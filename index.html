@@ -2454,11 +2454,20 @@ Ne retourne que le JSON, rien d'autre.`
     setPdfLoading(true, 'Traitement de la réponse...');
 
     var data = await response.json();
-    var text = (data.content || []).map(function(c){ return c.text || ''; }).join('');
+    console.log('[PDF] Réponse API brute:', JSON.stringify(data).substring(0, 500));
 
-    // Nettoyer et parser le JSON
-    var clean = text.replace(/```json|```/g, '').trim();
-    var cmd = JSON.parse(clean);
+    // Vérifier erreur API
+    if(data.error) throw new Error('API: ' + data.error.message);
+
+    var text = (data.content || []).map(function(c){ return c.text || ''; }).join('');
+    console.log('[PDF] Texte extrait:', text.substring(0, 300));
+
+    // Extraire le JSON robustement (chercher le premier { ... } ou [ ... ])
+    var clean = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    // Trouver le bloc JSON même si entouré de texte
+    var jsonMatch = clean.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) throw new Error('Aucun JSON trouvé dans la réponse: ' + clean.substring(0, 200));
+    var cmd = JSON.parse(jsonMatch[0]);
 
     setPdfLoading(false);
 
