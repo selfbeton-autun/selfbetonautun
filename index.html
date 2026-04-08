@@ -536,7 +536,7 @@ window.LOGO_B64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZg
   <div class="bottom-nav">
     <div class="nav-item active" onclick="switchTechTab('dashboard',this)"><span class="nav-icon">🏠</span><span>Accueil</span></div>
     <div class="nav-item" onclick="switchTechTab('nettoyage',this)"><span class="nav-icon">🧹</span><span>Nettoyage</span></div>
-    <div class="nav-item" onclick="switchTechTab('production',this)"><span class="nav-icon">🧱</span><span>Production</span></div>
+
     <div class="nav-item" onclick="switchTechTab('heures',this)"><span class="nav-icon">⏰</span><span>Heures</span></div>
     <div class="nav-item" onclick="switchTechTab('rapport',this)"><span class="nav-icon">📋</span><span>Rapport</span></div>
   </div>
@@ -661,60 +661,60 @@ window.LOGO_B64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZg
       <div><button class="submit-btn" style="margin:0 1.25rem 1rem;width:calc(100% - 2.5rem)" onclick="saveSectionNettoyageTremies()">✅ VALIDER NETTOYAGE & TREMIES</button></div>
     </div>
 
-    <div id="tech-production" class="tab-content content">
-      <div class="card">
-        <div class="card-title"><span class="dot" style="background:var(--primary)"></span>Production de Blocs</div>
-        <div style="margin-bottom:1.25rem">
-          <label class="form-label" style="margin-bottom:.5rem">Type de moule</label>
-          <select class="select-input" id="mould-type">
-            <option>Moule Standard 20x20x40</option><option>Moule Standard 15x20x40</option>
-            <option>Moule Plein 20x20x40</option><option>Moule Creux 20x20x40</option><option>Moule Spécial</option>
-          </select>
-        </div>
-        <div class="counter-row">
-          <div class="counter-label"><strong>Blocs produits</strong><div style="font-size:.75rem;color:var(--text-dim)">Objectif : <span id="obj-blocs">50</span></div></div>
-          <div class="counter-controls">
-            <button class="counter-btn" onclick="adjustCounter('blocs',-1)">−</button>
-            <div class="counter-val" id="blocs-count">0</div>
-            <button class="counter-btn" onclick="adjustCounter('blocs',+1)">+</button>
-          </div>
-        </div>
-        <div class="progress-bar-wrap" style="margin:.75rem 0 1.25rem">
-          <div class="progress-label-row"><span>Objectif blocs</span><span id="blocs-pct">0 / 50</span></div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill" id="blocs-bar" style="width:0%"></div></div>
-        </div>
-        <div class="counter-row">
-          <div class="counter-label"><strong>Blocs défectueux</strong></div>
-          <div class="counter-controls">
-            <button class="counter-btn" onclick="adjustCounter('defects',-1)">−</button>
-            <div class="counter-val" id="defects-count" style="color:var(--red)">0</div>
-            <button class="counter-btn" onclick="adjustCounter('defects',+1)">+</button>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title"><span class="dot" style="background:var(--yellow)"></span>Checklist Production</div>
-        <ul class="checklist">
-          <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Vérification consistance béton (bonne fluidité)</div><span class="check-tag tag-check">Qualité</span></li>
-          <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Huilage des moules avant coulée</div><span class="check-tag tag-prod">Production</span></li>
-          <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Vibration correcte (pas de ségrégation)</div><span class="check-tag tag-check">Qualité</span></li>
-          <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Démoulage soigneux (≥ 24h après coulée)</div><span class="check-tag tag-prod">Production</span></li>
-          <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Étiquetage et rangement des blocs</div><span class="check-tag tag-prod">Production</span></li>
-          <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Nettoyage moules après démoulage</div><span class="check-tag tag-clean">Nettoyage</span></li>
-        </ul>
-      </div>
-      <div class="card">
-        <div class="card-title"><span class="dot"></span>Photos production</div>
-        <div class="photo-zone" onclick="document.getElementById('prod-photo-input').click()"><div class="photo-zone-icon">📷</div><div class="photo-zone-text">Photos des blocs produits</div></div>
-        <input type="file" accept="image/*" capture="environment" id="prod-photo-input" class="file-input-hidden" onchange="addPhoto('prod',this)">
-        <div class="photos-grid" id="prod-photos"></div>
-      </div>
-      <div class="card">
-        <div class="card-title"><span class="dot"></span>Observations</div>
-        <textarea class="form-textarea" id="prod-note" placeholder="Problèmes, ajustements dosage, anomalies..."></textarea>
-      </div>
-      <div><button class="submit-btn" style="margin:0 1.25rem 1rem;width:calc(100% - 2.5rem)" onclick="saveSection('production')">✅ VALIDER LA PRODUCTION</button></div>
-    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     <div id="tech-heures" class="tab-content content">
       <div class="date-banner">
@@ -726,6 +726,20 @@ window.LOGO_B64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZg
           <button onclick="changeHeuresDate(-1)" style="width:30px;height:30px;border-radius:6px;background:rgba(255,255,255,.15);border:none;color:white;font-size:1rem;cursor:pointer">←</button>
           <div class="date-badge" id="heures-total-badge">0h00</div>
           <button onclick="changeHeuresDate(+1)" id="heures-next-btn" style="width:30px;height:30px;border-radius:6px;background:rgba(255,255,255,.15);border:none;color:white;font-size:1rem;cursor:pointer">→</button>
+        </div>
+      </div>
+
+      <!-- PLANNING DU JOUR -->
+      <div class="card" id="planning-jour-card">
+        <div class="card-title"><span class="dot" style="background:var(--primary)"></span>Planning du jour</div>
+        <div id="planning-jour-info" style="font-size:.88rem;color:var(--text-dim);margin-bottom:.75rem">—</div>
+        <div id="validation-nettoyage-block" style="display:none">
+          <div style="font-size:.82rem;font-weight:600;margin-bottom:.5rem">Confirmer le type de journée :</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+            <button id="btn-avec-nettoyage" onclick="validerJournee('avec_nettoyage')" style="padding:.75rem .5rem;border-radius:8px;border:2px solid rgba(255,255,255,.1);background:var(--bg3);color:var(--text-dim);font-family:inherit;font-size:.82rem;font-weight:600;cursor:pointer">🧹 Avec nettoyage</button>
+            <button id="btn-sans-nettoyage" onclick="validerJournee('sans_nettoyage')" style="padding:.75rem .5rem;border-radius:8px;border:2px solid rgba(255,255,255,.1);background:var(--bg3);color:var(--text-dim);font-family:inherit;font-size:.82rem;font-weight:600;cursor:pointer">⏰ Sans nettoyage</button>
+          </div>
+          <div id="validation-nettoyage-status" style="margin-top:.5rem;font-size:.8rem;text-align:center;color:var(--text-dim)"></div>
         </div>
       </div>
 
@@ -1097,6 +1111,20 @@ window.LOGO_B64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZg
           </div>
         </div>
       </div>
+
+      <!-- SIGNATURE MENSUELLE -->
+      <div id="signature-mensuelle-block" style="display:none;margin:0 1.25rem 1.5rem">
+        <div class="card" style="border:2px solid var(--yellow)">
+          <div class="card-title"><span class="dot" style="background:var(--yellow)"></span>🗓️ Signature mensuelle</div>
+          <p id="signature-mensuelle-titre" style="font-size:.85rem;font-weight:600;margin-bottom:.25rem">—</p>
+          <p style="font-size:.82rem;color:var(--text-dim);margin-bottom:.75rem">Je certifie l'exactitude de mes heures pour ce mois.</p>
+          <canvas id="signature-pad-mensuelle" width="320" height="150" style="width:100%;border:2px solid rgba(255,255,255,.15);border-radius:8px;background:#fff;touch-action:none;cursor:crosshair"></canvas>
+          <div style="display:flex;gap:.5rem;margin-top:.5rem">
+            <button onclick="clearSignatureMensuelle()" style="flex:1;padding:.6rem;background:var(--bg3);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:var(--text-dim);font-family:inherit;font-size:.85rem;cursor:pointer">🗑️ Effacer</button>
+            <button onclick="saveSignatureMensuelle()" style="flex:2;padding:.6rem;background:var(--yellow);border:none;border-radius:8px;color:#1a1a2e;font-family:inherit;font-size:.85rem;font-weight:700;cursor:pointer">📝 SIGNER LE MOIS</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div id="tech-rapport" class="tab-content content">
@@ -1342,6 +1370,8 @@ function switchTechTab(tab,el){
     updateHeuresDateDisplay();
     loadHeuresForDate();
     setTimeout(checkVendredi, 200);
+    setTimeout(function(){ if(window.afficherPlanningJour) window.afficherPlanningJour(); }, 300);
+    setTimeout(function(){ if(window.checkSignatureMensuelle) window.checkSignatureMensuelle(); }, 400);
   }
 }
 
@@ -2033,6 +2063,7 @@ window.changeHeuresDate = function(delta) {
   heuresDateOffset += delta;
   updateHeuresDateDisplay();
   loadHeuresForDate();
+  setTimeout(function(){ if(window.afficherPlanningJour) window.afficherPlanningJour(); }, 150);
 };
 
 function updateHeuresDateDisplay() {
@@ -2757,6 +2788,168 @@ window.generatePDF = function() {
     window.showNotif('PDF genere !');
   });
 };
+</script>
+
+<script>
+// ===== MODULE PLANNING & VALIDATION JOURNÉE + SIGNATURE MENSUELLE =====
+(function() {
+
+function getSaison(mois) {
+  return (mois >= 10 || mois <= 2) ? 'hiver' : 'ete';
+}
+
+function getPlanningJour(date) {
+  var j = date.getDay();
+  var saison = getSaison(date.getMonth());
+  if (j === 0 || j === 6) return { travail:false };
+  if (j === 2) return { travail:true, nettoyage:false, arrivee:'08:00', debutPause:'', finPause:'', depart:'12:00', objectif:4, label:'Mardi — sans nettoyage (4h)' };
+  if (saison === 'ete') return { travail:true, nettoyage:true, arrivee:'08:00', debutPause:'12:30', finPause:'13:30', depart:'18:30', objectif:9.5, label:'Été — avec nettoyage (9h30)' };
+  return { travail:true, nettoyage:true, arrivee:'08:00', debutPause:'12:00', finPause:'13:00', depart:'17:30', objectif:8.5, label:'Hiver — avec nettoyage (8h30)' };
+}
+
+window.afficherPlanningJour = function() {
+  if (window.currentUser !== 'francois') return;
+  var date = window.getHeuresDate ? window.getHeuresDate() : new Date();
+  var p = getPlanningJour(date);
+  var infoEl = document.getElementById('planning-jour-info');
+  var validBlock = document.getElementById('validation-nettoyage-block');
+  var statusEl = document.getElementById('validation-nettoyage-status');
+  if (!infoEl) return;
+
+  var jourNom = date.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
+
+  if (!p.travail) {
+    infoEl.innerHTML = '<span style="color:var(--text-dim)">' + jourNom + ' — Repos</span>';
+    if (validBlock) validBlock.style.display = 'none';
+    return;
+  }
+
+  infoEl.innerHTML = '<div style="font-weight:600;color:var(--text);margin-bottom:.25rem">' + jourNom + '</div>'
+    + '<div style="display:flex;gap:.5rem;flex-wrap:wrap">'
+    + '<span style="background:var(--bg3);border-radius:6px;padding:.2rem .5rem;font-size:.78rem">🕗 ' + p.arrivee + ' → ' + p.depart + '</span>'
+    + (p.debutPause ? '<span style="background:var(--bg3);border-radius:6px;padding:.2rem .5rem;font-size:.78rem">🍽 ' + p.debutPause + '-' + p.finPause + '</span>' : '')
+    + '<span style="background:var(--bg3);border-radius:6px;padding:.2rem .5rem;font-size:.78rem">⏱ ' + p.objectif + 'h</span>'
+    + '</div>';
+
+  // Pré-remplir si vides
+  [['heure-arrivee', p.arrivee], ['heure-debut-pause', p.debutPause||''], ['heure-fin-pause', p.finPause||''], ['heure-depart', p.depart]].forEach(function(pair) {
+    var el = document.getElementById(pair[0]);
+    if (el && !el.value) el.value = pair[1];
+  });
+  if (window.calcHeures) window.calcHeures();
+
+  if (validBlock) {
+    if (p.nettoyage === false) {
+      validBlock.style.display = 'none';
+      if (statusEl) { statusEl.style.display='block'; statusEl.textContent='⏰ Journée sans nettoyage (planning fixe)'; }
+    } else {
+      validBlock.style.display = 'block';
+      var dateStr = date.toLocaleDateString('fr-FR');
+      if (window._validNettoyage && window._validNettoyage.date === dateStr) {
+        afficherStatutNettoyage(window._validNettoyage.type);
+      } else {
+        if (statusEl) statusEl.textContent = '';
+        resetBtns();
+      }
+    }
+  }
+};
+
+window.validerJournee = function(type) {
+  var date = window.getHeuresDate ? window.getHeuresDate() : new Date();
+  var saison = getSaison(date.getMonth());
+  var depart = type === 'sans_nettoyage'
+    ? (saison === 'ete' ? '17:30' : '16:30')
+    : getPlanningJour(date).depart;
+  var el = document.getElementById('heure-depart');
+  if (el) { el.value = depart; if (window.calcHeures) window.calcHeures(); }
+  window._validNettoyage = { date: date.toLocaleDateString('fr-FR'), type: type };
+  afficherStatutNettoyage(type);
+  window.showNotif(type === 'avec_nettoyage' ? '🧹 Avec nettoyage' : '⏰ Sans nettoyage');
+};
+
+function afficherStatutNettoyage(type) {
+  var s = document.getElementById('validation-nettoyage-status');
+  var bA = document.getElementById('btn-avec-nettoyage');
+  var bS = document.getElementById('btn-sans-nettoyage');
+  if (bA) { bA.style.borderColor = type==='avec_nettoyage'?'var(--primary)':'rgba(255,255,255,.1)'; bA.style.background = type==='avec_nettoyage'?'rgba(46,125,50,.2)':'var(--bg3)'; bA.style.color = type==='avec_nettoyage'?'var(--primary)':'var(--text-dim)'; }
+  if (bS) { bS.style.borderColor = type==='sans_nettoyage'?'var(--yellow)':'rgba(255,255,255,.1)'; bS.style.background = type==='sans_nettoyage'?'rgba(245,200,66,.1)':'var(--bg3)'; bS.style.color = type==='sans_nettoyage'?'var(--yellow)':'var(--text-dim)'; }
+  if (s) { s.textContent = '✓ ' + (type==='avec_nettoyage'?'Avec nettoyage validé':'Sans nettoyage validé'); s.style.color = type==='avec_nettoyage'?'var(--primary)':'var(--yellow)'; s.style.fontWeight='600'; }
+}
+
+function resetBtns() {
+  ['btn-avec-nettoyage','btn-sans-nettoyage'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) { el.style.borderColor='rgba(255,255,255,.1)'; el.style.background='var(--bg3)'; el.style.color='var(--text-dim)'; }
+  });
+}
+
+// ===== SIGNATURE MENSUELLE =====
+var sigMCtx=null, sigMCanvas=null, sigMHasMark=false;
+
+function initSignatureMensuelle() {
+  sigMCanvas = document.getElementById('signature-pad-mensuelle');
+  if (!sigMCanvas) return;
+  sigMCtx = sigMCanvas.getContext('2d');
+  sigMHasMark = false;
+  var drawing = false;
+  function pos(e) { var r=sigMCanvas.getBoundingClientRect(), s=e.touches?e.touches[0]:e; return {x:(s.clientX-r.left)*(sigMCanvas.width/r.width), y:(s.clientY-r.top)*(sigMCanvas.height/r.height)}; }
+  function start(e) { e.preventDefault(); drawing=true; var p=pos(e); sigMCtx.beginPath(); sigMCtx.moveTo(p.x,p.y); }
+  function move(e) { e.preventDefault(); if(!drawing) return; sigMHasMark=true; var p=pos(e); sigMCtx.lineTo(p.x,p.y); sigMCtx.strokeStyle='#1a1a2e'; sigMCtx.lineWidth=2; sigMCtx.stroke(); }
+  function stop() { drawing=false; }
+  sigMCanvas.addEventListener('mousedown',start); sigMCanvas.addEventListener('mousemove',move); sigMCanvas.addEventListener('mouseup',stop);
+  sigMCanvas.addEventListener('touchstart',start,{passive:false}); sigMCanvas.addEventListener('touchmove',move,{passive:false}); sigMCanvas.addEventListener('touchend',stop);
+}
+
+window.clearSignatureMensuelle = function() {
+  if (sigMCtx) { sigMCtx.clearRect(0,0,sigMCanvas.width,sigMCanvas.height); sigMHasMark=false; }
+};
+
+window.saveSignatureMensuelle = function() {
+  if (!sigMHasMark) { window.showNotif('Signer avant de valider','error'); return; }
+  if (!window.currentUser) { window.showNotif('Non connecté','error'); return; }
+  var now = new Date();
+  var mois=now.getMonth(), annee=now.getFullYear();
+  var nomMois = now.toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+  var dataURL = sigMCanvas.toDataURL('image/png');
+  var data = { technicien:window.currentUser, technicien_nom:window.TECHNICIENS[window.currentUser].nom, mois:mois, annee:annee, nomMois:nomMois, date:now.toLocaleDateString('fr-FR'), signature:dataURL, timestamp:Date.now() };
+  window.waitForFirebase(function() {
+    window.doLoadSignaturesMensuelles(function(sigs) {
+      var deja = sigs.find(function(s){ return s.technicien===window.currentUser && s.mois===mois && s.annee===annee; });
+      if (deja) { window.showNotif('Mois déjà signé !'); return; }
+      window.doSaveSignatureMensuelle(data).then(function() {
+        var block = document.getElementById('signature-mensuelle-block');
+        if (block) block.innerHTML = '<div class="card" style="background:rgba(46,125,50,.1);border:1.5px solid var(--primary)"><div style="text-align:center;padding:1rem"><div style="font-size:1.5rem">✅</div><div style="font-weight:600;color:var(--primary);margin-top:.5rem">Mois signé : '+nomMois+'</div><img src="'+dataURL+'" style="max-width:150px;margin-top:.75rem;border-radius:6px"></div></div>';
+      });
+    });
+  });
+};
+
+window.checkSignatureMensuelle = function() {
+  if (window.currentUser !== 'francois') return;
+  var now = new Date();
+  var dernierJour = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+  var block = document.getElementById('signature-mensuelle-block');
+  if (!block) return;
+  if (now.getDate() < dernierJour - 2) { block.style.display='none'; return; }
+  var mois=now.getMonth(), annee=now.getFullYear();
+  var nomMois = now.toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+  window.waitForFirebase(function() {
+    window.doLoadSignaturesMensuelles(function(sigs) {
+      var sigMois = sigs.find(function(s){ return s.technicien==='francois' && s.mois===mois && s.annee===annee; });
+      block.style.display = 'block';
+      if (sigMois) {
+        block.innerHTML = '<div class="card" style="background:rgba(46,125,50,.1);border:1.5px solid var(--primary)"><div style="text-align:center;padding:1rem"><div style="font-size:1.5rem">✅</div><div style="font-weight:600;color:var(--primary);margin-top:.5rem">Mois signé : '+nomMois+'</div><img src="'+sigMois.signature+'" style="max-width:150px;margin-top:.75rem;border-radius:6px"></div></div>';
+      } else {
+        var titre = document.getElementById('signature-mensuelle-titre');
+        if (titre) titre.textContent = 'Mois de ' + nomMois;
+        setTimeout(initSignatureMensuelle, 100);
+      }
+    });
+  });
+};
+
+})();
 </script>
 </body>
 </html>
