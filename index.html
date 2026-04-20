@@ -219,12 +219,20 @@ select.fi{cursor:pointer}
 .ps-lbl{font-size:10px;font-weight:600;color:var(--mt);letter-spacing:.3px}
 .ps-item.done .ps-lbl,.ps-item.current .ps-lbl{color:var(--txt)}
 
+/* HAMBURGER */
+#hamburger{display:none;align-items:center;justify-content:center;width:38px;height:38px;border:none;background:transparent;cursor:pointer;font-size:22px;color:var(--n1);flex-shrink:0;border-radius:7px;transition:background .15s}
+#hamburger:hover{background:var(--bg)}
+#sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:199}
+
 @media(max-width:768px){
   :root{--sw:0px}
-  #sb{transform:translateX(-240px);width:240px}
+  #sb{transform:translateX(-240px);width:240px;transition:transform .25s ease;z-index:200}
   #sb.open{transform:translateX(0)}
+  #sb-overlay.open{display:block}
   #tb{left:0}
   #main{margin-left:0}
+  #hamburger{display:flex}
+  .tb-search{display:none}
   .det-grid,.fr,.bon-grid,.bon-sigs{grid-template-columns:1fr}
   .kpi-row{grid-template-columns:1fr 1fr}
 }
@@ -281,8 +289,12 @@ select.fi{cursor:pointer}
   </div>
 </aside>
 
+<!-- OVERLAY MOBILE -->
+<div id="sb-overlay" onclick="closeSidebar()"></div>
+
 <!-- TOPBAR -->
 <header id="tb">
+  <button id="hamburger" onclick="toggleSidebar()" aria-label="Menu">☰</button>
   <div class="tb-ttl" id="tb-ttl">Dashboard</div>
   <div class="tb-search">
     <span>🔍</span>
@@ -815,7 +827,7 @@ function nav(id){
 }
 
 document.querySelectorAll('.sb-lnk').forEach(l=>l.addEventListener('click',()=>{
-  const p=l.dataset.p;if(p)nav(p);
+  const p=l.dataset.p;if(p){nav(p);closeSidebar();}
 }));
 
 function tbAction(){
@@ -1708,6 +1720,18 @@ function exportCSV(){
 // ══════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════
+// SIDEBAR MOBILE
+function toggleSidebar(){
+  var sb=document.getElementById("sb");
+  var ov=document.getElementById("sb-overlay");
+  sb.classList.toggle("open");
+  ov.classList.toggle("open");
+}
+function closeSidebar(){
+  document.getElementById("sb").classList.remove("open");
+  document.getElementById("sb-overlay").classList.remove("open");
+}
+
 renderDash();
 document.getElementById('tb-btn').style.display='';
 </script>
