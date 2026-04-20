@@ -892,7 +892,28 @@ select.fi{cursor:pointer}
   </div>
 </div>
 
-<!-- ══ ÉCRAN DE CONNEXION ══ -->
+<!-- Modal signature feuille d'heures -->
+<div class="ov" id="mo-fh-sig" style="display:none" onclick="closeMo('mo-fh-sig')">
+  <div class="mo wide" onclick="event.stopPropagation()" style="max-width:620px">
+    <div class="mo-h">
+      <div>
+        <h2 id="mo-fh-sig-ttl">Signature feuille d'heures</h2>
+        <div id="mo-fh-sig-sub" style="font-size:12px;color:var(--mt);margin-top:2px"></div>
+      </div>
+      <button class="mo-x" onclick="closeMo('mo-fh-sig')">✕</button>
+    </div>
+    <div class="mo-b">
+      <!-- Récap heures -->
+      <div id="mo-fh-sig-recap" style="margin-bottom:16px"></div>
+      <!-- Tableau journées -->
+      <div id="mo-fh-sig-table" style="margin-bottom:16px"></div>
+      <!-- Zone signature -->
+      <div id="mo-fh-sig-zone"></div>
+    </div>
+    <div class="mo-f" id="mo-fh-sig-footer"></div>
+  </div>
+</div>
+
 <div id="login-screen" style="position:fixed;inset:0;background:var(--n2);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px">
   <div style="background:var(--surf);border-radius:16px;width:min(400px,95vw);box-shadow:var(--sh2);overflow:hidden">
     <div style="background:linear-gradient(135deg,var(--n2),var(--n1));padding:28px 28px 22px;text-align:center">
@@ -1968,146 +1989,234 @@ function renderSigBlock(){
 }
 
 function openFeuilleSig(tech, wk){
+  const wd = heures[wk]||{};
+  let totH = 0;
+  JOURS.forEach(j=>totH+=parseFloat(wd[j]?.total||0));
+  const t = TEAM.find(x=>x.prenom===tech);
+  const sup = Math.max(0, totH-(t?.h||35));
+  const sigKey = `sig_${wk}_${tech}`;
+  const existSig = wd[sigKey];
+  const isSigned = !!existSig?.sigTech;
+  const isValidated = !!existSig?.sigManager;
+
+  document.getElementById('mo-fh-sig-ttl').textContent = `Feuille d'heures — ${tech}`;
+  document.getElementById('mo-fh-sig-sub').textContent = `Semaine ${wk} · ${totH.toFixed(1)}h${sup>0?' · +'+sup.toFixed(1)+'h sup':''}`;
+
+  // Récap KPIs
+  document.getElementById('mo-fh-sig-recap').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+      ${[['Technicien',tech,'var(--n1)'],['Semaine',wk,'var(--n1)'],
+         ['Total',totH.toFixed(1)+'h','var(--g1)'],
+         ['Sup',sup>0?'+'+sup.toFixed(1)+'h':'0h',sup>0?'var(--o1)':'var(--g1)']
+        ].map(([l,v,c])=>`
+        <div style="background:var(--bg);border-radius:7px;padding:8px 10px;text-align:center">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--mt);font-weight:600">${l}</div>
+          <div style="font-size:15px;font-weight:800;color:${c};font-family:'JetBrains Mono',monospace;margin-top:2px">${v}</div>
+        </div>`).join('')}
+    </div>`;
+
+  // Tableau journées
+  document.getElementById('mo-fh-sig-table').innerHTML=`
+    <table class="tbl" style="font-size:12px">
+      <thead><tr><th>Jour</th><th>Chantier</th><th>Début</th><th>Fin</th><th>Pause</th><th>Total</th></tr></thead>
+      <tbody>
+        ${JOURS.map(j=>{
+          const d=wd[j];
+          if(!d||!d.total||parseFloat(d.total)===0)
+            return `<tr><td>${j}</td><td colspan="5" style="color:var(--mt);font-style:italic">Repos / absent</td></tr>`;
+          return `<tr><td><strong>${j}</strong></td><td>${d.chantier||'—'}</td><td>${d.deb||'—'}</td><td>${d.fin||'—'}</td><td>${d.pause||0}h</td><td><strong class="fh-total">${d.total}h</strong></td></tr>`;
+        }).join('')}
+        <tr style="background:var(--nl)">
+          <td colspan="5" style="text-align:right;font-weight:700;font-size:13px">TOTAL SEMAINE</td>
+          <td><strong style="font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--n1)">${totH.toFixed(1)}h</strong></td>
+        </tr>
+      </tbody>
+    </table>`;
+
+  // Zone signature
+  const zone = document.getElementById('mo-fh-sig-zone');
+  const footer = document.getElementById('mo-fh-sig-footer');
+
+  if(isValidated){
+    zone.innerHTML=`
+      <div style="background:var(--gl);border:1px solid var(--g1);border-radius:9px;padding:14px 16px;text-align:center">
+        <div style="font-size:22px;margin-bottom:6px">✅</div>
+        <div style="font-size:14px;font-weight:700;color:var(--g2)">Feuille validée et signée</div>
+        <div style="font-size:12px;color:var(--mt);margin-top:3px">Technicien : ${tech} · Manager : Damien</div>
+      </div>`;
+    footer.innerHTML=`
+      <button class="btn btn-ghost" onclick="closeMo('mo-fh-sig')">Fermer</button>
+      <button class="btn btn-ghost" onclick="printFeuille('${tech}','${wk}')">🖨️ Imprimer</button>
+      <button class="btn btn-ghost btn-sm" style="color:var(--r1)" onclick="resetSig('${tech}','${wk}')">↩ Réinitialiser</button>`;
+
+  } else if(isSigned){
+    zone.innerHTML=`
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div style="text-align:center">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mt);margin-bottom:6px">Signature technicien — ${tech}</div>
+          <img src="${existSig.sigTech}" style="border:1px solid var(--brd);border-radius:8px;background:#fafafa;max-width:100%;height:90px;object-fit:contain"/>
+          <div style="font-size:11px;color:var(--g2);margin-top:4px">✓ Signé</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mt);margin-bottom:6px">Visa manager — Damien</div>
+          <div style="border:1px dashed var(--brd);border-radius:8px;height:90px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--mt);background:var(--bg)">En attente de validation</div>
+        </div>
+      </div>`;
+    footer.innerHTML=`
+      <button class="btn btn-ghost" onclick="closeMo('mo-fh-sig')">Fermer</button>
+      ${currentUser?.role==='manager'?`<button class="btn btn-g" onclick="validerManager('${tech}','${wk}')">✅ Valider &amp; signer</button>`:''}`;
+
+  } else {
+    // Pad de signature inline avec canvas
+    zone.innerHTML=`
+      <div style="margin-bottom:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
+          ✍️ Signez ci-dessous pour certifier vos heures
+        </div>
+        <div style="position:relative;border:2px dashed var(--brd);border-radius:10px;background:var(--bg);overflow:hidden">
+          <canvas id="sig-canvas-fh" style="display:block;width:100%;height:120px;cursor:crosshair;touch-action:none"></canvas>
+          <div id="sig-hint" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:13px;color:var(--mt);font-style:italic;pointer-events:none">Signez ici…</div>
+        </div>
+        <div style="font-size:11px;color:var(--mt);margin-top:5px;text-align:center">
+          Je soussigné(e) <strong>${tech}</strong> certifie l'exactitude des heures déclarées ci-dessus.
+        </div>
+      </div>`;
+    footer.innerHTML=`
+      <button class="btn btn-ghost" onclick="clearSigCanvas()">🗑️ Effacer</button>
+      <button class="btn btn-ghost" onclick="closeMo('mo-fh-sig')">Annuler</button>
+      <button class="btn btn-g" onclick="saveSigFH('${tech}','${wk}')">✅ Confirmer la signature</button>`;
+
+    // Initialiser le canvas après rendu
+    setTimeout(()=>initSigCanvas(), 50);
+  }
+
+  document.getElementById('mo-fh-sig').style.display='flex';
+}
+
+function initSigCanvas(){
+  const canvas = document.getElementById('sig-canvas-fh');
+  if(!canvas) return;
+  // Ajuster la résolution réelle du canvas à sa taille CSS
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * window.devicePixelRatio;
+  canvas.height = rect.height * window.devicePixelRatio;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  ctx.strokeStyle='#1a3a6b';
+  ctx.lineWidth=2.5;
+  ctx.lineCap='round';
+  ctx.lineJoin='round';
+  let drawing = false;
+
+  function getPos(e){
+    const r = canvas.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return {x: src.clientX - r.left, y: src.clientY - r.top};
+  }
+
+  canvas.addEventListener('mousedown', e=>{
+    drawing=true;
+    const p=getPos(e);
+    ctx.beginPath();ctx.moveTo(p.x,p.y);
+    document.getElementById('sig-hint').style.display='none';
+  });
+  canvas.addEventListener('mousemove', e=>{
+    if(!drawing)return;
+    const p=getPos(e);ctx.lineTo(p.x,p.y);ctx.stroke();
+  });
+  canvas.addEventListener('mouseup', ()=>drawing=false);
+  canvas.addEventListener('mouseleave', ()=>drawing=false);
+
+  canvas.addEventListener('touchstart', e=>{
+    e.preventDefault();drawing=true;
+    const p=getPos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);
+    document.getElementById('sig-hint').style.display='none';
+  },{passive:false});
+  canvas.addEventListener('touchmove', e=>{
+    e.preventDefault();if(!drawing)return;
+    const p=getPos(e);ctx.lineTo(p.x,p.y);ctx.stroke();
+  },{passive:false});
+  canvas.addEventListener('touchend', ()=>drawing=false);
+}
+
+function clearSigCanvas(){
+  const canvas = document.getElementById('sig-canvas-fh');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  document.getElementById('sig-hint').style.display='';
+}
+
+function saveSigFH(tech, wk){
+  const canvas = document.getElementById('sig-canvas-fh');
+  if(!canvas){toast('Canvas introuvable','err');return;}
+  // Vérifier que le canvas n'est pas vide
+  const ctx = canvas.getContext('2d');
+  const data = ctx.getImageData(0,0,canvas.width,canvas.height).data;
+  const hasContent = data.some(v=>v!==0);
+  if(!hasContent){toast('Veuillez signer avant de confirmer','err');return;}
+
+  const sigData = canvas.toDataURL('image/png');
+  const wk2 = document.getElementById('fh-week').value;
+  if(!heures[wk]) heures[wk]={};
+  const sigKey = `sig_${wk}_${tech}`;
+  heures[wk][sigKey]={sigTech:sigData, sigManager:null, ts:Date.now()};
+  save();
+  closeMo('mo-fh-sig');
+  renderSigBlock();
+  toast('Feuille signée par '+tech+' ✓','ok');
+}
+
+function printFeuille(tech, wk){
+  // Ouvrir une version imprimable simple sans script
   const wd=heures[wk]||{};
   let totH=0;
   JOURS.forEach(j=>totH+=parseFloat(wd[j]?.total||0));
-  const t=TEAM.find(x=>x.prenom===tech);
-  const contrat=t?.h||35;
-  const sup=Math.max(0,totH-contrat);
   const sigKey=`sig_${wk}_${tech}`;
   const existSig=wd[sigKey];
-
   const w=window.open('','_blank','width=780,height=860');
-  w.document.write(`<!DOCTYPE html><html><head>
-  <meta charset="UTF-8"/><title>Feuille d'heures — ${tech} — ${wk}</title>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet"/>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Outfit',sans-serif;padding:32px;color:#111;font-size:13px}
-    .hdr{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:14px;border-bottom:3px solid #5b9e2f;margin-bottom:20px}
-    .brand{font-size:20px;font-weight:800;color:#1a3a6b}.brand span{color:#5b9e2f}
-    h4{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:#64748b;margin:16px 0 8px;padding-bottom:5px;border-bottom:1px solid #dde3ef}
-    table{width:100%;border-collapse:collapse;margin-bottom:16px}
-    th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#64748b;padding:8px 10px;border-bottom:2px solid #dde3ef;text-align:left;background:#f8fafc}
-    td{padding:8px 10px;border-bottom:1px solid #f0f3f9;font-size:13px}
-    .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
-    .kpi{background:#f0f3f9;border-radius:7px;padding:10px 12px;text-align:center}
-    .kl{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#64748b;font-weight:600}
-    .kv{font-size:18px;font-weight:800;font-family:monospace;margin-top:3px}
-    .sigs{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:20px;padding-top:18px;border-top:2px solid #dde3ef}
-    .sig-box{text-align:center}
-    .sig-box .sl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#64748b;margin-bottom:8px}
-    canvas{border:1px dashed #dde3ef;border-radius:8px;background:#fafafa;touch-action:none;cursor:crosshair}
-    .sig-img{border:1px solid #dde3ef;border-radius:8px;background:#fafafa;padding:6px;max-width:100%}
-    .btns{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}
-    button{padding:9px 18px;border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;border:none;cursor:pointer}
-    .bg{background:#5b9e2f;color:#fff}.bn{background:#1a3a6b;color:#fff}.bw{background:#f0f3f9;border:1px solid #dde3ef}
-    .footer{margin-top:20px;padding-top:12px;border-top:1px solid #dde3ef;font-size:11px;color:#64748b;text-align:center}
-    @media print{.btns{display:none}canvas{display:none}.sig-img{display:block}}
+  const rows=JOURS.map(j=>{
+    const d=wd[j];
+    if(!d||!d.total||parseFloat(d.total)===0) return `<tr><td>${j}</td><td colspan="5" style="color:#b0bec5;font-style:italic">Repos / absent</td></tr>`;
+    return `<tr><td><b>${j}</b></td><td>${d.chantier||'—'}</td><td>${d.deb||'—'}</td><td>${d.fin||'—'}</td><td>${d.pause||0}h</td><td><b style="color:#5b9e2f">${d.total}h</b></td></tr>`;
+  }).join('');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Feuille ${tech} ${wk}</title>
+  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;padding:30px;font-size:12px}
+  h1{font-size:18px;color:#1a3a6b;margin-bottom:4px}h2{font-size:13px;color:#5b9e2f;margin-bottom:16px}
+  table{width:100%;border-collapse:collapse;margin:12px 0}th{background:#f0f3f9;padding:7px 9px;text-align:left;font-size:11px;border-bottom:2px solid #dde3ef}
+  td{padding:7px 9px;border-bottom:1px solid #f0f3f9}
+  .sigs{display:flex;gap:40px;margin-top:24px;padding-top:16px;border-top:2px solid #dde3ef}
+  .sig-box{flex:1;text-align:center}.sig-lbl{font-size:10px;text-transform:uppercase;font-weight:bold;color:#64748b;margin-bottom:8px}
+  img{border:1px solid #dde3ef;border-radius:6px;max-width:100%;height:80px;object-fit:contain}
+  .empty-sig{border:1px dashed #dde3ef;border-radius:6px;height:80px;display:flex;align-items:center;justify-content:center;color:#b0bec5;font-size:11px}
   </style></head><body>
-  <div class="hdr">
-    <div><div class="brand">Self<span>Béton</span> Autun</div><div style="font-size:12px;color:#64748b;margin-top:3px">Feuille d'heures hebdomadaire</div></div>
-    <div style="text-align:right;font-size:12px;color:#64748b"><strong style="font-size:14px;color:#111;display:block">${tech}</strong>Semaine ${wk}<br>Généré le ${new Date().toLocaleDateString('fr-FR')}</div>
-  </div>
-
-  <div class="kpi-row">
-    <div class="kpi"><div class="kl">Technicien</div><div class="kv" style="color:#1a3a6b;font-size:14px">${tech}</div></div>
-    <div class="kpi"><div class="kl">Semaine</div><div class="kv" style="color:#1a3a6b">${wk}</div></div>
-    <div class="kpi"><div class="kl">Total heures</div><div class="kv" style="color:#5b9e2f">${totH.toFixed(1)}h</div></div>
-    <div class="kpi"><div class="kl">Heures sup</div><div class="kv" style="color:${sup>0?'#e07b2a':'#5b9e2f'}">${sup>0?'+'+sup.toFixed(1)+'h':'0h'}</div></div>
-  </div>
-
-  <h4>Détail des journées</h4>
-  <table>
-    <thead><tr><th>Jour</th><th>Chantier</th><th>Début</th><th>Fin</th><th>Pause</th><th>Total</th></tr></thead>
-    <tbody>
-      ${JOURS.map(j=>{
-        const d=wd[j];
-        if(!d||!d.total||parseFloat(d.total)===0) return `<tr><td>${j}</td><td colspan="5" style="color:#b0bec5;font-style:italic">Repos / absent</td></tr>`;
-        return `<tr><td><strong>${j}</strong></td><td>${d.chantier||'—'}</td><td>${d.deb||'—'}</td><td>${d.fin||'—'}</td><td>${d.pause||0}h</td><td><strong style="color:#5b9e2f">${d.total}h</strong></td></tr>`;
-      }).join('')}
-      <tr style="background:#f0f3f9;border-top:2px solid #dde3ef">
-        <td colspan="5" style="text-align:right;font-weight:700">TOTAL SEMAINE</td>
-        <td><strong style="font-family:monospace;font-size:15px;color:#1a3a6b">${totH.toFixed(1)}h</strong></td>
-      </tr>
-    </tbody>
-  </table>
-
+  <h1>Self<span style="color:#5b9e2f">Béton</span> Autun — Feuille d'heures</h1>
+  <h2>${tech} · Semaine ${wk} · Total : ${totH.toFixed(1)}h</h2>
+  <table><thead><tr><th>Jour</th><th>Chantier</th><th>Début</th><th>Fin</th><th>Pause</th><th>Total</th></tr></thead>
+  <tbody>${rows}<tr style="background:#f0f3f9"><td colspan="5" style="text-align:right;font-weight:bold">TOTAL</td><td><b>${totH.toFixed(1)}h</b></td></tr></tbody></table>
   <div class="sigs">
-    <div class="sig-box">
-      <div class="sl">Signature du technicien — ${tech}</div>
-      ${existSig?.sigTech
-        ?`<img class="sig-img" src="${existSig.sigTech}" alt="Signature ${tech}"/><div style="font-size:11px;color:#5b9e2f;margin-top:5px">✓ Déjà signé</div>`
-        :`<canvas id="c-tech" width="300" height="110"></canvas>
-         <div style="font-size:11px;color:#64748b;margin-top:4px">Signez ci-dessus</div>`
-      }
-    </div>
-    <div class="sig-box">
-      <div class="sl">Visa manager — Damien</div>
-      ${existSig?.sigManager
-        ?`<img class="sig-img" src="${existSig.sigManager}" alt="Visa manager"/><div style="font-size:11px;color:#5b9e2f;margin-top:5px">✓ Validé</div>`
-        :`<div style="border:1px dashed #dde3ef;border-radius:8px;height:110px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#b0bec5;background:#fafafa">En attente de validation</div>`
-      }
-    </div>
+    <div class="sig-box"><div class="sig-lbl">Signature technicien — ${tech}</div>
+      ${existSig?.sigTech?`<img src="${existSig.sigTech}"/>`:'<div class="empty-sig">Non signé</div>'}</div>
+    <div class="sig-box"><div class="sig-lbl">Visa manager — Damien</div>
+      ${existSig?.sigManager?'<div style="color:#5b9e2f;font-weight:bold;font-size:14px;margin-top:20px">✓ Validé</div>':'<div class="empty-sig">En attente</div>'}</div>
   </div>
-
-  <div class="btns">
-    ${!existSig?.sigTech?`<button class="bg" onclick="saveSigTech()">✅ Confirmer ma signature</button>`:''}
-    <button class="bn" onclick="window.print()">🖨️ Imprimer</button>
-    ${!existSig?.sigTech?`<button class="bw" onclick="clearSig()">🗑️ Effacer</button>`:''}
-  </div>
-
-  <div class="footer">Self Béton Autun — autun.selfbeton@gmail.com — Je soussigné(e) ${tech} certifie l'exactitude des heures déclarées ci-dessus.</div>
-
-  <scr'+'ipt>
-    const JOURS=${JSON.stringify(JOURS)};
-    var canvas=document.getElementById('c-tech');
-    var ctx=canvas?canvas.getContext('2d'):null;
-    if(ctx){
-      ctx.strokeStyle='#1a3a6b';ctx.lineWidth=2;ctx.lineCap='round';ctx.lineJoin='round';
-      var drawing=false;
-      canvas.addEventListener('mousedown',e=>{drawing=true;ctx.beginPath();ctx.moveTo(e.offsetX,e.offsetY)});
-      canvas.addEventListener('mousemove',e=>{if(drawing){ctx.lineTo(e.offsetX,e.offsetY);ctx.stroke()}});
-      canvas.addEventListener('mouseup',()=>drawing=false);
-      canvas.addEventListener('touchstart',e=>{e.preventDefault();drawing=true;var t=e.touches[0],r=canvas.getBoundingClientRect();ctx.beginPath();ctx.moveTo(t.clientX-r.left,t.clientY-r.top)},{passive:false});
-      canvas.addEventListener('touchmove',e=>{e.preventDefault();if(drawing){var t=e.touches[0],r=canvas.getBoundingClientRect();ctx.lineTo(t.clientX-r.left,t.clientY-r.top);ctx.stroke()}},{passive:false});
-      canvas.addEventListener('touchend',()=>drawing=false);
-    }
-    function clearSig(){if(ctx)ctx.clearRect(0,0,canvas.width,canvas.height)}
-    function saveSigTech(){
-      if(!canvas){alert('Déjà signé');return}
-      var data=canvas.toDataURL();
-      window.opener&&window.opener.postMessage({type:'fh-sig-tech',tech:'${tech}',wk:'${wk}',sig:data},'*');
-      alert('Signature enregistrée ✓ — En attente de validation manager');
-    }
-  <\/script>
+  <script>window.onload=()=>window.print()<\/script>
   </body></html>`);
   w.document.close();
 }
 
-window.addEventListener('message',e=>{
-  if(e.data?.type==='fh-sig-tech'){
-    const {tech,wk,sig}=e.data;
-    if(!heures[wk]) heures[wk]={};
-    const sigKey=`sig_${wk}_${tech}`;
-    heures[wk][sigKey]={sigTech:sig,sigManager:null,ts:Date.now()};
-    save();
-    // Rafraîchir si on est sur la bonne semaine/tech
-    const curTech=document.getElementById('fh-tech')?.value;
-    const curWk=document.getElementById('fh-week')?.value;
-    if(curTech===tech&&curWk===wk) renderSigBlock();
-    toast('Feuille signée par '+tech,'ok');
-  }
-});
+
 
 function validerManager(tech, wk){
   if(!heures[wk]) heures[wk]={};
   const sigKey=`sig_${wk}_${tech}`;
   const existing=heures[wk][sigKey]||{};
-  heures[wk][sigKey]={...existing,sigManager:'validated_by_manager',ts:Date.now()};
-  save();renderSigBlock();
-  toast('Feuille validée et signée ✓','ok');
-  openFeuillePDF(tech,wk);
+  // Signature manager = validation automatique (pas de pad requis)
+  heures[wk][sigKey]={...existing, sigManager:'validated_'+Date.now(), ts:Date.now()};
+  save();
+  closeMo('mo-fh-sig');
+  renderSigBlock();
+  toast('Feuille validée par Damien ✓','ok');
 }
 
 function resetSig(tech, wk){
@@ -2117,7 +2226,7 @@ function resetSig(tech, wk){
 }
 
 function openFeuillePDF(tech, wk){
-  openFeuilleSig(tech, wk);
+  printFeuille(tech, wk);
 }
 
 
