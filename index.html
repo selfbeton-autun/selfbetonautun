@@ -3,1567 +3,1912 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SelfBéton Autun — Gestion</title>
+<title>SelfBéton Autun</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
-  :root {
-    --green:   #5b9e2f;
-    --green-d: #3d6b1f;
-    --green-l: #eaf3e0;
-    --navy:    #1a3a6b;
-    --navy-d:  #0f2347;
-    --navy-l:  #e8edf7;
-    --cyan:    #0099cc;
-    --cyan-l:  #e0f4fb;
-    --orange:  #e07b2a;
-    --orange-l:#fdf0e3;
-    --red:     #d94040;
-    --red-l:   #fdeaea;
-    --bg:      #f4f6fa;
-    --surface: #ffffff;
-    --border:  #dde3ef;
-    --text:    #1a2340;
-    --muted:   #6b7a99;
-    --shadow:  0 2px 12px rgba(26,58,107,.08);
-    --shadow-lg:0 8px 32px rgba(26,58,107,.13);
-    --radius:  10px;
-    --sidebar: 230px;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;font-size:14px}
+:root{
+  --g1:#5b9e2f;--g2:#3d6b1f;--gl:#eaf3e0;
+  --n1:#1a3a6b;--n2:#0f2347;--nl:#e8edf7;
+  --c1:#0099cc;--cl:#e0f4fb;
+  --o1:#e07b2a;--ol:#fdf0e3;
+  --r1:#d94040;--rl:#fdeaea;
+  --bg:#f0f3f9;--surf:#fff;--brd:#dde3ef;
+  --txt:#111827;--mt:#64748b;
+  --sh:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.07);
+  --sh2:0 8px 32px rgba(26,58,107,.14);
+  --r:10px;--sw:245px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt);display:flex;min-height:100vh;font-size:14px;line-height:1.5}
 
-  /* ── SIDEBAR ── */
-  #sidebar{
-    width:var(--sidebar);min-height:100vh;background:var(--navy-d);
-    display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;
-    transition:transform .25s;
-  }
-  .sb-logo{
-    padding:22px 18px 14px;
-    border-bottom:1px solid rgba(255,255,255,.08);
-  }
-  .sb-logo .brand{font-size:17px;font-weight:700;color:#fff;letter-spacing:-.3px}
-  .sb-logo .sub{font-size:11px;color:rgba(255,255,255,.45);letter-spacing:.5px;text-transform:uppercase;margin-top:2px}
-  .sb-logo .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:7px;vertical-align:middle}
+/* ── SIDEBAR ── */
+#sb{width:var(--sw);min-height:100vh;background:var(--n2);position:fixed;left:0;top:0;bottom:0;z-index:200;display:flex;flex-direction:column;transition:transform .25s ease}
+.sb-head{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,.07)}
+.sb-brand{display:flex;align-items:center;gap:10px}
+.sb-icon{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--g1),var(--g2));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.sb-brand-txt .t1{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.3px}
+.sb-brand-txt .t2{font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.8px;text-transform:uppercase}
+.sb-mode{margin-top:11px;display:flex;gap:3px;background:rgba(0,0,0,.3);border-radius:8px;padding:3px}
+.sb-mode-btn{flex:1;padding:5px 6px;border-radius:5px;border:none;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;color:rgba(255,255,255,.45);background:transparent;transition:all .15s}
+.sb-mode-btn.on{background:var(--g1);color:#fff}
+.sb-nav{flex:1;padding:8px 10px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent}
+.sb-sec{font-size:9.5px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.22);padding:13px 8px 5px;font-weight:600}
+.sb-lnk{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;color:rgba(255,255,255,.58);cursor:pointer;font-size:13px;font-weight:500;margin-bottom:1px;transition:all .15s;position:relative;user-select:none}
+.sb-lnk:hover{background:rgba(255,255,255,.06);color:#fff}
+.sb-lnk.on{background:rgba(91,158,47,.18);color:#fff}
+.sb-lnk.on::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;border-radius:2px;background:var(--g1)}
+.sb-lnk .ico{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.sb-lnk .bub{margin-left:auto;background:var(--r1);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;min-width:16px;text-align:center}
+.sb-lnk .bub.g{background:var(--g1)}
+.sb-foot{padding:11px 13px;border-top:1px solid rgba(255,255,255,.06)}
+.sb-usr{display:flex;align-items:center;gap:9px}
+.sb-av{width:32px;height:32px;border-radius:50%;background:var(--g1);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;flex-shrink:0}
+.sb-ui .un{font-size:12px;font-weight:700;color:#fff}
+.sb-ui .ur{font-size:10px;color:rgba(255,255,255,.38)}
+.sb-dot{margin-left:auto;width:7px;height:7px;border-radius:50%;background:var(--g1)}
 
-  .sb-nav{flex:1;padding:10px 10px;overflow-y:auto}
-  .sb-section{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.3);padding:14px 8px 6px}
-  .sb-item{
-    display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:7px;
-    color:rgba(255,255,255,.65);cursor:pointer;font-size:13.5px;font-weight:500;
-    transition:all .15s;margin-bottom:2px;position:relative;
-  }
-  .sb-item:hover{background:rgba(255,255,255,.07);color:#fff}
-  .sb-item.active{background:var(--green);color:#fff;box-shadow:0 4px 14px rgba(91,158,47,.4)}
-  .sb-item .icon{font-size:16px;width:20px;text-align:center}
-  .sb-item .badge{
-    margin-left:auto;background:var(--orange);color:#fff;
-    font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;
-  }
+/* ── TOPBAR ── */
+#tb{position:fixed;top:0;left:var(--sw);right:0;height:56px;background:var(--surf);border-bottom:1px solid var(--brd);display:flex;align-items:center;padding:0 20px;gap:12px;z-index:100;box-shadow:0 1px 0 var(--brd)}
+#hamburger{display:none;width:36px;height:36px;border:none;background:transparent;cursor:pointer;font-size:22px;color:var(--n1);border-radius:7px;flex-shrink:0;align-items:center;justify-content:center}
+#hamburger:hover{background:var(--bg)}
+.tb-title{font-size:16px;font-weight:700;flex:1;letter-spacing:-.2px}
+.tb-date{font-size:12px;color:var(--mt);background:var(--bg);padding:5px 11px;border-radius:20px;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 15px;border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-g{background:var(--g1);color:#fff}
+.btn-g:hover{background:var(--g2);box-shadow:0 4px 14px rgba(91,158,47,.3);transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--mt);border:1px solid var(--brd)}
+.btn-ghost:hover{background:var(--bg);color:var(--txt)}
+.btn-n{background:var(--n1);color:#fff}
+.btn-n:hover{background:var(--n2)}
+.btn-r{background:var(--r1);color:#fff}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-xs{padding:3px 8px;font-size:11px}
 
-  .sb-user{
-    padding:14px 16px;border-top:1px solid rgba(255,255,255,.08);
-    display:flex;align-items:center;gap:10px;
-  }
-  .sb-avatar{
-    width:34px;height:34px;border-radius:50%;background:var(--green);
-    display:flex;align-items:center;justify-content:center;
-    font-weight:700;font-size:13px;color:#fff;flex-shrink:0;
-  }
-  .sb-user-info .name{font-size:13px;font-weight:600;color:#fff}
-  .sb-user-info .role{font-size:11px;color:rgba(255,255,255,.4)}
+/* ── OVERLAY + MAIN ── */
+#sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:199}
+#main{margin-left:var(--sw);padding-top:56px;flex:1;min-height:100vh}
+.pg{display:none;padding:20px;animation:fi .2s ease}
+.pg.on{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 
-  /* ── TOPBAR ── */
-  #topbar{
-    position:fixed;top:0;left:var(--sidebar);right:0;height:58px;
-    background:var(--surface);border-bottom:1px solid var(--border);
-    display:flex;align-items:center;padding:0 24px;gap:16px;z-index:90;
-    box-shadow:0 1px 0 var(--border);
-  }
-  .topbar-title{font-size:17px;font-weight:700;flex:1;letter-spacing:-.2px}
-  .topbar-date{font-size:12px;color:var(--muted);background:var(--bg);padding:5px 12px;border-radius:20px}
-  .btn{
-    display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:7px;
-    font-family:inherit;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all .15s;
-  }
-  .btn-primary{background:var(--green);color:#fff}
-  .btn-primary:hover{background:var(--green-d);transform:translateY(-1px);box-shadow:0 4px 12px rgba(91,158,47,.3)}
-  .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
-  .btn-ghost:hover{background:var(--bg);color:var(--text)}
-  .btn-sm{padding:5px 12px;font-size:12px}
+/* ── CARDS ── */
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);box-shadow:var(--sh)}
+.ch{padding:14px 18px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ch h3{font-size:14px;font-weight:700}
+.cb{padding:18px}
 
-  /* ── MAIN ── */
-  #main{
-    margin-left:var(--sidebar);padding-top:58px;flex:1;min-height:100vh;
-  }
-  .page{display:none;padding:24px;animation:fadeIn .2s ease}
-  .page.active{display:block}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+/* ── KPI ── */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:13px;margin-bottom:20px}
+.kpi{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);padding:15px 17px;box-shadow:var(--sh);position:relative;overflow:hidden}
+.kpi-bar{position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r) var(--r) 0 0}
+.kpi-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--mt)}
+.kpi-val{font-size:26px;font-weight:800;margin:5px 0 3px;font-family:'JetBrains Mono',monospace;letter-spacing:-1px}
+.kpi-sub{font-size:11px;color:var(--mt)}
+.kpi-trend{position:absolute;top:14px;right:14px;font-size:11px;font-weight:700;padding:2px 7px;border-radius:20px}
+.trend-up{background:var(--gl);color:var(--g2)}
+.trend-dn{background:var(--rl);color:var(--r1)}
 
-  /* ── CARDS ── */
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
-  .card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-  .card-header h3{font-size:14px;font-weight:700;letter-spacing:-.1px}
-  .card-body{padding:20px}
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.2px}
+.b-g{background:var(--gl);color:var(--g2)}
+.b-c{background:var(--cl);color:#006688}
+.b-o{background:var(--ol);color:#7a3e00}
+.b-r{background:var(--rl);color:var(--r1)}
+.b-n{background:var(--nl);color:var(--n1)}
+.tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600;background:var(--bg);color:var(--mt)}
 
-  /* ── KPI GRID ── */
-  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px}
-  .kpi{
-    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
-    padding:18px 20px;position:relative;overflow:hidden;box-shadow:var(--shadow);
-  }
-  .kpi::before{
-    content:'';position:absolute;top:0;left:0;width:4px;height:100%;
-    background:var(--green);border-radius:var(--radius) 0 0 var(--radius);
-  }
-  .kpi.navy::before{background:var(--navy)}
-  .kpi.cyan::before{background:var(--cyan)}
-  .kpi.orange::before{background:var(--orange)}
-  .kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);font-weight:600}
-  .kpi-value{font-size:28px;font-weight:700;margin:6px 0 4px;letter-spacing:-1px;font-family:'DM Mono',monospace}
-  .kpi-sub{font-size:12px;color:var(--muted)}
-  .kpi-trend{position:absolute;top:16px;right:16px;font-size:12px;font-weight:600;padding:3px 8px;border-radius:20px}
-  .trend-up{background:var(--green-l);color:var(--green-d)}
-  .trend-down{background:var(--red-l);color:var(--red)}
+/* ── TABLE ── */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--mt);font-weight:600;padding:9px 14px;text-align:left;border-bottom:2px solid var(--brd);background:var(--bg)}
+.tbl td{padding:10px 14px;border-bottom:1px solid var(--brd);font-size:13px}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:#f8fafc}
 
-  /* ── TABLE ── */
-  .tbl{width:100%;border-collapse:collapse}
-  .tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);font-weight:600;padding:10px 14px;text-align:left;border-bottom:2px solid var(--border)}
-  .tbl td{padding:11px 14px;border-bottom:1px solid var(--border);font-size:13.5px}
-  .tbl tr:last-child td{border-bottom:none}
-  .tbl tr:hover td{background:#f9fafc}
+/* ── CHART BARS ── */
+.chart-bars{display:flex;align-items:flex-end;gap:6px;height:110px;padding-top:8px}
+.chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.chart-bar{width:100%;border-radius:4px 4px 0 0;background:var(--g1);transition:height .6s cubic-bezier(.34,1.56,.64,1);min-height:3px;cursor:pointer;position:relative}
+.chart-bar:hover::after{content:attr(data-val);position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;white-space:nowrap;color:var(--txt);background:var(--surf);padding:1px 5px;border-radius:3px;box-shadow:var(--sh)}
+.chart-bar.n{background:var(--n1);opacity:.45}
+.chart-lbl{font-size:10px;color:var(--mt);font-weight:600}
 
-  /* ── BADGE STATUS ── */
-  .badge-status{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.3px}
-  .bs-ok{background:var(--green-l);color:var(--green-d)}
-  .bs-en-cours{background:var(--cyan-l);color:#006688}
-  .bs-attente{background:var(--orange-l);color:#8a4d00}
-  .bs-retard{background:var(--red-l);color:var(--red)}
+/* ── FIL ACTUALITE ── */
+.feed-item{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid var(--brd);animation:fi .2s ease}
+.feed-item:last-child{border-bottom:none}
+.feed-av{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff}
+.feed-meta{font-size:12px;color:var(--mt);margin-bottom:4px}
+.feed-meta strong{color:var(--txt);font-weight:700}
+.feed-msg{font-size:13.5px;line-height:1.5}
+.feed-tag{display:inline-block;margin-top:5px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px}
+.feed-composer{display:flex;gap:10px;padding-top:14px;border-top:2px solid var(--brd);margin-top:4px;align-items:flex-start}
+.feed-input{flex:1;border:1px solid var(--brd);border-radius:8px;padding:10px 13px;font-family:inherit;font-size:13px;resize:none;outline:none;background:var(--bg);transition:border .15s}
+.feed-input:focus{border-color:var(--g1);background:#fff}
+.feed-controls{display:flex;flex-direction:column;gap:6px}
 
-  /* ── PLANNING ── */
-  .planning-grid{display:grid;grid-template-columns:100px repeat(7,1fr);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--surface)}
-  .pg-header{background:var(--navy-d);color:#fff;padding:10px 8px;text-align:center;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-  .pg-header.tech{background:var(--navy);text-align:left;padding-left:14px}
-  .pg-tech{padding:10px 14px;font-size:13px;font-weight:600;background:var(--navy-l);border-right:1px solid var(--border);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
-  .pg-cell{padding:6px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);min-height:60px;vertical-align:top;cursor:pointer;transition:background .1s}
-  .pg-cell:hover{background:#f0f5ff}
-  .pg-slot{
-    background:var(--green);color:#fff;border-radius:5px;padding:4px 8px;
-    font-size:11px;font-weight:600;margin-bottom:3px;cursor:pointer;
-    transition:opacity .15s;
-  }
-  .pg-slot:hover{opacity:.85}
-  .pg-slot.cyan{background:var(--cyan)}
-  .pg-slot.orange{background:var(--orange)}
-  .pg-slot.navy{background:var(--navy)}
+/* ── FEUILLES HEURES ── */
+.fh-day{border:1px solid var(--brd);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
+.fh-day-hdr{padding:9px 14px;background:var(--nl);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.fh-day-hdr .dn{font-size:13px;font-weight:700;color:var(--n1)}
+.fh-body{padding:10px 14px}
+.fh-row{display:grid;grid-template-columns:1fr 80px 80px 90px 90px;gap:8px;align-items:center;margin-bottom:6px}
+.fh-lbl{font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.fh-inp{border:1px solid var(--brd);border-radius:6px;padding:6px 10px;font-family:'JetBrains Mono',monospace;font-size:13px;text-align:center;outline:none;background:var(--bg);transition:border .15s;width:100%}
+.fh-inp:focus{border-color:var(--c1);background:#fff}
+.fh-total{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--g1)}
 
-  /* ── FIL ACTUALITE ── */
-  .feed-item{
-    display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);
-    animation:fadeIn .25s ease;
-  }
-  .feed-item:last-child{border-bottom:none}
-  .feed-avatar{
-    width:38px;height:38px;border-radius:50%;flex-shrink:0;
-    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;
-  }
-  .feed-content .feed-meta{font-size:12px;color:var(--muted);margin-bottom:4px}
-  .feed-content .feed-meta strong{color:var(--text);font-weight:600}
-  .feed-content .feed-msg{font-size:13.5px;line-height:1.5}
-  .feed-content .feed-tag{
-    display:inline-block;margin-top:6px;font-size:11px;font-weight:600;
-    padding:2px 8px;border-radius:12px;background:var(--navy-l);color:var(--navy);
-  }
-  .feed-input-area{
-    display:flex;gap:10px;padding-top:16px;border-top:2px solid var(--border);margin-top:4px;
-  }
-  .feed-input{
-    flex:1;border:1px solid var(--border);border-radius:8px;padding:10px 14px;
-    font-family:inherit;font-size:13.5px;resize:none;outline:none;background:var(--bg);
-    transition:border .15s;
-  }
-  .feed-input:focus{border-color:var(--green);background:#fff}
+/* ── PLANNING ── */
+.plan-grid{display:grid;border:1px solid var(--brd);border-radius:var(--r);overflow:hidden;background:var(--surf)}
+.pg-hdr{background:var(--n2);color:#fff;padding:9px 7px;text-align:center;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.pg-hdr.tech{text-align:left;padding-left:12px;background:var(--n1)}
+.pg-tech{padding:9px 12px;font-size:12px;font-weight:700;background:var(--nl);border-right:1px solid var(--brd);border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:7px}
+.pg-cell{padding:4px;border-right:1px solid var(--brd);border-bottom:1px solid var(--brd);min-height:56px;cursor:pointer;transition:background .1s}
+.pg-cell:hover{background:#f0f5ff}
+.pg-slot{border-radius:4px;padding:3px 7px;font-size:10px;font-weight:700;color:#fff;margin-bottom:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .15s}
+.pg-slot:hover{opacity:.85}
 
-  /* ── FEUILLES D'HEURES ── */
-  .fh-day{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
-  .fh-day-header{
-    padding:10px 16px;background:var(--navy-l);display:flex;align-items:center;
-    justify-content:space-between;cursor:pointer;
-  }
-  .fh-day-header .day-name{font-size:13px;font-weight:700;color:var(--navy)}
-  .fh-day-body{padding:12px 16px}
-  .fh-row{display:grid;grid-template-columns:1fr 80px 80px 100px 100px;gap:10px;align-items:center;margin-bottom:8px}
-  .fh-label{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-  .fh-input{
-    border:1px solid var(--border);border-radius:6px;padding:6px 10px;
-    font-family:'DM Mono',monospace;font-size:13px;text-align:center;outline:none;
-    background:var(--bg);transition:border .15s;width:100%;
-  }
-  .fh-input:focus{border-color:var(--cyan);background:#fff}
-  .fh-total{font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:var(--green)}
+/* ── INTERVENTIONS ── */
+.int-card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);margin-bottom:9px;box-shadow:var(--sh);cursor:pointer;transition:all .15s;overflow:hidden;display:flex}
+.int-card:hover{box-shadow:var(--sh2);border-color:var(--g1);transform:translateY(-1px)}
+.int-strip{width:4px;flex-shrink:0}
+.int-body{flex:1;padding:12px 15px;display:flex;align-items:center;gap:13px}
+.int-ico{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.int-info{flex:1;min-width:0}
+.int-nom{font-size:14px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.int-meta{display:flex;gap:10px;font-size:12px;color:var(--mt);flex-wrap:wrap}
+.int-meta span{display:flex;align-items:center;gap:3px}
+.int-right{text-align:right;flex-shrink:0}
+.int-ca{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--n1)}
 
-  /* ── FICHES CHANTIER ── */
-  .chantier-card{
-    border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);
-    padding:16px 20px;cursor:pointer;transition:all .15s;box-shadow:var(--shadow);
-    margin-bottom:12px;display:flex;align-items:center;gap:16px;
-  }
-  .chantier-card:hover{box-shadow:var(--shadow-lg);border-color:var(--green);transform:translateY(-1px)}
-  .chantier-icon{
-    width:44px;height:44px;border-radius:9px;background:var(--green-l);
-    display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;
-  }
-  .chantier-info{flex:1}
-  .chantier-info .ch-name{font-size:15px;font-weight:700;margin-bottom:4px}
-  .chantier-info .ch-meta{font-size:12px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
-  .chantier-info .ch-meta span{display:flex;align-items:center;gap:4px}
-  .chantier-right{text-align:right}
-  .chantier-right .ch-ca{font-family:'DM Mono',monospace;font-size:16px;font-weight:700;color:var(--navy)}
+/* ── CRM ── */
+.client-card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);cursor:pointer;transition:all .15s}
+.client-card:hover{box-shadow:var(--sh2);border-color:var(--c1);transform:translateY(-1px)}
+.client-head{padding:13px 15px;background:linear-gradient(135deg,var(--n2),var(--n1));color:#fff}
+.client-head .cn{font-size:14px;font-weight:700}
+.client-head .ct{font-size:10px;opacity:.55;margin-top:1px}
+.client-body{padding:11px 15px}
+.client-stats{display:flex;gap:14px;margin-top:7px}
+.cs .cv{font-size:17px;font-weight:800;font-family:'JetBrains Mono',monospace}
+.cs .cl{font-size:9px;color:var(--mt);text-transform:uppercase;letter-spacing:.5px}
 
-  /* ── MODAL ── */
-  .modal-overlay{
-    position:fixed;inset:0;background:rgba(15,35,71,.55);z-index:500;
-    display:flex;align-items:center;justify-content:center;
-    animation:fadeIn .15s ease;
-  }
-  .modal{
-    background:var(--surface);border-radius:14px;width:min(540px,94vw);
-    max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg);
-    animation:slideUp .2s ease;
-  }
-  @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
-  .modal-header{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-  .modal-header h2{font-size:16px;font-weight:700}
-  .modal-body{padding:20px 22px}
-  .modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
-  .modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1}
-  .modal-close:hover{color:var(--text)}
+/* ── CONTRATS ── */
+.contrat-card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);padding:0;box-shadow:var(--sh);margin-bottom:9px;overflow:hidden;display:flex}
 
-  /* ── FORM ── */
-  .form-group{margin-bottom:16px}
-  .form-label{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-  .form-control{
-    width:100%;border:1px solid var(--border);border-radius:7px;padding:9px 12px;
-    font-family:inherit;font-size:13.5px;outline:none;background:var(--bg);transition:border .15s;
-  }
-  .form-control:focus{border-color:var(--green);background:#fff;box-shadow:0 0 0 3px rgba(91,158,47,.1)}
-  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  select.form-control{cursor:pointer}
-  textarea.form-control{resize:vertical;min-height:80px}
+/* ── MODAL ── */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.mo{background:var(--surf);border-radius:14px;width:min(580px,95vw);max-height:90vh;overflow-y:auto;box-shadow:var(--sh2);animation:mu .2s ease}
+.mo.wide{width:min(760px,95vw)}
+@keyframes mu{from{opacity:0;transform:translateY(14px)}}
+.mo-h{padding:17px 21px 13px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surf);z-index:1}
+.mo-h h2{font-size:15px;font-weight:700}
+.mo-b{padding:19px 21px}
+.mo-f{padding:13px 21px;border-top:1px solid var(--brd);display:flex;justify-content:flex-end;gap:9px;background:var(--bg)}
+.mo-x{background:none;border:none;font-size:20px;cursor:pointer;color:var(--mt);line-height:1;padding:2px}
+.mo-x:hover{color:var(--txt)}
 
-  /* ── CHART BARS ── */
-  .chart-bars{display:flex;align-items:flex-end;gap:8px;height:120px;padding-top:10px}
-  .chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
-  .chart-bar{
-    width:100%;border-radius:4px 4px 0 0;background:var(--green);
-    transition:height .5s cubic-bezier(.34,1.56,.64,1);min-height:4px;
-    cursor:pointer;position:relative;
-  }
-  .chart-bar:hover::after{
-    content:attr(data-val);position:absolute;top:-22px;left:50%;transform:translateX(-50%);
-    font-size:11px;font-weight:700;white-space:nowrap;color:var(--text);
-  }
-  .chart-bar.navy{background:var(--navy)}
-  .chart-label{font-size:11px;color:var(--muted);font-weight:600}
+/* ── FORM ── */
+.fg{margin-bottom:13px}
+.fl{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mt);margin-bottom:5px}
+.fi{width:100%;border:1px solid var(--brd);border-radius:7px;padding:9px 12px;font-family:inherit;font-size:13px;background:var(--bg);outline:none;transition:border .15s}
+.fi:focus{border-color:var(--g1);background:#fff;box-shadow:0 0 0 3px rgba(91,158,47,.1)}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+textarea.fi{resize:vertical;min-height:76px}
+select.fi{cursor:pointer}
 
-  /* ── CONFIG PANEL ── */
-  .config-section{margin-bottom:24px}
-  .config-section h3{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:12px}
-  .config-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
-  .toggle{
-    width:40px;height:22px;background:var(--border);border-radius:11px;
-    cursor:pointer;position:relative;transition:background .2s;border:none;
-  }
-  .toggle.on{background:var(--green)}
-  .toggle::after{
-    content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;
-    top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2);
-  }
-  .toggle.on::after{transform:translateX(18px)}
+/* ── PROCESS STEPS ── */
+.ps{display:flex;gap:0;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
+.ps-item{flex:1;text-align:center;position:relative;min-width:70px}
+.ps-item::after{content:'';position:absolute;top:15px;left:50%;right:-50%;height:2px;background:var(--brd);z-index:0}
+.ps-item:last-child::after{display:none}
+.ps-dot{width:30px;height:30px;border-radius:50%;background:var(--brd);color:var(--mt);display:flex;align-items:center;justify-content:center;margin:0 auto 5px;font-size:11px;font-weight:700;position:relative;z-index:1;transition:all .3s}
+.ps-item.done .ps-dot{background:var(--g1);color:#fff}
+.ps-item.cur .ps-dot{background:var(--n1);color:#fff;box-shadow:0 0 0 4px var(--nl)}
+.ps-lbl{font-size:9.5px;font-weight:600;color:var(--mt);letter-spacing:.2px}
+.ps-item.done .ps-lbl,.ps-item.cur .ps-lbl{color:var(--txt)}
 
-  /* ── NOTIFICATION ── */
-  .notif{
-    position:fixed;bottom:24px;right:24px;background:var(--navy-d);color:#fff;
-    padding:12px 18px;border-radius:9px;font-size:13px;font-weight:500;
-    box-shadow:var(--shadow-lg);z-index:999;animation:slideNotif .3s ease;
-    display:flex;align-items:center;gap:10px;
-  }
-  .notif.success{background:var(--green-d)}
-  .notif.error{background:var(--red)}
-  @keyframes slideNotif{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+/* ── TIMELINE ── */
+.tl-item{display:flex;gap:11px;margin-bottom:10px}
+.tl-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:4px;position:relative}
+.tl-dot::after{content:'';position:absolute;top:9px;left:4px;width:1px;height:calc(100% + 6px);background:var(--brd)}
+.tl-item:last-child .tl-dot::after{display:none}
+.tl-txt{font-size:13px;font-weight:500}
+.tl-ts{font-size:11px;color:var(--mt)}
 
-  /* ── GOOGLE SHEETS CONFIG ── */
-  .gs-banner{
-    background:linear-gradient(135deg,var(--navy-d),var(--navy));
-    color:#fff;border-radius:var(--radius);padding:20px 24px;margin-bottom:24px;
-    display:flex;align-items:center;gap:16px;
-  }
-  .gs-banner .gs-icon{font-size:28px}
-  .gs-banner h3{font-size:15px;font-weight:700;margin-bottom:4px}
-  .gs-banner p{font-size:12px;opacity:.7}
-  .gs-status{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600}
-  .gs-dot{width:8px;height:8px;border-radius:50%;background:var(--orange);animation:pulse 1.5s infinite}
-  .gs-dot.connected{background:var(--green);animation:none}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* ── PHOTOS ── */
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:7px}
+.photo-item{aspect-ratio:1;border-radius:7px;overflow:hidden;border:1px solid var(--brd);background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border .15s;position:relative}
+.photo-item:hover{border-color:var(--g1)}
+.photo-item img{width:100%;height:100%;object-fit:cover}
 
-  /* ── RESPONSIVE ── */
-  /* HAMBURGER */
-  #hamburger{display:none;align-items:center;justify-content:center;width:36px;height:36px;border:none;background:transparent;cursor:pointer;font-size:22px;color:var(--navy);flex-shrink:0;border-radius:7px;transition:background .15s}
-  #hamburger:hover{background:var(--bg)}
-  #sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99}
+/* ── CONFIG ── */
+.cfg-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--brd)}
+.toggle{width:38px;height:21px;background:var(--brd);border-radius:11px;cursor:pointer;position:relative;transition:background .2s;border:none;flex-shrink:0}
+.toggle.on{background:var(--g1)}
+.toggle::after{content:'';position:absolute;width:15px;height:15px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle.on::after{transform:translateX(17px)}
 
-  @media(max-width:768px){
-    :root{--sidebar:0px}
-    #sidebar{transform:translateX(-230px);width:230px;transition:transform .25s ease;z-index:100}
-    #sidebar.open{transform:translateX(0)}
-    #sb-overlay.open{display:block}
-    #topbar{left:0}
-    #main{margin-left:0}
-    #hamburger{display:flex}
-    .topbar-date{display:none}
-    .kpi-grid{grid-template-columns:1fr 1fr}
-    .planning-grid{grid-template-columns:80px repeat(7,1fr);font-size:11px}
-    .fh-row{grid-template-columns:1fr 70px 70px 90px}
-  }
+/* ── GS BANNER ── */
+.gs-banner{background:linear-gradient(135deg,var(--n2),var(--n1));color:#fff;border-radius:var(--r);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px}
+.gs-banner h3{font-size:14px;font-weight:700;margin-bottom:3px}
+.gs-banner p{font-size:11px;opacity:.65}
+.gs-status{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;white-space:nowrap}
+.gs-dot{width:7px;height:7px;border-radius:50%;background:var(--o1);animation:pulse 1.5s infinite}
+.gs-dot.ok{background:var(--g1);animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--n2);color:#fff;padding:11px 17px;border-radius:9px;font-size:13px;font-weight:500;box-shadow:var(--sh2);z-index:999;animation:ts .25s ease;display:flex;align-items:center;gap:8px}
+.toast.ok{background:var(--g2)}
+.toast.err{background:var(--r1)}
+@keyframes ts{from{opacity:0;transform:translateX(14px)}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  :root{--sw:0px}
+  #sb{transform:translateX(-245px);width:245px}
+  #sb.open{transform:translateX(0)}
+  #sb-overlay.open{display:block}
+  #tb{left:0}
+  #main{margin-left:0}
+  #hamburger{display:flex}
+  .tb-date{display:none}
+  .kpi-row{grid-template-columns:1fr 1fr}
+  .fr2{grid-template-columns:1fr}
+  .fh-row{grid-template-columns:1fr 70px 70px 80px}
+  .int-right{display:none}
+  .det-grid{grid-template-columns:1fr}
+  .plan-grid{grid-template-columns:80px repeat(6,1fr)!important;font-size:10px}
+}
 </style>
 </head>
 <body>
 
 <!-- SIDEBAR -->
-<aside id="sidebar">
-  <div class="sb-logo">
-    <div class="brand"><span class="dot"></span>SelfBéton</div>
-    <div class="sub">Autun — Gestion</div>
+<aside id="sb">
+  <div class="sb-head">
+    <div class="sb-brand">
+      <div class="sb-icon">🏗️</div>
+      <div class="sb-brand-txt">
+        <div class="t1">SelfBéton Autun</div>
+        <div class="t2">Gestion complète</div>
+      </div>
+    </div>
+    <div class="sb-mode">
+      <button class="sb-mode-btn on" id="btn-manager" onclick="setMode('manager')">Manager</button>
+      <button class="sb-mode-btn" id="btn-tech" onclick="setMode('tech')">Technicien</button>
+    </div>
   </div>
+
   <nav class="sb-nav">
-    <div class="sb-section">Principal</div>
-    <div class="sb-item active" data-page="dashboard">
-      <span class="icon">📊</span> Tableau de bord
-    </div>
-    <div class="sb-item" data-page="feed">
-      <span class="icon">💬</span> Fil d'actualité
-      <span class="badge" id="feed-badge">3</span>
-    </div>
-    <div class="sb-section">Chantiers</div>
-    <div class="sb-item" data-page="chantiers">
-      <span class="icon">🏗️</span> Interventions
-    </div>
-    <div class="sb-item" data-page="heures">
-      <span class="icon">⏱️</span> Feuilles d'heures
-    </div>
-    <div class="sb-item" data-page="planning">
-      <span class="icon">📅</span> Planning
-    </div>
-    <div class="sb-section">Admin</div>
-    <div class="sb-item" data-page="config">
-      <span class="icon">⚙️</span> Configuration
-    </div>
+    <div class="sb-sec">Tableau de bord</div>
+    <div class="sb-lnk on" data-p="dashboard"><span class="ico">📊</span>Dashboard</div>
+    <div class="sb-lnk" data-p="feed"><span class="ico">💬</span>Fil d'actualité<span class="bub" id="bub-feed">0</span></div>
+
+    <div class="sb-sec">Interventions</div>
+    <div class="sb-lnk" data-p="interventions"><span class="ico">🔧</span>Toutes les interventions<span class="bub" id="bub-int">0</span></div>
+    <div class="sb-lnk" data-p="planning"><span class="ico">📅</span>Planning semaine</div>
+    <div class="sb-lnk" data-p="bons"><span class="ico">📄</span>Bons d'intervention</div>
+
+    <div class="sb-sec">Terrain</div>
+    <div class="sb-lnk" data-p="heures"><span class="ico">⏱️</span>Feuilles d'heures</div>
+    <div class="sb-lnk" data-p="photos"><span class="ico">📸</span>Photos terrain</div>
+
+    <div class="sb-sec">Clients &amp; Contrats</div>
+    <div class="sb-lnk" data-p="crm"><span class="ico">👥</span>Annuaire CRM</div>
+    <div class="sb-lnk" data-p="contrats"><span class="ico">📝</span>Contrats maintenance</div>
+
+    <div class="sb-sec">Admin</div>
+    <div class="sb-lnk" data-p="rapports"><span class="ico">📋</span>Rapports</div>
+    <div class="sb-lnk" data-p="config"><span class="ico">⚙️</span>Configuration</div>
   </nav>
-  <div class="sb-user">
-    <div class="sb-avatar">DM</div>
-    <div class="sb-user-info">
-      <div class="name">Damien</div>
-      <div class="role">Manager</div>
+
+  <div class="sb-foot">
+    <div class="sb-usr">
+      <div class="sb-av" id="sb-av">DM</div>
+      <div class="sb-ui">
+        <div class="un" id="sb-name">Damien</div>
+        <div class="ur" id="sb-role">Manager</div>
+      </div>
+      <div class="sb-dot"></div>
     </div>
   </div>
 </aside>
 
-<!-- OVERLAY MOBILE -->
-<div id="sb-overlay" onclick="closeSidebar()"></div>
+<!-- OVERLAY -->
+<div id="sb-overlay" onclick="closeSb()"></div>
 
 <!-- TOPBAR -->
-<header id="topbar">
-  <button id="hamburger" onclick="toggleSidebar()" aria-label="Menu">☰</button>
-  <div class="topbar-title" id="page-title">Tableau de bord</div>
-  <div class="topbar-date" id="topbar-date"></div>
-  <button class="btn btn-primary btn-sm" id="btn-action">+ Nouveau</button>
+<header id="tb">
+  <button id="hamburger" onclick="toggleSb()">☰</button>
+  <div class="tb-title" id="tb-title">Dashboard</div>
+  <div class="tb-date" id="tb-date"></div>
+  <button class="btn btn-g btn-sm" id="tb-btn" onclick="tbAction()" style="display:none"></button>
 </header>
 
 <!-- MAIN -->
 <main id="main">
 
-  <!-- ── PAGE DASHBOARD ── -->
-  <div class="page active" id="page-dashboard">
-    <div class="gs-banner">
-      <div class="gs-icon">📋</div>
-      <div>
-        <h3>Google Sheets — Backend</h3>
-        <p>Connectez votre Spreadsheet ID pour synchroniser toutes les données</p>
+<!-- ══════════════════════════════════════════
+     DASHBOARD
+══════════════════════════════════════════ -->
+<div class="pg on" id="pg-dashboard">
+  <div class="gs-banner">
+    <div style="font-size:26px">📋</div>
+    <div><h3>Google Sheets — Backend</h3><p>Configurez votre Spreadsheet ID dans Paramètres pour synchroniser</p></div>
+    <div class="gs-status"><div class="gs-dot" id="gs-dot"></div><span id="gs-txt">Non connecté</span></div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-bar" style="background:var(--g1)"></div>
+      <div class="kpi-lbl">CA du mois</div>
+      <div class="kpi-val" id="k-ca">—</div>
+      <div class="kpi-sub">vs mois précédent</div>
+      <div class="kpi-trend trend-up" id="k-ca-trend">+0%</div>
+    </div>
+    <div class="kpi"><div class="kpi-bar" style="background:var(--c1)"></div>
+      <div class="kpi-lbl">En cours</div>
+      <div class="kpi-val" id="k-encours">—</div>
+      <div class="kpi-sub">interventions actives</div>
+    </div>
+    <div class="kpi"><div class="kpi-bar" style="background:var(--o1)"></div>
+      <div class="kpi-lbl">À planifier</div>
+      <div class="kpi-val" id="k-aplan">—</div>
+      <div class="kpi-sub">en attente</div>
+    </div>
+    <div class="kpi"><div class="kpi-bar" style="background:var(--n1)"></div>
+      <div class="kpi-lbl">Heures semaine</div>
+      <div class="kpi-val" id="k-heures">—</div>
+      <div class="kpi-sub">saisies cette semaine</div>
+    </div>
+    <div class="kpi"><div class="kpi-bar" style="background:var(--g2)"></div>
+      <div class="kpi-lbl">Techniciens</div>
+      <div class="kpi-val">4</div>
+      <div class="kpi-sub">François · Mohian · Maden · Damien</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px">
+    <div class="card">
+      <div class="ch"><h3>📈 CA mensuel (€)</h3>
+        <div style="display:flex;gap:8px;font-size:11px;align-items:center">
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:var(--g1);display:inline-block"></span>2025</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:var(--n1);display:inline-block"></span>2024</span>
+        </div>
       </div>
-      <div class="gs-status">
-        <div class="gs-dot" id="gs-dot"></div>
-        <span id="gs-status-txt">Non connecté</span>
+      <div class="cb"><div class="chart-bars" id="chart-ca"></div></div>
+    </div>
+    <div class="card">
+      <div class="ch"><h3>⚡ Activité récente</h3></div>
+      <div style="padding:6px 14px" id="dash-activity"></div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+    <div class="card">
+      <div class="ch"><h3>🔧 Interventions du jour</h3><span id="dash-today-date" style="font-size:12px;color:var(--mt)"></span></div>
+      <div id="dash-today"></div>
+    </div>
+    <div class="card">
+      <div class="ch"><h3>👥 Techniciens — statut</h3></div>
+      <div id="dash-techs" style="padding:0"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><h3>🏗️ Interventions en cours</h3>
+      <button class="btn btn-g btn-sm" onclick="nav('interventions')">Voir tout</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="tbl"><thead><tr>
+        <th>Intervention</th><th>Client</th><th>Technicien</th><th>Statut</th><th>CA</th><th>Avancement</th>
+      </tr></thead><tbody id="dash-ints"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     FIL D'ACTUALITE
+══════════════════════════════════════════ -->
+<div class="pg" id="pg-feed">
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
+    <div class="card">
+      <div class="ch"><h3>💬 Fil d'actualité</h3><span id="feed-count" style="font-size:12px;color:var(--mt)"></span></div>
+      <div class="cb">
+        <div id="feed-list"></div>
+        <div class="feed-composer">
+          <div class="sb-av" style="width:36px;height:36px;font-size:12px" id="feed-av">DM</div>
+          <textarea class="feed-input" id="feed-input" placeholder="Écrire un message à l'équipe…" rows="2"></textarea>
+          <div class="feed-controls">
+            <select class="fi" id="feed-tag" style="font-size:12px;padding:5px 8px">
+              <option>Info</option><option>Urgent</option><option>Chantier</option><option>RH</option><option>Matériel</option>
+            </select>
+            <button class="btn btn-g btn-sm" onclick="postFeed()">Envoyer</button>
+          </div>
+        </div>
       </div>
     </div>
-
-    <div class="kpi-grid">
-      <div class="kpi">
-        <div class="kpi-label">CA du mois</div>
-        <div class="kpi-value" id="kpi-ca">—</div>
-        <div class="kpi-sub">vs mois précédent</div>
-        <div class="kpi-trend trend-up" id="kpi-ca-trend">+0%</div>
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="ch"><h3>👥 Équipe</h3></div>
+        <div id="feed-team" style="padding:6px 14px"></div>
       </div>
-      <div class="kpi navy">
-        <div class="kpi-label">Interventions actives</div>
-        <div class="kpi-value" id="kpi-inter">—</div>
-        <div class="kpi-sub">en cours ce mois</div>
-      </div>
-      <div class="kpi cyan">
-        <div class="kpi-label">Heures saisies</div>
-        <div class="kpi-value" id="kpi-heures">—</div>
-        <div class="kpi-sub">cette semaine</div>
-      </div>
-      <div class="kpi orange">
-        <div class="kpi-label">Techniciens</div>
-        <div class="kpi-value" id="kpi-techs">4</div>
-        <div class="kpi-sub">François · Mohian · Maden · Damien</div>
-      </div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px">
       <div class="card">
-        <div class="card-header">
-          <h3>📈 CA mensuel (€)</h3>
+        <div class="ch"><h3>📌 Épinglés</h3></div>
+        <div class="cb" style="font-size:13px;color:var(--mt)">Aucun message épinglé</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     INTERVENTIONS
+══════════════════════════════════════════ -->
+<div class="pg" id="pg-interventions">
+  <div style="display:flex;gap:9px;margin-bottom:15px;flex-wrap:wrap;align-items:center">
+    <select class="fi" style="max-width:145px" id="f-stat" onchange="renderInts()"><option value="">Tous statuts</option>
+      <option>À planifier</option><option>Planifiée</option><option>En cours</option><option>En pause</option><option>Terminée</option>
+    </select>
+    <select class="fi" style="max-width:135px" id="f-tech" onchange="renderInts()"><option value="">Tous tech.</option>
+      <option>François</option><option>Mohian</option><option>Maden</option><option>Damien</option>
+    </select>
+    <select class="fi" style="max-width:140px" id="f-type" onchange="renderInts()"><option value="">Tous types</option>
+      <option>Maintenance</option><option>Dépannage</option><option>Installation</option><option>Contrôle</option>
+    </select>
+    <input class="fi" style="max-width:190px" placeholder="🔍 Client, lieu…" id="f-q" oninput="renderInts()"/>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ CSV</button>
+      <button class="btn btn-g" onclick="openMoInt()">+ Nouvelle intervention</button>
+    </div>
+  </div>
+  <div id="int-list"></div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PLANNING
+══════════════════════════════════════════ -->
+<div class="pg" id="pg-planning">
+  <div style="display:flex;gap:10px;align-items:center;margin-bottom:15px;flex-wrap:wrap">
+    <button class="btn btn-ghost btn-sm" onclick="planNav(-1)">◀</button>
+    <strong id="plan-lbl" style="font-size:15px;min-width:220px;text-align:center"></strong>
+    <button class="btn btn-ghost btn-sm" onclick="planNav(1)">▶</button>
+    <button class="btn btn-ghost btn-sm" onclick="planOffset=0;renderPlan()">Aujourd'hui</button>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn btn-g btn-sm" onclick="openMoAff()">+ Affecter</button>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:12px">
+    <div style="overflow-x:auto"><div id="plan-grid" class="plan-grid"></div></div>
+  </div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap">
+    <span style="font-size:11px;display:flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:3px;background:#5b9e2f;display:inline-block"></span>Maintenance</span>
+    <span style="font-size:11px;display:flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:3px;background:#0099cc;display:inline-block"></span>Dépannage</span>
+    <span style="font-size:11px;display:flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:3px;background:#e07b2a;display:inline-block"></span>Installation</span>
+    <span style="font-size:11px;display:flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:3px;background:#1a3a6b;display:inline-block"></span>Contrôle</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     BONS
+══════════════════════════════════════════ -->
+<div class="pg" id="pg-bons">
+  <div style="display:flex;gap:10px;margin-bottom:15px;align-items:center">
+    <select class="fi" style="max-width:160px" id="bon-f" onchange="renderBons()">
+      <option value="">Tous</option><option>Signé</option><option>Non signé</option>
+    </select>
+    <div style="margin-left:auto"></div>
+  </div>
+  <div id="bons-list"></div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     FEUILLES D'HEURES
+══════════════════════════════════════════ -->
+<div class="pg" id="pg-heures">
+  <div style="display:flex;gap:10px;align-items:center;margin-bottom:15px;flex-wrap:wrap">
+    <select class="fi" style="max-width:150px" id="fh-tech" onchange="renderHeures()">
+      <option>François</option><option>Mohian</option><option>Maden</option><option>Damien</option>
+    </select>
+    <input type="week" class="fi" style="max-width:185px" id="fh-week" onchange="renderHeures()"/>
+    <div style="margin-left:auto;display:flex;gap:7px">
+      <button class="btn btn-ghost btn-sm" onclick="fhNav(-1)">◀ Préc.</button>
+      <button class="btn btn-ghost btn-sm" onclick="fhNav(1)">Suiv. ▶</button>
+      <button class="btn btn-g btn-sm" onclick="saveHeures()">💾 Enregistrer</button>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="ch">
+      <h3 id="fh-title">Feuille d'heures</h3>
+      <div style="display:flex;gap:14px;font-size:13px">
+        <span>Total : <strong id="fh-tot" class="fh-total">0h</strong></span>
+        <span>Sup : <strong id="fh-sup" style="color:var(--o1)">0h</strong></span>
+      </div>
+    </div>
+    <div class="cb" style="padding:10px 14px">
+      <div class="fh-row" style="margin-bottom:5px">
+        <div class="fh-lbl">Chantier</div><div class="fh-lbl">Début</div>
+        <div class="fh-lbl">Fin</div><div class="fh-lbl">Pause(h)</div><div class="fh-lbl">Total</div>
+      </div>
+      <div id="fh-days"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch"><h3>📊 Récap équipe</h3></div>
+    <div style="overflow-x:auto">
+      <table class="tbl"><thead><tr>
+        <th>Technicien</th><th>Contrat</th><th>Saisies</th><th>Heures sup</th><th>Statut</th>
+      </tr></thead><tbody id="fh-recap"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PHOTOS
+══════════════════════════════════════════ -->
+<div class="pg" id="pg-photos">
+  <div style="display:flex;gap:10px;margin-bottom:15px;align-items:center;flex-wrap:wrap">
+    <select class="fi" style="max-width:220px" id="photo-f-int" onchange="renderPhotos()">
+      <option value="">Toutes interventions</option>
+    </select>
+    <select class="fi" style="max-width:145px" id="photo-f-tech" onchange="renderPhotos()">
+      <option value="">Tous techniciens</option>
+      <option>François</option><option>Mohian</option><option>Maden</option><option>Damien</option>
+    </select>
+    <div style="margin-left:auto">
+      <label class="btn btn-g btn-sm" style="cursor:pointer">📷 Ajouter
+        <input type="file" accept="image/*" multiple style="display:none" onchange="addPhotos(this)"/>
+      </label>
+    </div>
+  </div>
+  <div id="photos-grid" class="photo-grid"></div>
+  <div id="photos-empty" style="display:none;text-align:center;padding:60px;color:var(--mt)">
+    <div style="font-size:44px;margin-bottom:12px">📸</div>
+    <div style="font-size:15px;font-weight:600">Aucune photo</div>
+    <div style="font-size:13px">Ajoutez des photos depuis le terrain</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     CRM
+══════════════════════════════════════════ -->
+<div class="pg" id="pg-crm">
+  <div style="display:flex;gap:10px;margin-bottom:15px;align-items:center">
+    <input class="fi" style="max-width:250px" placeholder="🔍 Rechercher client…" id="crm-q" oninput="renderCRM()"/>
+    <div style="margin-left:auto">
+      <button class="btn btn-g" onclick="openMoClient()">+ Nouveau client</button>
+    </div>
+  </div>
+  <div id="crm-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:13px"></div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     CONTRATS
+══════════════════════════════════════════ -->
+<div class="pg" id="pg-contrats">
+  <div style="display:flex;margin-bottom:15px">
+    <div style="margin-left:auto"><button class="btn btn-g" onclick="openMoContrat()">+ Nouveau contrat</button></div>
+  </div>
+  <div id="contrats-list"></div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     RAPPORTS
+══════════════════════════════════════════ -->
+<div class="pg" id="pg-rapports">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+    <div class="card">
+      <div class="ch"><h3>📄 Générer un rapport</h3></div>
+      <div class="cb">
+        <div class="fg"><label class="fl">Type</label>
+          <select class="fi" id="rpt-type">
+            <option>Rapport hebdomadaire</option><option>Rapport mensuel CA</option>
+            <option>Fiche technicien</option><option>Historique client</option>
+          </select></div>
+        <div class="fr2">
+          <div class="fg"><label class="fl">Du</label><input class="fi" type="date" id="rpt-deb"/></div>
+          <div class="fg"><label class="fl">Au</label><input class="fi" type="date" id="rpt-fin"/></div>
+        </div>
+        <button class="btn btn-g" onclick="genRapport()">📄 Générer</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><h3>📊 Statistiques globales</h3></div>
+      <div class="cb" id="stats-block"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch"><h3>📁 Rapports générés</h3></div>
+    <table class="tbl"><thead><tr><th>Rapport</th><th>Période</th><th>Date</th><th></th></tr></thead>
+    <tbody id="rpt-tbody"></tbody></table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     CONFIG
+══════════════════════════════════════════ -->
+<div class="pg" id="pg-config">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="ch"><h3>🔗 Google Sheets</h3></div>
+        <div class="cb">
+          <div class="fg"><label class="fl">Spreadsheet ID</label>
+            <input class="fi" id="cfg-sid" placeholder="1BxiMVs0XRA5n…"/></div>
+          <div class="fg"><label class="fl">OAuth Token</label>
+            <input class="fi" id="cfg-tok" type="password" placeholder="ya29.xxxxx…"/></div>
           <div style="display:flex;gap:8px">
-            <button class="btn btn-ghost btn-sm" onclick="toggleChartType()">Basculer vue</button>
+            <button class="btn btn-g btn-sm" onclick="saveCfg()">💾 Sauvegarder</button>
+            <button class="btn btn-ghost btn-sm" onclick="testCfg()">🔌 Tester</button>
           </div>
-        </div>
-        <div class="card-body">
-          <div class="chart-bars" id="chart-ca"></div>
-          <div style="display:flex;gap:8px;margin-top:12px;justify-content:center">
-            <span style="font-size:11px;display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:var(--green);display:inline-block"></span>2025</span>
-            <span style="font-size:11px;display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:var(--navy);display:inline-block"></span>2024</span>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header"><h3>⚡ Activité récente</h3></div>
-        <div class="card-body" style="padding:10px 16px">
-          <div id="recent-activity"></div>
-        </div>
-      </div>
-    </div>
-
-    <div style="margin-top:20px">
-      <div class="card">
-        <div class="card-header">
-          <h3>🏗️ Interventions en cours</h3>
-          <button class="btn btn-primary btn-sm" onclick="navigate('chantiers')">Voir tout</button>
-        </div>
-        <div class="card-body" style="padding:0">
-          <table class="tbl">
-            <thead>
-              <tr>
-                <th>Intervention</th>
-                <th>Client</th>
-                <th>Technicien</th>
-                <th>Statut</th>
-                <th>CA estimé</th>
-                <th>Avancement</th>
-              </tr>
-            </thead>
-            <tbody id="dashboard-chantiers"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── PAGE FIL D'ACTUALITÉ ── -->
-  <div class="page" id="page-feed">
-    <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px">
-      <div class="card">
-        <div class="card-header">
-          <h3>💬 Fil d'actualité</h3>
-          <span style="font-size:12px;color:var(--muted)" id="feed-count"></span>
-        </div>
-        <div class="card-body">
-          <div id="feed-list"></div>
-          <div class="feed-input-area">
-            <div class="sb-avatar" style="width:38px;height:38px;font-size:13px">DM</div>
-            <textarea class="feed-input" id="feed-input" placeholder="Écrire un message à l'équipe…" rows="2"></textarea>
-            <div style="display:flex;flex-direction:column;gap:6px">
-              <select class="form-control" id="feed-tag" style="font-size:12px;padding:5px 8px">
-                <option>Info</option>
-                <option>Urgent</option>
-                <option>Chantier</option>
-                <option>RH</option>
-                <option>Matériel</option>
-              </select>
-              <button class="btn btn-primary btn-sm" onclick="postFeedMessage()">Envoyer</button>
-            </div>
+          <div style="margin-top:12px">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mt);margin-bottom:8px">Onglets requis dans Sheets</div>
+            <div id="sheets-tabs"></div>
           </div>
         </div>
       </div>
       <div class="card">
-        <div class="card-header"><h3>👥 Équipe en ligne</h3></div>
-        <div class="card-body" id="team-status"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── PAGE CHANTIERS ── -->
-  <div class="page" id="page-chantiers">
-    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
-      <input class="form-control" style="max-width:240px" placeholder="🔍 Rechercher…" id="search-chantier" oninput="filterChantiers()"/>
-      <select class="form-control" style="max-width:160px" id="filter-statut" onchange="filterChantiers()">
-        <option value="">Tous statuts</option>
-        <option>En cours</option>
-        <option>Planifié</option>
-        <option>Terminé</option>
-        <option>En attente</option>
-      </select>
-      <select class="form-control" style="max-width:160px" id="filter-tech" onchange="filterChantiers()">
-        <option value="">Tous techniciens</option>
-        <option>François</option>
-        <option>Mohian</option>
-        <option>Maden</option>
-        <option>Damien</option>
-      </select>
-      <button class="btn btn-primary" style="margin-left:auto" onclick="openModalChantier()">+ Nouvelle intervention</button>
-    </div>
-    <div id="chantiers-list"></div>
-  </div>
-
-  <!-- ── PAGE FEUILLES D'HEURES ── -->
-  <div class="page" id="page-heures">
-    <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap">
-      <select class="form-control" style="max-width:160px" id="fh-tech-select" onchange="renderHeures()">
-        <option>François</option>
-        <option>Mohian</option>
-        <option>Maden</option>
-        <option>Damien</option>
-      </select>
-      <input type="week" class="form-control" style="max-width:190px" id="fh-week" onchange="renderHeures()"/>
-      <div style="margin-left:auto;display:flex;gap:8px">
-        <button class="btn btn-ghost btn-sm" onclick="prevWeek()">◀ Semaine précédente</button>
-        <button class="btn btn-ghost btn-sm" onclick="nextWeek()">Semaine suivante ▶</button>
-        <button class="btn btn-primary btn-sm" onclick="saveHeures()">💾 Enregistrer</button>
-      </div>
-    </div>
-
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-header">
-        <h3 id="fh-title">Feuille d'heures</h3>
-        <div style="display:flex;gap:12px;font-size:13px">
-          <span>Total semaine : <strong id="fh-total-week" class="fh-total">0h</strong></span>
-          <span>Heures sup : <strong id="fh-sup" style="color:var(--orange)">0h</strong></span>
-        </div>
-      </div>
-      <div class="card-body" style="padding:12px 16px">
-        <div class="fh-row" style="margin-bottom:4px">
-          <div class="fh-label">Chantier</div>
-          <div class="fh-label">Début</div>
-          <div class="fh-label">Fin</div>
-          <div class="fh-label">Pause (h)</div>
-          <div class="fh-label">Total</div>
-        </div>
-        <div id="fh-days"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header"><h3>📊 Récap mensuel</h3></div>
-      <div class="card-body" style="padding:0">
-        <table class="tbl" id="fh-recap-table">
-          <thead>
-            <tr>
-              <th>Technicien</th>
-              <th>Heures contractuelles</th>
-              <th>Heures saisies</th>
-              <th>Heures sup</th>
-              <th>Statut</th>
-            </tr>
-          </thead>
-          <tbody id="fh-recap-body"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── PAGE PLANNING ── -->
-  <div class="page" id="page-planning">
-    <div style="display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap">
-      <button class="btn btn-ghost btn-sm" onclick="prevPlanWeek()">◀ Semaine préc.</button>
-      <div style="font-size:15px;font-weight:700;padding:0 8px" id="plan-week-label"></div>
-      <button class="btn btn-ghost btn-sm" onclick="nextPlanWeek()">Sem. suiv. ▶</button>
-      <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="openModalAffectation()">+ Affecter</button>
-    </div>
-    <div class="card">
-      <div class="card-body" style="padding:0;overflow-x:auto">
-        <div class="planning-grid" id="planning-grid"></div>
-      </div>
-    </div>
-    <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">
-      <span style="font-size:12px;display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:var(--green);display:inline-block"></span>Maintenance béton</span>
-      <span style="font-size:12px;display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:var(--cyan);display:inline-block"></span>Dépannage</span>
-      <span style="font-size:12px;display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:var(--orange);display:inline-block"></span>Installation</span>
-      <span style="font-size:12px;display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:var(--navy);display:inline-block"></span>Formation</span>
-    </div>
-  </div>
-
-  <!-- ── PAGE CONFIG ── -->
-  <div class="page" id="page-config">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-      <div>
-        <div class="card" style="margin-bottom:20px">
-          <div class="card-header"><h3>🔗 Connexion Google Sheets</h3></div>
-          <div class="card-body">
-            <div class="form-group">
-              <label class="form-label">Spreadsheet ID</label>
-              <input class="form-control" id="cfg-sheet-id" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms"/>
-              <div style="font-size:11px;color:var(--muted);margin-top:5px">Extrait de l'URL Google Sheets</div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">OAuth Token</label>
-              <input class="form-control" id="cfg-token" type="password" placeholder="ya29.xxxxx…"/>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Onglets configurés</label>
-              <div style="display:flex;flex-direction:column;gap:6px">
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg);border-radius:6px;font-size:13px">
-                  <span>📊 CA_Mensuel</span><span class="badge-status bs-attente">À créer</span>
-                </div>
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg);border-radius:6px;font-size:13px">
-                  <span>🏗️ Chantiers</span><span class="badge-status bs-attente">À créer</span>
-                </div>
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg);border-radius:6px;font-size:13px">
-                  <span>⏱️ Heures</span><span class="badge-status bs-attente">À créer</span>
-                </div>
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg);border-radius:6px;font-size:13px">
-                  <span>📅 Planning</span><span class="badge-status bs-attente">À créer</span>
-                </div>
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg);border-radius:6px;font-size:13px">
-                  <span>💬 Actualités</span><span class="badge-status bs-attente">À créer</span>
-                </div>
-              </div>
-            </div>
-            <div style="display:flex;gap:8px">
-              <button class="btn btn-primary" onclick="saveConfig()">💾 Enregistrer</button>
-              <button class="btn btn-ghost" onclick="testConnection()">🔌 Tester la connexion</button>
-            </div>
+        <div class="ch"><h3>⚙️ Paramètres</h3></div>
+        <div class="cb">
+          <div class="cfg-row">
+            <div><div style="font-size:13px;font-weight:600">Sync automatique (5 min)</div></div>
+            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
           </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header"><h3>👥 Équipe</h3></div>
-          <div class="card-body" style="padding:0">
-            <table class="tbl" id="team-table">
-              <thead><tr><th>Prénom</th><th>Rôle</th><th>H/semaine</th><th></th></tr></thead>
-              <tbody id="team-tbody"></tbody>
-            </table>
-            <div style="padding:12px 16px">
-              <button class="btn btn-ghost btn-sm" onclick="openModalTechnicien()">+ Ajouter technicien</button>
-            </div>
+          <div class="cfg-row">
+            <div><div style="font-size:13px;font-weight:600">Signature obligatoire</div></div>
+            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
           </div>
+          <div class="cfg-row">
+            <div><div style="font-size:13px;font-weight:600">Mode hors-ligne</div></div>
+            <button class="toggle" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="fg" style="margin-top:14px"><label class="fl">Heures contrat/semaine</label>
+            <input class="fi" type="number" id="cfg-hc" value="35" style="max-width:90px"/></div>
+          <div class="fg"><label class="fl">Préfixe bons</label>
+            <input class="fi" id="cfg-pfx" value="SBA-" style="max-width:120px"/></div>
         </div>
       </div>
-
-      <div>
-        <div class="card" style="margin-bottom:20px">
-          <div class="card-header"><h3>⚙️ Paramètres généraux</h3></div>
-          <div class="card-body">
-            <div class="config-section">
-              <div class="config-row">
-                <div>
-                  <div style="font-size:13px;font-weight:600">Synchronisation automatique</div>
-                  <div style="font-size:12px;color:var(--muted)">Sync toutes les 5 minutes</div>
-                </div>
-                <button class="toggle on" id="toggle-sync" onclick="toggleSwitch(this)"></button>
-              </div>
-              <div class="config-row">
-                <div>
-                  <div style="font-size:13px;font-weight:600">Notifications push</div>
-                  <div style="font-size:12px;color:var(--muted)">Alertes nouvelles saisies</div>
-                </div>
-                <button class="toggle on" id="toggle-notif" onclick="toggleSwitch(this)"></button>
-              </div>
-              <div class="config-row">
-                <div>
-                  <div style="font-size:13px;font-weight:600">Signature numérique obligatoire</div>
-                  <div style="font-size:12px;color:var(--muted)">Pour validation feuilles d'heures</div>
-                </div>
-                <button class="toggle on" onclick="toggleSwitch(this)"></button>
-              </div>
-              <div class="config-row">
-                <div>
-                  <div style="font-size:13px;font-weight:600">Mode hors-ligne</div>
-                  <div style="font-size:12px;color:var(--muted)">Cache local des données</div>
-                </div>
-                <button class="toggle" onclick="toggleSwitch(this)"></button>
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Heures hebdomadaires contractuelles</label>
-              <input class="form-control" type="number" id="cfg-h-contrat" value="35" style="max-width:100px"/>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Taux horaire heures sup (%)</label>
-              <input class="form-control" type="number" id="cfg-hs-taux" value="25" style="max-width:100px"/>
-            </div>
-          </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="ch"><h3>👥 Équipe</h3></div>
+        <div id="cfg-team" style="padding:0"></div>
+        <div style="padding:10px 14px">
+          <button class="btn btn-ghost btn-sm" onclick="openMoTech()">+ Ajouter technicien</button>
         </div>
-
-        <div class="card">
-          <div class="card-header"><h3>📱 Accès techniciens</h3></div>
-          <div class="card-body">
-            <p style="font-size:13px;color:var(--muted);margin-bottom:14px">URL de l'app à partager avec les techniciens</p>
-            <div style="background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:10px 14px;font-family:'DM Mono',monospace;font-size:12px;word-break:break-all" id="app-url">
-              Déployez l'app sur Vercel pour obtenir une URL
-            </div>
-            <div style="display:flex;gap:8px;margin-top:12px">
-              <button class="btn btn-ghost btn-sm" onclick="copyUrl()">📋 Copier</button>
-              <button class="btn btn-ghost btn-sm">QR Code</button>
-            </div>
-          </div>
+      </div>
+      <div class="card">
+        <div class="ch"><h3>🔧 Processus métier</h3></div>
+        <div class="cb">
+          <div id="cfg-steps"></div>
+          <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="addStep()">+ Étape</button>
         </div>
       </div>
     </div>
   </div>
+</div>
 
 </main>
 
-<!-- MODAL CHANTIER -->
-<div class="modal-overlay" id="modal-chantier" style="display:none" onclick="closeModal('modal-chantier')">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-header">
-      <h2 id="modal-ch-title">Nouvelle intervention</h2>
-      <button class="modal-close" onclick="closeModal('modal-chantier')">✕</button>
+<!-- ══ MODALS ══ -->
+
+<!-- Intervention -->
+<div class="ov" id="mo-int" style="display:none" onclick="closeMo('mo-int')">
+  <div class="mo" onclick="event.stopPropagation()">
+    <div class="mo-h"><h2 id="mo-int-ttl">Nouvelle intervention</h2><button class="mo-x" onclick="closeMo('mo-int')">✕</button></div>
+    <div class="mo-b">
+      <div class="fg"><label class="fl">Intitulé</label><input class="fi" id="i-nom" placeholder="Ex : Maintenance distributeur Autun"/></div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">Client</label>
+          <select class="fi" id="i-client"><option value="">— Sélectionner —</option></select></div>
+        <div class="fg"><label class="fl">Lieu</label><input class="fi" id="i-lieu" placeholder="Ville ou adresse"/></div>
+      </div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">Technicien</label>
+          <select class="fi" id="i-tech"><option>François</option><option>Mohian</option><option>Maden</option><option>Damien</option></select></div>
+        <div class="fg"><label class="fl">Type</label>
+          <select class="fi" id="i-type"><option>Maintenance</option><option>Dépannage</option><option>Installation</option><option>Contrôle</option></select></div>
+      </div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">Date</label><input class="fi" type="date" id="i-date"/></div>
+        <div class="fg"><label class="fl">Heure</label><input class="fi" type="time" id="i-heure" value="08:00"/></div>
+      </div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">Durée (h)</label><input class="fi" type="number" step=".5" id="i-duree" value="2"/></div>
+        <div class="fg"><label class="fl">CA estimé (€)</label><input class="fi" type="number" id="i-ca" value="0"/></div>
+      </div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">Priorité</label>
+          <select class="fi" id="i-prio"><option>Normale</option><option>Haute</option><option>Urgente</option><option>Basse</option></select></div>
+        <div class="fg"><label class="fl">Statut</label>
+          <select class="fi" id="i-stat"><option>Planifiée</option><option>À planifier</option><option>En cours</option><option>Terminée</option></select></div>
+      </div>
+      <div class="fg"><label class="fl">Description</label><textarea class="fi" id="i-desc" placeholder="Instructions, pièces à prévoir, consignes…"></textarea></div>
     </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label class="form-label">Nom de l'intervention</label>
-        <input class="form-control" id="ch-nom" placeholder="Ex: Maintenance distributeur Chalon-sur-Saône"/>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Client</label>
-          <input class="form-control" id="ch-client" placeholder="ENT MANGEMATIN…"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Lieu</label>
-          <input class="form-control" id="ch-lieu" placeholder="Adresse ou ville"/>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Technicien assigné</label>
-          <select class="form-control" id="ch-tech">
-            <option>François</option>
-            <option>Mohian</option>
-            <option>Maden</option>
-            <option>Damien</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Type</label>
-          <select class="form-control" id="ch-type">
-            <option>Maintenance</option>
-            <option>Dépannage</option>
-            <option>Installation</option>
-            <option>Formation</option>
-            <option>Audit</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Date début</label>
-          <input class="form-control" type="date" id="ch-debut"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Date fin prévue</label>
-          <input class="form-control" type="date" id="ch-fin"/>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">CA estimé (€)</label>
-          <input class="form-control" type="number" id="ch-ca" placeholder="0"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Statut</label>
-          <select class="form-control" id="ch-statut">
-            <option>Planifié</option>
-            <option>En cours</option>
-            <option>Terminé</option>
-            <option>En attente</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Notes</label>
-        <textarea class="form-control" id="ch-notes" placeholder="Informations complémentaires…"></textarea>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('modal-chantier')">Annuler</button>
-      <button class="btn btn-primary" onclick="saveChantier()">💾 Enregistrer</button>
+    <div class="mo-f">
+      <button class="btn btn-ghost" onclick="closeMo('mo-int')">Annuler</button>
+      <button class="btn btn-g" onclick="saveInt()">💾 Enregistrer</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL AFFECTATION PLANNING -->
-<div class="modal-overlay" id="modal-affectation" style="display:none" onclick="closeModal('modal-affectation')">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-header">
-      <h2>Affecter une intervention</h2>
-      <button class="modal-close" onclick="closeModal('modal-affectation')">✕</button>
+<!-- Détail intervention -->
+<div class="ov" id="mo-det" style="display:none" onclick="closeMo('mo-det')">
+  <div class="mo wide" onclick="event.stopPropagation()">
+    <div class="mo-h">
+      <div><h2 id="det-nom">Intervention</h2><div id="det-num" style="font-size:11px;color:var(--mt);font-family:'JetBrains Mono',monospace;margin-top:1px"></div></div>
+      <button class="mo-x" onclick="closeMo('mo-det')">✕</button>
     </div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Technicien</label>
-          <select class="form-control" id="aff-tech">
-            <option>François</option><option>Mohian</option><option>Maden</option><option>Damien</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Jour</label>
-          <select class="form-control" id="aff-jour">
-            <option>Lundi</option><option>Mardi</option><option>Mercredi</option>
-            <option>Jeudi</option><option>Vendredi</option><option>Samedi</option>
-          </select>
-        </div>
+    <div class="mo-b" id="mo-det-body"></div>
+  </div>
+</div>
+
+<!-- Affectation planning -->
+<div class="ov" id="mo-aff" style="display:none" onclick="closeMo('mo-aff')">
+  <div class="mo" onclick="event.stopPropagation()">
+    <div class="mo-h"><h2>Affecter une intervention</h2><button class="mo-x" onclick="closeMo('mo-aff')">✕</button></div>
+    <div class="mo-b">
+      <div class="fr2">
+        <div class="fg"><label class="fl">Technicien</label>
+          <select class="fi" id="aff-tech"><option>François</option><option>Mohian</option><option>Maden</option><option>Damien</option></select></div>
+        <div class="fg"><label class="fl">Jour</label>
+          <select class="fi" id="aff-jour"><option>Lun</option><option>Mar</option><option>Mer</option><option>Jeu</option><option>Ven</option><option>Sam</option></select></div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Intervention</label>
-        <select class="form-control" id="aff-chantier"></select>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Heure début</label>
-          <input class="form-control" type="time" id="aff-debut" value="08:00"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Heure fin</label>
-          <input class="form-control" type="time" id="aff-fin" value="17:00"/>
-        </div>
+      <div class="fg"><label class="fl">Intervention</label><select class="fi" id="aff-int"></select></div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">Heure début</label><input class="fi" type="time" id="aff-deb" value="08:00"/></div>
+        <div class="fg"><label class="fl">Heure fin</label><input class="fi" type="time" id="aff-fin" value="17:00"/></div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('modal-affectation')">Annuler</button>
-      <button class="btn btn-primary" onclick="saveAffectation()">✅ Affecter</button>
+    <div class="mo-f">
+      <button class="btn btn-ghost" onclick="closeMo('mo-aff')">Annuler</button>
+      <button class="btn btn-g" onclick="saveAff()">✅ Affecter</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL TECHNICIEN -->
-<div class="modal-overlay" id="modal-tech" style="display:none" onclick="closeModal('modal-tech')">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-header">
-      <h2>Ajouter un technicien</h2>
-      <button class="modal-close" onclick="closeModal('modal-tech')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Prénom</label>
-          <input class="form-control" id="tech-prenom" placeholder="Prénom"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Nom</label>
-          <input class="form-control" id="tech-nom" placeholder="Nom"/>
-        </div>
+<!-- Client -->
+<div class="ov" id="mo-client" style="display:none" onclick="closeMo('mo-client')">
+  <div class="mo" onclick="event.stopPropagation()">
+    <div class="mo-h"><h2>Nouveau client</h2><button class="mo-x" onclick="closeMo('mo-client')">✕</button></div>
+    <div class="mo-b">
+      <div class="fr2">
+        <div class="fg"><label class="fl">Raison sociale</label><input class="fi" id="cl-nom"/></div>
+        <div class="fg"><label class="fl">Type</label>
+          <select class="fi" id="cl-type"><option>Entreprise BTP</option><option>Collectivité</option><option>Particulier</option></select></div>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Rôle</label>
-          <select class="form-control" id="tech-role">
-            <option>Technicien</option><option>Manager</option><option>Intérimaire</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Heures/semaine</label>
-          <input class="form-control" type="number" id="tech-h" value="35"/>
-        </div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">Contact</label><input class="fi" id="cl-contact"/></div>
+        <div class="fg"><label class="fl">Téléphone</label><input class="fi" id="cl-tel" type="tel"/></div>
+      </div>
+      <div class="fg"><label class="fl">Adresse</label><input class="fi" id="cl-adresse"/></div>
+      <div class="fg"><label class="fl">Email</label><input class="fi" id="cl-email" type="email"/></div>
+      <div class="fg"><label class="fl">Notes</label><textarea class="fi" id="cl-notes"></textarea></div>
+    </div>
+    <div class="mo-f">
+      <button class="btn btn-ghost" onclick="closeMo('mo-client')">Annuler</button>
+      <button class="btn btn-g" onclick="saveClient()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Contrat -->
+<div class="ov" id="mo-contrat" style="display:none" onclick="closeMo('mo-contrat')">
+  <div class="mo" onclick="event.stopPropagation()">
+    <div class="mo-h"><h2>Contrat de maintenance</h2><button class="mo-x" onclick="closeMo('mo-contrat')">✕</button></div>
+    <div class="mo-b">
+      <div class="fg"><label class="fl">Client</label><select class="fi" id="ct-cl"><option value="">—</option></select></div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">Libellé</label><input class="fi" id="ct-nom"/></div>
+        <div class="fg"><label class="fl">Technicien</label>
+          <select class="fi" id="ct-tech"><option>François</option><option>Mohian</option><option>Maden</option><option>Damien</option></select></div>
+      </div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">Périodicité</label>
+          <select class="fi" id="ct-period"><option>Mensuelle</option><option>Trimestrielle</option><option>Semestrielle</option><option>Annuelle</option></select></div>
+        <div class="fg"><label class="fl">Tarif HT (€)</label><input class="fi" type="number" id="ct-tarif" value="0"/></div>
+      </div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">Début</label><input class="fi" type="date" id="ct-deb"/></div>
+        <div class="fg"><label class="fl">Fin</label><input class="fi" type="date" id="ct-fin"/></div>
+      </div>
+      <div class="fg"><label class="fl">Description</label><textarea class="fi" id="ct-desc"></textarea></div>
+    </div>
+    <div class="mo-f">
+      <button class="btn btn-ghost" onclick="closeMo('mo-contrat')">Annuler</button>
+      <button class="btn btn-g" onclick="saveContrat()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Technicien -->
+<div class="ov" id="mo-tech" style="display:none" onclick="closeMo('mo-tech')">
+  <div class="mo" onclick="event.stopPropagation()">
+    <div class="mo-h"><h2>Ajouter technicien</h2><button class="mo-x" onclick="closeMo('mo-tech')">✕</button></div>
+    <div class="mo-b">
+      <div class="fr2">
+        <div class="fg"><label class="fl">Prénom</label><input class="fi" id="t-prenom"/></div>
+        <div class="fg"><label class="fl">Nom</label><input class="fi" id="t-nom"/></div>
+      </div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">Rôle</label>
+          <select class="fi" id="t-role"><option>Technicien</option><option>Manager</option></select></div>
+        <div class="fg"><label class="fl">H/semaine</label><input class="fi" type="number" id="t-h" value="35"/></div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('modal-tech')">Annuler</button>
-      <button class="btn btn-primary" onclick="saveTechnicien()">Ajouter</button>
+    <div class="mo-f">
+      <button class="btn btn-ghost" onclick="closeMo('mo-tech')">Annuler</button>
+      <button class="btn btn-g" onclick="saveTech()">Ajouter</button>
     </div>
   </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════════
-// DATA STORE (localStorage + Google Sheets)
-// ═══════════════════════════════════════════════════════
-const DB = {
-  get(k){ try{return JSON.parse(localStorage.getItem('sb_'+k))||null}catch(e){return null} },
-  set(k,v){ localStorage.setItem('sb_'+k,JSON.stringify(v)) }
+// ══════════════════════════════════════════════════════════
+// STORE
+// ══════════════════════════════════════════════════════════
+const S={
+  get(k){try{return JSON.parse(localStorage.getItem('sb3_'+k))||null}catch{return null}},
+  set(k,v){localStorage.setItem('sb3_'+k,JSON.stringify(v))}
 };
 
-// CONFIG
-let config = DB.get('config') || {sheetId:'',token:'',hContrat:35,hsTaux:25};
+let cfg = S.get('cfg')||{sid:'',tok:'',hc:35,pfx:'SBA-'};
+
+// COULEURS
+const TC={François:'#5b9e2f',Mohian:'#0099cc',Maden:'#e07b2a',Damien:'#1a3a6b'};
+const TYPC={Maintenance:'#5b9e2f',Dépannage:'#0099cc',Installation:'#e07b2a',Contrôle:'#1a3a6b','Mise en service':'#9b59b6'};
+const TAGC={Info:'#e8edf7',Urgent:'#fdeaea',Chantier:'#eaf3e0',RH:'#fdf0e3',Matériel:'#e0f4fb'};
+const TAGTC={Info:'#1a3a6b',Urgent:'#d94040',Chantier:'#3d6b1f',RH:'#7a3e00',Matériel:'#006688'};
 
 // DATA
-let chantiers = DB.get('chantiers') || [
-  {id:1,nom:'Maintenance distributeur Autun',client:'Self Béton',lieu:'Autun (71)',tech:'François',type:'Maintenance',debut:'2025-04-01',fin:'2025-04-05',ca:2800,statut:'En cours',avancement:65,notes:'RAS'},
-  {id:2,nom:'Dépannage malaxeur Chalon',client:'ENT MANGEMATIN',lieu:'Chalon-sur-Saône',tech:'Mohian',type:'Dépannage',debut:'2025-04-08',fin:'2025-04-09',ca:1200,statut:'Terminé',avancement:100,notes:''},
-  {id:3,nom:'Installation nouveau site Mâcon',client:'SARL RUBIO',lieu:'Mâcon (71)',tech:'Maden',type:'Installation',debut:'2025-04-15',fin:'2025-04-25',ca:8500,statut:'Planifié',avancement:10,notes:'Livraison bétonière le 15'},
-  {id:4,nom:'Audit technique Beaune',client:'Mairie de Beaune',lieu:'Beaune (21)',tech:'Damien',type:'Audit',debut:'2025-04-18',fin:'2025-04-18',ca:600,statut:'En attente',avancement:0,notes:'RDV à confirmer'},
+let interventions = S.get('ints')||[
+  {id:1,nom:'Maintenance préventive distributeur Autun',client:'Self Béton',lieu:'Autun (71)',tech:'François',type:'Maintenance',date:'2025-04-19',heure:'08:00',duree:3,ca:850,statut:'En cours',prio:'Haute',avancement:60,desc:'Vérification hydraulique, nettoyage filtre, test dosage',timeline:[{txt:'Créée',ts:Date.now()-86400000,col:'#1a3a6b'},{txt:'François en route',ts:Date.now()-3600000,col:'#5b9e2f'}],photos:[],sig:'',bonNum:'SBA-0001'},
+  {id:2,nom:'Dépannage malaxeur — panne moteur',client:'ENT MANGEMATIN',lieu:'Chalon-sur-Saône (71)',tech:'Mohian',type:'Dépannage',date:'2025-04-19',heure:'10:00',duree:2,ca:1200,statut:'Planifiée',prio:'Urgente',avancement:0,desc:'Moteur malaxeur HS. Pièce de rechange en stock.',timeline:[{txt:'Appel client reçu',ts:Date.now()-7200000,col:'#d94040'}],photos:[],sig:'',bonNum:'SBA-0002'},
+  {id:3,nom:'Installation nouveau site béton automatisé',client:'SARL RUBIO',lieu:'Mâcon (71)',tech:'Maden',type:'Installation',date:'2025-04-22',heure:'07:30',duree:8,ca:8500,statut:'Planifiée',prio:'Normale',avancement:10,desc:'Installation complète coffret, tuyauteries, mise en eau.',timeline:[],photos:[],sig:'',bonNum:'SBA-0003'},
+  {id:4,nom:'Contrôle annuel — Beaune',client:'Mairie de Beaune',lieu:'Beaune (21)',tech:'Damien',type:'Contrôle',date:'2025-04-21',heure:'14:00',duree:1.5,ca:380,statut:'À planifier',prio:'Basse',avancement:0,desc:'Contrôle réglementaire annuel.',timeline:[],photos:[],sig:'',bonNum:'SBA-0004'},
+  {id:5,nom:'Maintenance corrective — fuite vanne',client:'ENT MANGEMATIN',lieu:'Dijon (21)',tech:'François',type:'Maintenance',date:'2025-04-15',heure:'09:00',duree:2,ca:650,statut:'Terminée',prio:'Haute',avancement:100,desc:'Remplacement vanne DN50.',timeline:[{txt:'Arrivée site',ts:Date.now()-432000000,col:'#5b9e2f'},{txt:'Bon signé',ts:Date.now()-428400000,col:'#5b9e2f'}],photos:[],sig:'signed',bonNum:'SBA-0005'},
 ];
 
-let heures = DB.get('heures') || {};
-let planning = DB.get('planning') || [
-  {tech:'François',jour:0,nom:'Maintenance Autun',type:'green'},
-  {tech:'François',jour:1,nom:'Maintenance Autun',type:'green'},
-  {tech:'Mohian',jour:0,nom:'Dépannage Chalon',type:'cyan'},
-  {tech:'Maden',jour:2,nom:'Installation Mâcon',type:'orange'},
-  {tech:'Maden',jour:3,nom:'Installation Mâcon',type:'orange'},
-  {tech:'Damien',jour:4,nom:'Audit Beaune',type:'navy'},
+let clients = S.get('clients')||[
+  {id:1,nom:'Self Béton',type:'Entreprise BTP',contact:'Damien',tel:'03 85 XX XX XX',adresse:'Autun (71)',email:'autun.selfbeton@gmail.com',notes:'Client interne'},
+  {id:2,nom:'ENT MANGEMATIN',type:'Entreprise BTP',contact:'M. Mangematin',tel:'03 80 XX XX XX',adresse:'Chalon-sur-Saône / Dijon',email:'contact@mangematin.fr',notes:'Top client — 3 sites'},
+  {id:3,nom:'SARL RUBIO',type:'Entreprise BTP',contact:'M. Rubio',tel:'03 85 XX XX XX',adresse:'Mâcon (71)',email:'',notes:''},
+  {id:4,nom:'Mairie de Beaune',type:'Collectivité',contact:'Service technique',tel:'03 80 XX XX XX',adresse:'Beaune (21)',email:'',notes:'Contrat annuel'},
 ];
 
-let feed = DB.get('feed') || [
-  {id:1,auteur:'François',initiales:'FR',couleur:'#5b9e2f',msg:'Maintenance distributeur Autun terminée pour la matinée. Remplacement du joint d\'étanchéité effectué.',tag:'Chantier',ts:new Date(Date.now()-7200000).toISOString()},
-  {id:2,auteur:'Mohian',initiales:'MO',couleur:'#0099cc',msg:'Dépannage malaxeur Chalon-sur-Saône : problème électrique résolu. Client satisfait.',tag:'Chantier',ts:new Date(Date.now()-86400000).toISOString()},
-  {id:3,auteur:'Damien',initiales:'DM',couleur:'#1a3a6b',msg:'Réunion d\'équipe lundi 8h30 en visio pour le point hebdomadaire. Merci de confirmer votre présence.',tag:'Info',ts:new Date(Date.now()-172800000).toISOString()},
+let contrats = S.get('contrats')||[
+  {id:1,client:'ENT MANGEMATIN',nom:'Maintenance préventive trimestrielle',tech:'François',period:'Trimestrielle',tarif:1200,deb:'2025-01-01',fin:'2025-12-31',desc:'4 visites/an',statut:'Actif',prochaine:'2025-07-01'},
+  {id:2,client:'Mairie de Beaune',nom:'Contrôle annuel réglementaire',tech:'Damien',period:'Annuelle',tarif:380,deb:'2025-01-01',fin:'2025-12-31',desc:'Rapport officiel',statut:'Actif',prochaine:'2025-04-21'},
 ];
 
-let team = DB.get('team') || [
-  {prenom:'François',nom:'Bernard',role:'Technicien',h:35,couleur:'#5b9e2f'},
-  {prenom:'Mohian',nom:'—',role:'Technicien',h:35,couleur:'#0099cc'},
-  {prenom:'Maden',nom:'—',role:'Technicien',h:35,couleur:'#e07b2a'},
-  {prenom:'Damien',nom:'—',role:'Manager',h:39,couleur:'#1a3a6b'},
+let feed = S.get('feed')||[
+  {id:1,auteur:'François',ini:'FR',col:'#5b9e2f',msg:'Maintenance Autun terminée pour la matinée. Joint étanchéité remplacé.',tag:'Chantier',ts:Date.now()-7200000},
+  {id:2,auteur:'Mohian',ini:'MO',col:'#0099cc',msg:'Dépannage Chalon-sur-Saône : problème électrique résolu. Client satisfait.',tag:'Chantier',ts:Date.now()-86400000},
+  {id:3,auteur:'Damien',ini:'DM',col:'#1a3a6b',msg:'Réunion équipe lundi 8h30 en visio — point hebdomadaire. Confirmez votre présence.',tag:'Info',ts:Date.now()-172800000},
 ];
 
-let caData = DB.get('ca') || {
+let heures = S.get('heures')||{};
+let planSlots = S.get('plan')||[
+  {tech:'François',jour:0,nom:'Maintenance Autun',type:'Maintenance',deb:'08:00',fin:'12:00'},
+  {tech:'Mohian',jour:0,nom:'Dépannage Chalon',type:'Dépannage',deb:'10:00',fin:'12:00'},
+  {tech:'Maden',jour:2,nom:'Installation Mâcon',type:'Installation',deb:'07:30',fin:'17:00'},
+  {tech:'Maden',jour:3,nom:'Installation Mâcon',type:'Installation',deb:'07:30',fin:'17:00'},
+  {tech:'Damien',jour:4,nom:'Contrôle Beaune',type:'Contrôle',deb:'14:00',fin:'16:00'},
+];
+let photos = S.get('photos')||[];
+let rapports = S.get('rapports')||[
+  {nom:'Rapport hebdo sem. 15',periode:'7–13 avr.',ts:Date.now()-432000000},
+  {nom:'Rapport mensuel Mars 2025',periode:'Mars 2025',ts:Date.now()-864000000},
+];
+let pSteps = S.get('psteps')||['Vérif. EPI','Photos avant','Intervention','Photos après','Signature client','Clôture bon'];
+let caData = S.get('ca')||{
   mois:['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'],
-  y2025:[12500,9800,14200,11600,0,0,0,0,0,0,0,0],
-  y2024:[10200,11400,13100,10800,12300,9700,8900,7600,11200,12800,13500,15200]
+  y25:[12500,9800,14200,11600,0,0,0,0,0,0,0,0],
+  y24:[10200,11400,13100,10800,12300,9700,8900,7600,11200,12800,13500,15200]
 };
 
-// Save helpers
+const TEAM=[
+  {prenom:'François',role:'Technicien',h:35,col:'#5b9e2f'},
+  {prenom:'Mohian',role:'Technicien',h:35,col:'#0099cc'},
+  {prenom:'Maden',role:'Technicien',h:35,col:'#e07b2a'},
+  {prenom:'Damien',role:'Manager',h:39,col:'#1a3a6b'},
+];
+
 function save(){
-  DB.set('chantiers',chantiers);DB.set('heures',heures);
-  DB.set('planning',planning);DB.set('feed',feed);
-  DB.set('team',team);DB.set('ca',caData);DB.set('config',config);
+  S.set('ints',interventions);S.set('clients',clients);S.set('contrats',contrats);
+  S.set('feed',feed);S.set('heures',heures);S.set('plan',planSlots);
+  S.set('photos',photos);S.set('rapports',rapports);S.set('psteps',pSteps);
+  S.set('ca',caData);S.set('cfg',cfg);
 }
 
-// ═══════════════════════════════════════════════════════
-// NAVIGATION
-// ═══════════════════════════════════════════════════════
-const pages = {
-  dashboard:{title:'Tableau de bord',action:'+ Nouveau CA'},
-  feed:{title:"Fil d'actualité",action:''},
-  chantiers:{title:'Interventions',action:'+ Nouvelle intervention'},
-  heures:{title:"Feuilles d'heures",action:''},
-  planning:{title:'Planning semaine',action:'+ Affecter'},
-  config:{title:'Configuration',action:''},
+// ══════════════════════════════════════════════════════════
+// NAV
+// ══════════════════════════════════════════════════════════
+const PAGES={
+  dashboard:{ttl:'Dashboard',btn:'+ Intervention'},
+  feed:{ttl:"Fil d'actualité",btn:''},
+  interventions:{ttl:'Interventions',btn:'+ Intervention'},
+  planning:{ttl:'Planning semaine',btn:'+ Affecter'},
+  bons:{ttl:"Bons d'intervention",btn:''},
+  heures:{ttl:"Feuilles d'heures",btn:''},
+  photos:{ttl:'Photos terrain',btn:''},
+  crm:{ttl:'Annuaire CRM',btn:'+ Client'},
+  contrats:{ttl:'Contrats',btn:'+ Contrat'},
+  rapports:{ttl:'Rapports',btn:''},
+  config:{ttl:'Configuration',btn:''},
 };
 
-function navigate(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
-  document.getElementById('page-'+id).classList.add('active');
-  document.querySelector(`[data-page="${id}"]`).classList.add('active');
-  document.getElementById('page-title').textContent = pages[id].title;
-  const btn = document.getElementById('btn-action');
-  btn.textContent = pages[id].action;
-  btn.style.display = pages[id].action ? '' : 'none';
-  btn.onclick = ()=>handleAction(id);
-  if(id==='dashboard') renderDashboard();
-  if(id==='feed') renderFeed();
-  if(id==='chantiers') renderChantiers();
-  if(id==='heures') renderHeures();
-  if(id==='planning') renderPlanning();
-  if(id==='config') renderConfig();
+function nav(id){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.sb-lnk').forEach(l=>l.classList.remove('on'));
+  document.getElementById('pg-'+id).classList.add('on');
+  const lnk=document.querySelector(`[data-p="${id}"]`);
+  if(lnk) lnk.classList.add('on');
+  const m=PAGES[id]||{ttl:id,btn:''};
+  document.getElementById('tb-title').textContent=m.ttl;
+  const btn=document.getElementById('tb-btn');
+  btn.textContent=m.btn;
+  btn.style.display=m.btn?'':'none';
+  btn.onclick=()=>tbAction(id);
+  closeSb();
+  const renders={dashboard:renderDash,feed:renderFeed,interventions:renderInts,planning:renderPlan,bons:renderBons,heures:renderHeures,photos:renderPhotos,crm:renderCRM,contrats:renderContrats,rapports:renderRapports,config:renderCfg};
+  renders[id]&&renders[id]();
 }
 
-function handleAction(id){
-  if(id==='chantiers'||id==='dashboard') openModalChantier();
-  if(id==='planning') openModalAffectation();
+document.querySelectorAll('.sb-lnk').forEach(l=>l.addEventListener('click',()=>{const p=l.dataset.p;if(p)nav(p)}));
+
+function tbAction(id){
+  if(id==='planning') openMoAff();
+  else if(id==='crm') openMoClient();
+  else if(id==='contrats') openMoContrat();
+  else openMoInt();
 }
 
-document.querySelectorAll('.sb-item').forEach(item=>{
-  item.addEventListener('click',()=>{
-    const page = item.dataset.page;
-    if(page){ navigate(page); closeSidebar(); }
+// ══════════════════════════════════════════════════════════
+// SIDEBAR MOBILE
+// ══════════════════════════════════════════════════════════
+function toggleSb(){document.getElementById('sb').classList.toggle('open');document.getElementById('sb-overlay').classList.toggle('open')}
+function closeSb(){document.getElementById('sb').classList.remove('open');document.getElementById('sb-overlay').classList.remove('open')}
+
+// ══════════════════════════════════════════════════════════
+// MODE
+// ══════════════════════════════════════════════════════════
+function setMode(m){
+  const isTech=m==='tech';
+  document.getElementById('btn-manager').classList.toggle('on',!isTech);
+  document.getElementById('btn-tech').classList.toggle('on',isTech);
+  document.getElementById('sb-name').textContent=isTech?'François':'Damien';
+  document.getElementById('sb-role').textContent=isTech?'Technicien':'Manager';
+  document.getElementById('sb-av').textContent=isTech?'FR':'DM';
+  document.getElementById('feed-av').textContent=isTech?'FR':'DM';
+  const techOnly=['interventions','planning','bons','heures','photos','feed'];
+  document.querySelectorAll('.sb-lnk').forEach(l=>{
+    if(isTech) l.style.display=techOnly.includes(l.dataset.p)||!l.dataset.p?'':'none';
+    else l.style.display='';
   });
-});
-
-// ── SIDEBAR MOBILE ──
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sb-overlay').classList.toggle('open');
-}
-function closeSidebar(){
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sb-overlay').classList.remove('open');
+  document.querySelectorAll('.sb-sec').forEach((s,i)=>{
+    if(isTech) s.style.display=i<3?'':'none';
+    else s.style.display='';
+  });
+  toast(isTech?'Mode technicien activé — François':'Mode manager activé — Damien');
 }
 
-// ═══════════════════════════════════════════════════════
-// TOPBAR DATE
-// ═══════════════════════════════════════════════════════
-function updateDate(){
-  const now = new Date();
-  const opts = {weekday:'long',day:'numeric',month:'long',year:'numeric'};
-  document.getElementById('topbar-date').textContent = now.toLocaleDateString('fr-FR',opts);
-}
-updateDate();
+// ══════════════════════════════════════════════════════════
+// DATE
+// ══════════════════════════════════════════════════════════
+(()=>{
+  const opts={weekday:'long',day:'numeric',month:'long',year:'numeric'};
+  document.getElementById('tb-date').textContent=new Date().toLocaleDateString('fr-FR',opts);
+})();
 
-// ═══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // DASHBOARD
-// ═══════════════════════════════════════════════════════
-function renderDashboard(){
-  // KPIs
-  const moisEnCours = new Date().getMonth();
-  const caThisMois = caData.y2025[moisEnCours] || 0;
-  const caPrevMois = caData.y2025[moisEnCours-1] || caData.y2024[moisEnCours] || 1;
-  const trend = caPrevMois ? Math.round((caThisMois-caPrevMois)/caPrevMois*100) : 0;
-  document.getElementById('kpi-ca').textContent = caThisMois ? caThisMois.toLocaleString('fr')+'€' : '—';
-  document.getElementById('kpi-ca-trend').textContent = (trend>=0?'+':'')+trend+'%';
-  document.getElementById('kpi-ca-trend').className = 'kpi-trend '+(trend>=0?'trend-up':'trend-down');
-  const actifs = chantiers.filter(c=>c.statut==='En cours').length;
-  document.getElementById('kpi-inter').textContent = actifs;
-  const totalH = Object.values(heures).reduce((a,week)=>
-    Object.values(week).reduce((b,day)=>b+(parseFloat(day.total)||0),a),0);
-  document.getElementById('kpi-heures').textContent = Math.round(totalH)+'h';
+// ══════════════════════════════════════════════════════════
+function renderDash(){
+  const now=new Date();
+  const m=now.getMonth();
+  const ca25=caData.y25[m]||0;
+  const caPrev=caData.y25[m-1]||caData.y24[m]||1;
+  const trend=Math.round((ca25-caPrev)/caPrev*100);
+  document.getElementById('k-ca').textContent=ca25?ca25.toLocaleString('fr')+'€':'—';
+  document.getElementById('k-ca-trend').textContent=(trend>=0?'+':'')+trend+'%';
+  document.getElementById('k-ca-trend').className='kpi-trend '+(trend>=0?'trend-up':'trend-dn');
+  document.getElementById('k-encours').textContent=interventions.filter(i=>i.statut==='En cours').length;
+  document.getElementById('k-aplan').textContent=interventions.filter(i=>i.statut==='À planifier').length;
+
+  // Heures semaine
+  const wk=getISOWeek(now);
+  const wkey=`${now.getFullYear()}-W${String(wk).padStart(2,'0')}`;
+  const wdata=heures[wkey]||{};
+  let hTot=0;
+  JOURS.forEach(j=>hTot+=parseFloat(wdata[j]?.total||0));
+  document.getElementById('k-heures').textContent=Math.round(hTot)+'h';
 
   // Chart CA
-  const chart = document.getElementById('chart-ca');
-  const max25 = Math.max(...caData.y2025,1);
-  chart.innerHTML = caData.mois.map((m,i)=>`
+  const max=Math.max(...caData.y25,...caData.y24,1);
+  document.getElementById('chart-ca').innerHTML=caData.mois.map((l,i)=>`
     <div class="chart-bar-wrap">
-      <div class="chart-bar" data-val="${caData.y2025[i]?caData.y2025[i].toLocaleString()+'€':'—'}"
-        style="height:${Math.round((caData.y2025[i]||0)/max25*100)}px"></div>
-      <div class="chart-bar navy" data-val="${caData.y2024[i].toLocaleString()}€"
-        style="height:${Math.round(caData.y2024[i]/max25*60)}px;opacity:.5"></div>
-      <div class="chart-label">${m}</div>
+      <div class="chart-bar" data-val="${caData.y25[i]?caData.y25[i].toLocaleString('fr')+'€':'—'}" style="height:${Math.round((caData.y25[i]||0)/max*100)}px"></div>
+      <div class="chart-bar n" data-val="${caData.y24[i].toLocaleString('fr')}€" style="height:${Math.round(caData.y24[i]/max*65)}px"></div>
+      <div class="chart-lbl">${l}</div>
     </div>`).join('');
 
   // Activité récente
-  const ra = document.getElementById('recent-activity');
-  ra.innerHTML = feed.slice(0,4).map(f=>`
-    <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border)">
-      <div style="width:30px;height:30px;border-radius:50%;background:${f.couleur||'var(--navy)'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${f.initiales}</div>
+  document.getElementById('dash-activity').innerHTML=[...feed].slice(0,4).map(f=>`
+    <div style="display:flex;gap:9px;padding:8px 0;border-bottom:1px solid var(--brd)">
+      <div style="width:28px;height:28px;border-radius:50%;background:${f.col};color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${f.ini}</div>
       <div>
-        <div style="font-size:12px;font-weight:600">${f.auteur}</div>
-        <div style="font-size:12px;color:var(--muted);line-height:1.4">${f.msg.substring(0,60)}${f.msg.length>60?'…':''}</div>
+        <div style="font-size:12px;font-weight:700">${f.auteur}</div>
+        <div style="font-size:11px;color:var(--mt);line-height:1.4">${f.msg.substring(0,55)}…</div>
       </div>
     </div>`).join('');
 
-  // Chantiers dashboard
-  const tbody = document.getElementById('dashboard-chantiers');
-  tbody.innerHTML = chantiers.filter(c=>c.statut!=='Terminé').map(c=>`
-    <tr>
-      <td><strong>${c.nom}</strong></td>
-      <td>${c.client}</td>
-      <td><span style="display:flex;align-items:center;gap:6px">${avatarHtml(c.tech,24)} ${c.tech}</span></td>
-      <td>${badgeStatut(c.statut)}</td>
-      <td style="font-family:'DM Mono',monospace;font-weight:600">${c.ca.toLocaleString('fr')} €</td>
+  // Interventions du jour
+  const today=now.toISOString().split('T')[0];
+  document.getElementById('dash-today-date').textContent=now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  const todayInts=interventions.filter(i=>i.date===today);
+  const dashToday=document.getElementById('dash-today');
+  dashToday.innerHTML=todayInts.length?todayInts.map(i=>`
+    <div style="display:flex;align-items:center;gap:11px;padding:11px 14px;border-bottom:1px solid var(--brd);cursor:pointer" onclick="openDet(${i.id})">
+      <div style="width:4px;height:38px;border-radius:2px;background:${TYPC[i.type]||'var(--g1)'};flex-shrink:0"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${i.nom}</div>
+        <div style="font-size:11px;color:var(--mt)">${i.heure} · ${i.tech} · ${i.lieu}</div>
+      </div>
+      ${statBadge(i.statut)}
+    </div>`).join('')
+    :'<div style="padding:22px;text-align:center;color:var(--mt);font-size:13px">Aucune intervention aujourd\'hui</div>';
+
+  // Techniciens statut
+  document.getElementById('dash-techs').innerHTML=TEAM.map(t=>{
+    const active=interventions.find(i=>i.tech===t.prenom&&i.statut==='En cours');
+    const plan=interventions.find(i=>i.tech===t.prenom&&i.statut==='Planifiée'&&i.date===today);
+    const cur=active||plan;
+    return `<tr>
+      <td style="padding:9px 14px;border-bottom:1px solid var(--brd)"><div style="display:flex;align-items:center;gap:8px">${av(t.prenom,28)}<strong>${t.prenom}</strong></div></td>
+      <td style="padding:9px 14px;border-bottom:1px solid var(--brd)">${active?'<span class="badge b-g">🟢 En cours</span>':plan?'<span class="badge b-c">📋 Planifié</span>':'<span class="badge b-n">Disponible</span>'}</td>
+      <td style="padding:9px 14px;border-bottom:1px solid var(--brd);font-size:12px;color:var(--mt)">${cur?cur.nom.substring(0,30)+'…':'—'}</td>
+    </tr>`;
+  }).join('');
+
+  // Interventions en cours (table)
+  document.getElementById('dash-ints').innerHTML=interventions.filter(i=>i.statut!=='Terminée'&&i.statut!=='Annulée').slice(0,6).map(i=>`
+    <tr style="cursor:pointer" onclick="openDet(${i.id})">
+      <td><strong>${i.nom.substring(0,40)}</strong></td>
+      <td>${i.client}</td>
+      <td><div style="display:flex;align-items:center;gap:7px">${av(i.tech,24)} ${i.tech}</div></td>
+      <td>${statBadge(i.statut)}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-weight:700">${i.ca.toLocaleString('fr')}€</td>
       <td>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div style="flex:1;height:6px;background:var(--border);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:${c.avancement}%;background:${c.avancement===100?'var(--green)':'var(--cyan)'};border-radius:3px;transition:width .5s"></div>
+        <div style="display:flex;align-items:center;gap:7px">
+          <div style="flex:1;height:5px;background:var(--brd);border-radius:3px;min-width:60px">
+            <div style="height:100%;width:${i.avancement}%;background:${i.avancement===100?'var(--g1)':'var(--c1)'};border-radius:3px"></div>
           </div>
-          <span style="font-size:12px;color:var(--muted)">${c.avancement}%</span>
+          <span style="font-size:11px;color:var(--mt)">${i.avancement}%</span>
         </div>
       </td>
     </tr>`).join('');
+
+  // GS status
+  updateGS();
+  // Bubbles
+  updateBubbles();
 }
 
-// ═══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // FIL D'ACTUALITE
-// ═══════════════════════════════════════════════════════
-const tagColors = {Info:'var(--navy-l)',Urgent:'var(--red-l)',Chantier:'var(--green-l)',RH:'var(--orange-l)',Matériel:'var(--cyan-l)'};
-const tagTextColors = {Info:'var(--navy)',Urgent:'var(--red)',Chantier:'var(--green-d)',RH:'var(--orange)',Matériel:'#006688'};
-
+// ══════════════════════════════════════════════════════════
 function renderFeed(){
-  document.getElementById('feed-badge').textContent = feed.length;
-  document.getElementById('feed-badge').style.display = feed.length?'':'none';
-  document.getElementById('feed-count').textContent = feed.length+' message'+(feed.length>1?'s':'');
-  const list = document.getElementById('feed-list');
-  list.innerHTML = [...feed].reverse().map(f=>`
+  updateBubbles();
+  document.getElementById('feed-count').textContent=feed.length+' message'+(feed.length>1?'s':'');
+  document.getElementById('feed-list').innerHTML=[...feed].reverse().map(f=>`
     <div class="feed-item">
-      <div class="feed-avatar" style="background:${f.couleur||'var(--navy)'}">${f.initiales}</div>
-      <div class="feed-content">
-        <div class="feed-meta"><strong>${f.auteur}</strong> · ${timeAgo(f.ts)}</div>
-        <div class="feed-msg">${f.msg}</div>
-        <span class="feed-tag" style="background:${tagColors[f.tag]||tagColors.Info};color:${tagTextColors[f.tag]||tagTextColors.Info}">${f.tag}</span>
-      </div>
-    </div>`).join('');
-
-  // Team status
-  const ts = document.getElementById('team-status');
-  ts.innerHTML = team.map(t=>`
-    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
-      ${avatarHtml(t.prenom,36)}
+      <div class="feed-av" style="background:${f.col}">${f.ini}</div>
       <div style="flex:1">
-        <div style="font-size:13px;font-weight:600">${t.prenom}</div>
-        <div style="font-size:11px;color:var(--muted)">${t.role}</div>
+        <div class="feed-meta"><strong>${f.auteur}</strong> · ${ago(f.ts)}</div>
+        <div class="feed-msg">${f.msg}</div>
+        <span class="feed-tag" style="background:${TAGC[f.tag]||TAGC.Info};color:${TAGTC[f.tag]||TAGTC.Info}">${f.tag}</span>
       </div>
-      <div style="width:8px;height:8px;border-radius:50%;background:${Math.random()>.3?'var(--green)':'var(--border)'}"></div>
+    </div>`).join('');
+
+  document.getElementById('feed-team').innerHTML=TEAM.map(t=>`
+    <div style="display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--brd)">
+      ${av(t.prenom,32)}
+      <div style="flex:1"><div style="font-size:13px;font-weight:600">${t.prenom}</div><div style="font-size:11px;color:var(--mt)">${t.role}</div></div>
+      <div style="width:7px;height:7px;border-radius:50%;background:${Math.random()>.35?'var(--g1)':'var(--brd)'}"></div>
     </div>`).join('');
 }
 
-function postFeedMessage(){
-  const msg = document.getElementById('feed-input').value.trim();
+function postFeed(){
+  const msg=document.getElementById('feed-input').value.trim();
   if(!msg) return;
-  const tag = document.getElementById('feed-tag').value;
-  feed.push({id:Date.now(),auteur:'Damien',initiales:'DM',couleur:'#1a3a6b',msg,tag,ts:new Date().toISOString()});
+  const tag=document.getElementById('feed-tag').value;
+  const istech=document.getElementById('btn-tech').classList.contains('on');
+  const auteur=istech?'François':'Damien';
+  const ini=istech?'FR':'DM';
+  const col=istech?'#5b9e2f':'#1a3a6b';
+  feed.push({id:Date.now(),auteur,ini,col,msg,tag,ts:Date.now()});
   document.getElementById('feed-input').value='';
-  save(); renderFeed();
-  showNotif('Message envoyé','success');
+  save();renderFeed();toast('Message envoyé','ok');
 }
 
-// ═══════════════════════════════════════════════════════
-// CHANTIERS
-// ═══════════════════════════════════════════════════════
-function renderChantiers(list){
-  const data = list || chantiers;
-  const el = document.getElementById('chantiers-list');
-  if(!data.length){el.innerHTML='<div style="text-align:center;padding:48px;color:var(--muted)">Aucune intervention trouvée</div>';return;}
-  el.innerHTML = data.map(c=>`
-    <div class="chantier-card" onclick="openModalChantier(${c.id})">
-      <div class="chantier-icon">${typeIcon(c.type)}</div>
-      <div class="chantier-info">
-        <div class="ch-name">${c.nom}</div>
-        <div class="ch-meta">
-          <span>👤 ${c.tech}</span>
-          <span>📍 ${c.lieu}</span>
-          <span>📅 ${formatDate(c.debut)} → ${formatDate(c.fin)}</span>
-          <span>🏷️ ${c.type}</span>
-        </div>
-        <div style="margin-top:8px;display:flex;align-items:center;gap:10px">
-          <div style="flex:1;max-width:200px;height:5px;background:var(--border);border-radius:3px">
-            <div style="height:100%;width:${c.avancement}%;background:${c.avancement===100?'var(--green)':'var(--cyan)'};border-radius:3px"></div>
+// ══════════════════════════════════════════════════════════
+// INTERVENTIONS
+// ══════════════════════════════════════════════════════════
+function renderInts(data){
+  const q=(document.getElementById('f-q')?.value||'').toLowerCase();
+  const fs=document.getElementById('f-stat')?.value||'';
+  const ft=document.getElementById('f-tech')?.value||'';
+  const fty=document.getElementById('f-type')?.value||'';
+  const list=data||interventions.filter(i=>
+    (!fs||i.statut===fs)&&(!ft||i.tech===ft)&&(!fty||i.type===fty)&&
+    (!q||(i.nom+i.client+i.lieu+i.tech).toLowerCase().includes(q))
+  );
+  const el=document.getElementById('int-list');
+  if(!list.length){el.innerHTML='<div style="text-align:center;padding:56px;color:var(--mt)"><div style="font-size:36px;margin-bottom:10px">🔧</div><div style="font-weight:600">Aucune intervention</div></div>';return}
+  el.innerHTML=list.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(i=>`
+    <div class="int-card" onclick="openDet(${i.id})">
+      <div class="int-strip" style="background:${TYPC[i.type]||'var(--g1)'}"></div>
+      <div class="int-body">
+        <div class="int-ico" style="background:${(TYPC[i.type]||'#5b9e2f')+'22'}">${typeIco(i.type)}</div>
+        <div class="int-info">
+          <div class="int-nom">${i.nom}${i.prio==='Urgente'?'<span style="margin-left:6px;font-size:10px;background:var(--rl);color:var(--r1);padding:1px 6px;border-radius:3px;font-weight:700">URGENT</span>':''}</div>
+          <div class="int-meta">
+            <span>${av(i.tech,18)} ${i.tech}</span>
+            <span>📍 ${i.lieu}</span>
+            <span>📅 ${fmtD(i.date)} ${i.heure}</span>
+            <span>⏱ ${i.duree}h</span>
           </div>
-          <span style="font-size:11px;color:var(--muted)">${c.avancement}%</span>
-          ${badgeStatut(c.statut)}
+          <div style="margin-top:5px;display:flex;gap:7px;align-items:center;flex-wrap:wrap">
+            ${statBadge(i.statut)}<span class="tag">${i.type}</span>
+            <span style="font-size:11px;color:var(--mt)">${i.bonNum}</span>
+          </div>
         </div>
-      </div>
-      <div class="chantier-right">
-        <div class="ch-ca">${c.ca.toLocaleString('fr')} €</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:4px">${c.client}</div>
+        <div class="int-right">
+          <div style="font-size:11px;color:var(--mt);margin-bottom:4px">${i.bonNum}</div>
+          <div class="int-ca">${i.ca.toLocaleString('fr')}€</div>
+          <div style="margin-top:5px">${i.sig?'<span style="font-size:11px;color:var(--g2)">✓ Signé</span>':'<span style="font-size:11px;color:var(--mt)">Non signé</span>'}</div>
+        </div>
       </div>
     </div>`).join('');
 }
 
-function filterChantiers(){
-  const q = document.getElementById('search-chantier').value.toLowerCase();
-  const s = document.getElementById('filter-statut').value;
-  const t = document.getElementById('filter-tech').value;
-  renderChantiers(chantiers.filter(c=>
-    (!q||(c.nom+c.client+c.lieu).toLowerCase().includes(q)) &&
-    (!s||c.statut===s) && (!t||c.tech===t)
-  ));
-}
-
-let editingChantier = null;
-function openModalChantier(id){
-  editingChantier = id||null;
-  const m = document.getElementById('modal-chantier');
-  if(id){
-    const c = chantiers.find(x=>x.id===id);
-    document.getElementById('modal-ch-title').textContent='Modifier intervention';
-    if(c){
-      document.getElementById('ch-nom').value=c.nom;
-      document.getElementById('ch-client').value=c.client;
-      document.getElementById('ch-lieu').value=c.lieu;
-      document.getElementById('ch-tech').value=c.tech;
-      document.getElementById('ch-type').value=c.type;
-      document.getElementById('ch-debut').value=c.debut;
-      document.getElementById('ch-fin').value=c.fin;
-      document.getElementById('ch-ca').value=c.ca;
-      document.getElementById('ch-statut').value=c.statut;
-      document.getElementById('ch-notes').value=c.notes||'';
-    }
-  } else {
-    document.getElementById('modal-ch-title').textContent='Nouvelle intervention';
-    ['ch-nom','ch-client','ch-lieu','ch-ca','ch-notes'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('ch-debut').value=new Date().toISOString().split('T')[0];
-    document.getElementById('ch-fin').value='';
-  }
-  m.style.display='flex';
-}
-
-function saveChantier(){
-  const nom = document.getElementById('ch-nom').value.trim();
-  if(!nom) return showNotif('Nom requis','error');
-  const data = {
-    nom,client:document.getElementById('ch-client').value,
-    lieu:document.getElementById('ch-lieu').value,
-    tech:document.getElementById('ch-tech').value,
-    type:document.getElementById('ch-type').value,
-    debut:document.getElementById('ch-debut').value,
-    fin:document.getElementById('ch-fin').value,
-    ca:parseFloat(document.getElementById('ch-ca').value)||0,
-    statut:document.getElementById('ch-statut').value,
-    avancement:editingChantier?chantiers.find(c=>c.id===editingChantier)?.avancement||0:0,
-    notes:document.getElementById('ch-notes').value,
-  };
-  if(editingChantier){ Object.assign(chantiers.find(c=>c.id===editingChantier),data); }
-  else { data.id=Date.now(); chantiers.push(data); }
-  save(); closeModal('modal-chantier');
-  renderChantiers(); showNotif('Intervention enregistrée','success');
-  syncToSheets('Chantiers',chantiers);
-}
-
-// ═══════════════════════════════════════════════════════
-// FEUILLES D'HEURES
-// ═══════════════════════════════════════════════════════
-function getWeekKey(){return document.getElementById('fh-week').value}
-const JOURS=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
-
-function renderHeures(){
-  const tech = document.getElementById('fh-tech-select').value;
-  const wk = getWeekKey();
-  if(!wk) return;
-  const t = team.find(x=>x.prenom===tech);
-  document.getElementById('fh-title').textContent=`Feuille d'heures — ${tech} — semaine ${wk}`;
-  const wdata = heures[wk]||{};
-  let totalWeek=0;
-  document.getElementById('fh-days').innerHTML = JOURS.slice(0,6).map((j,i)=>{
-    const d = wdata[j]||{chantier:'',debut:'08:00',fin:'17:00',pause:'1',total:'0'};
-    return `
-    <div class="fh-day">
-      <div class="fh-day-header" onclick="toggleDay(this)">
-        <div class="day-name">${j}</div>
-        <div style="font-size:12px;color:var(--muted)">${d.chantier||'—'} · <strong class="fh-total">${d.total||0}h</strong></div>
-        <span style="color:var(--muted)">▼</span>
+let detId=null;
+function openDet(id){
+  detId=id;
+  const i=interventions.find(x=>x.id===id);if(!i)return;
+  document.getElementById('det-nom').textContent=i.nom;
+  document.getElementById('det-num').textContent=i.bonNum+' · '+fmtD(i.date)+' à '+i.heure;
+  const steps=['À planifier','Planifiée','En cours','En pause','Terminée'];
+  const si=steps.indexOf(i.statut);
+  document.getElementById('mo-det-body').innerHTML=`
+    <div style="margin-bottom:18px">
+      <div class="ps">${steps.map((s,idx)=>`
+        <div class="ps-item ${idx<si?'done':idx===si?'cur':''}">
+          <div class="ps-dot">${idx<si?'✓':idx+1}</div>
+          <div class="ps-lbl">${s}</div>
+        </div>`).join('')}</div>
+    </div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px">
+      ${statBadge(i.statut)}<span class="tag">${i.type}</span>
+      ${i.prio==='Urgente'?'<span class="badge b-r">⚡ Urgent</span>':''}
+      <div style="margin-left:auto;display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="changeStatut(${id})">Changer statut</button>
+        <button class="btn btn-ghost btn-sm" onclick="openMoInt(${id})">✏️ Modifier</button>
+        <button class="btn btn-n btn-sm" onclick="openBon(${id})">📄 Bon</button>
       </div>
-      <div class="fh-day-body">
-        <div class="fh-row">
-          <select class="form-control" data-jour="${j}" data-field="chantier" onchange="recalcDay('${j}')">
-            <option value="">— Sélectionner —</option>
-            ${chantiers.map(c=>`<option ${c.nom===d.chantier?'selected':''}>${c.nom}</option>`).join('')}
-          </select>
-          <input class="fh-input" type="time" value="${d.debut}" data-jour="${j}" data-field="debut" oninput="recalcDay('${j}')"/>
-          <input class="fh-input" type="time" value="${d.fin}" data-jour="${j}" data-field="fin" oninput="recalcDay('${j}')"/>
-          <input class="fh-input" type="number" step="0.25" min="0" value="${d.pause}" data-jour="${j}" data-field="pause" oninput="recalcDay('${j}')"/>
-          <div class="fh-total" id="total-${j}">${d.total||0}h</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px" class="det-grid">
+      <div>
+        <div style="margin-bottom:14px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mt);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--brd)">Informations</div>
+          ${detRow('Client',i.client)}${detRow('Lieu','📍 '+i.lieu)}${detRow('Technicien',i.tech)}
+          ${detRow('Date',fmtD(i.date)+' à '+i.heure)}${detRow('Durée',i.duree+'h')}
+          ${detRow('CA','<span style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--n1)">'+i.ca.toLocaleString('fr')+'€</span>')}
+        </div>
+        <div style="margin-bottom:14px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mt);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--brd)">Description</div>
+          <p style="font-size:13px;line-height:1.6;color:var(--mt)">${i.desc||'Aucune description'}</p>
+        </div>
+        <div style="margin-bottom:14px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mt);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--brd)">Navigation GPS</div>
+          <div onclick="window.open('https://maps.google.com/?q='+encodeURIComponent('${i.lieu}, France'),'_blank')" style="background:var(--nl);border:1px solid var(--n1);border-radius:8px;padding:9px 13px;display:flex;align-items:center;gap:9px;font-size:12px;font-weight:600;color:var(--n1);cursor:pointer">
+            📍 ${i.lieu} <span style="margin-left:auto;font-size:11px;opacity:.7">Ouvrir Maps →</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mt);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--brd)">Processus métier</div>
+          ${pSteps.map(s=>`<div style="display:flex;align-items:center;gap:9px;padding:5px 0;border-bottom:1px solid var(--bg)">
+            <input type="checkbox" ${i.statut==='Terminée'?'checked disabled':''} style="cursor:pointer"/>
+            <span style="font-size:13px">${s}</span>
+          </div>`).join('')}
+        </div>
+      </div>
+      <div>
+        <div style="margin-bottom:14px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mt);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--brd)">Timeline</div>
+          ${i.timeline.length?i.timeline.map(t=>`
+            <div class="tl-item">
+              <div class="tl-dot" style="background:${t.col||'var(--g1)'}"></div>
+              <div><div class="tl-txt">${t.txt}</div><div class="tl-ts">${ago(t.ts)}</div></div>
+            </div>`).join(''):'<div style="font-size:13px;color:var(--mt)">Aucune activité</div>'}
+        </div>
+        <div style="margin-bottom:14px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mt);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--brd)">Photos (${i.photos?.length||0})</div>
+          <div class="photo-grid">
+            ${(i.photos||[]).map(p=>`<div class="photo-item"><img src="${p}"/></div>`).join('')}
+            <label class="photo-item" style="cursor:pointer">
+              <span style="font-size:22px">📷+</span>
+              <input type="file" accept="image/*" multiple style="display:none" onchange="addPhotoInt(${id},this)"/>
+            </label>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mt);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--brd)">Signature</div>
+          ${i.sig?'<div style="background:var(--gl);border-radius:7px;padding:10px;text-align:center;font-size:13px;color:var(--g2);font-weight:700">✓ Bon signé</div>':
+          `<button class="btn btn-g btn-sm" onclick="closeMo('mo-det');openBon(${id})">✍️ Faire signer le bon →</button>`}
         </div>
       </div>
     </div>`;
-  }).join('');
-  calcWeekTotal();
-  renderFHRecap();
+  document.getElementById('mo-det').style.display='flex';
 }
 
-function toggleDay(header){
-  const body = header.nextElementSibling;
-  body.style.display = body.style.display==='none'?'block':'none';
+function detRow(l,v){
+  return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--bg)"><span style="font-size:12px;color:var(--mt);font-weight:500">${l}</span><span style="font-size:13px;font-weight:600;text-align:right;max-width:60%">${v}</span></div>`;
 }
 
-function recalcDay(jour){
-  const get=(f)=>document.querySelector(`[data-jour="${jour}"][data-field="${f}"]`)?.value||'';
-  const debut=get('debut'),fin=get('fin'),pause=parseFloat(get('pause'))||0;
-  if(!debut||!fin) return;
-  const [dh,dm]=debut.split(':').map(Number);
-  const [fh,fm]=fin.split(':').map(Number);
-  const total=Math.max(0,(fh*60+fm-dh*60-dm)/60-pause);
-  document.getElementById('total-'+jour).textContent=total.toFixed(2)+'h';
-  // store
-  const wk=getWeekKey();
-  if(!heures[wk]) heures[wk]={};
-  heures[wk][jour]={
-    chantier:get('chantier'),debut,fin,pause:get('pause'),total:total.toFixed(2)
-  };
-  calcWeekTotal(); save();
+function changeStatut(id){
+  const i=interventions.find(x=>x.id===id);if(!i)return;
+  const s=['À planifier','Planifiée','En cours','En pause','Terminée'];
+  i.statut=s[(s.indexOf(i.statut)+1)%s.length];
+  i.timeline.push({txt:'Statut → '+i.statut,ts:Date.now(),col:i.statut==='Terminée'?'#5b9e2f':'#1a3a6b'});
+  save();openDet(id);toast('Statut : '+i.statut,'ok');updateBubbles();
 }
 
-function calcWeekTotal(){
-  const wk=getWeekKey();
-  const wdata=heures[wk]||{};
-  let total=0;
-  JOURS.forEach(j=>{total+=parseFloat(wdata[j]?.total||0)});
-  const t = team.find(x=>x.prenom===document.getElementById('fh-tech-select').value);
-  const contrat = t?.h||35;
-  const sup = Math.max(0,total-contrat);
-  document.getElementById('fh-total-week').textContent=total.toFixed(1)+'h';
-  document.getElementById('fh-sup').textContent=sup.toFixed(1)+'h';
+function addPhotoInt(id,inp){
+  const i=interventions.find(x=>x.id===id);if(!i)return;
+  Array.from(inp.files).forEach(f=>{const r=new FileReader();r.onload=e=>{i.photos.push(e.target.result);save();openDet(id)};r.readAsDataURL(f)});
 }
 
-function renderFHRecap(){
-  const body=document.getElementById('fh-recap-body');
-  body.innerHTML=team.map(t=>{
-    const total=Object.values(heures).reduce((a,wk)=>
-      a+JOURS.reduce((b,j)=>b+parseFloat(wk[j]?.total||0),0),0)/4; // avg/semaine approx
-    const sup=Math.max(0,total-t.h);
-    return `<tr>
-      <td><span style="display:flex;align-items:center;gap:8px">${avatarHtml(t.prenom,28)} ${t.prenom}</span></td>
-      <td>${t.h}h</td>
-      <td style="font-family:'DM Mono',monospace">${total.toFixed(1)}h</td>
-      <td style="font-family:'DM Mono',monospace;color:${sup>0?'var(--orange)':'var(--muted)'}">${sup.toFixed(1)}h</td>
-      <td>${sup>2?'<span class="badge-status bs-attente">Dépassement</span>':'<span class="badge-status bs-ok">OK</span>'}</td>
-    </tr>`;
-  }).join('');
-}
+// ══════════════════════════════════════════════════════════
+// PLANNING
+// ══════════════════════════════════════════════════════════
+let planOffset=0;
+const DAYS=['Lun','Mar','Mer','Jeu','Ven','Sam'];
 
-function saveHeures(){
-  save();
-  showNotif('Feuille d\'heures enregistrée','success');
-  syncToSheets('Heures',[{semaine:getWeekKey(),data:heures[getWeekKey()]}]);
-}
+function planNav(d){planOffset+=d;renderPlan()}
 
-function prevWeek(){
-  const el=document.getElementById('fh-week');
-  const [y,w]=el.value.split('-W').map(Number);
-  if(w>1)el.value=`${y}-W${String(w-1).padStart(2,'0')}`;
-  else el.value=`${y-1}-W52`;
-  renderHeures();
-}
-function nextWeek(){
-  const el=document.getElementById('fh-week');
-  const [y,w]=el.value.split('-W').map(Number);
-  if(w<52)el.value=`${y}-W${String(w+1).padStart(2,'0')}`;
-  else el.value=`${y+1}-W01`;
-  renderHeures();
-}
-
-// Init week to current
-(()=>{
+function renderPlan(){
   const now=new Date();
-  const wk=getISOWeek(now);
-  const y=now.getFullYear();
-  document.getElementById('fh-week').value=`${y}-W${String(wk).padStart(2,'0')}`;
-})();
+  const day=now.getDay()||7;
+  const mon=new Date(now);
+  mon.setDate(now.getDate()-day+1+planOffset*7);
+  const dates=Array.from({length:6},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d});
+  document.getElementById('plan-lbl').textContent=
+    `${dates[0].toLocaleDateString('fr-FR',{day:'numeric',month:'short'})} – ${dates[5].toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})}`;
+
+  const cols=1+6;
+  const grid=document.getElementById('plan-grid');
+  grid.style.gridTemplateColumns=`110px repeat(6,1fr)`;
+
+  let html=`<div class="pg-hdr tech">Technicien</div>`;
+  dates.forEach((d,i)=>{
+    const iso=d.toISOString().split('T')[0];
+    const isT=iso===new Date().toISOString().split('T')[0];
+    html+=`<div class="pg-hdr" style="${isT?'background:var(--g1)':''}">${DAYS[i]}<br><span style="font-size:9px;opacity:.65">${d.getDate()}</span></div>`;
+  });
+
+  TEAM.forEach(t=>{
+    html+=`<div class="pg-tech">${av(t.prenom,24)} ${t.prenom}</div>`;
+    dates.forEach((d,di)=>{
+      const iso=d.toISOString().split('T')[0];
+      const isT=iso===new Date().toISOString().split('T')[0];
+      // Planning slots + interventions
+      const slots=planSlots.filter(s=>s.tech===t.prenom&&s.jour===di);
+      const ints=interventions.filter(i=>i.tech===t.prenom&&i.date===iso);
+      html+=`<div class="pg-cell" style="${isT?'background:rgba(91,158,47,.04)':''}" onclick="openMoAff('${t.prenom}',${di})">
+        ${slots.map(s=>`<div class="pg-slot" style="background:${TYPC[s.type]||'var(--g1)'}">${s.nom.substring(0,16)}</div>`).join('')}
+        ${ints.filter(i=>!slots.find(s=>s.nom===i.nom)).map(i=>`<div class="pg-slot" style="background:${TYPC[i.type]||'var(--g1)'};" onclick="event.stopPropagation();openDet(${i.id})">${i.heure} ${i.nom.substring(0,12)}</div>`).join('')}
+      </div>`;
+    });
+  });
+  grid.innerHTML=html;
+
+  // Populate select
+  const s=document.getElementById('aff-int');
+  if(s) s.innerHTML=interventions.map(i=>`<option>${i.nom}</option>`).join('');
+}
+
+function openMoAff(tech,jour){
+  if(tech) document.getElementById('aff-tech').value=tech;
+  if(jour!==undefined) document.getElementById('aff-jour').value=DAYS[jour]||'Lun';
+  const s=document.getElementById('aff-int');
+  s.innerHTML=interventions.map(i=>`<option>${i.nom}</option>`).join('');
+  document.getElementById('mo-aff').style.display='flex';
+}
+
+function saveAff(){
+  const tech=document.getElementById('aff-tech').value;
+  const jourStr=document.getElementById('aff-jour').value;
+  const jour=DAYS.indexOf(jourStr);
+  const nom=document.getElementById('aff-int').value;
+  const int=interventions.find(i=>i.nom===nom);
+  planSlots.push({tech,jour,nom,type:int?.type||'Maintenance',deb:document.getElementById('aff-deb').value,fin:document.getElementById('aff-fin').value});
+  save();closeMo('mo-aff');renderPlan();toast('Affectation enregistrée','ok');
+}
+
+// ══════════════════════════════════════════════════════════
+// BONS
+// ══════════════════════════════════════════════════════════
+function renderBons(){
+  const f=document.getElementById('bon-f')?.value||'';
+  const list=interventions.filter(i=>{
+    if(f==='Signé') return i.sig;
+    if(f==='Non signé') return !i.sig;
+    return true;
+  });
+  document.getElementById('bons-list').innerHTML=list.map(i=>`
+    <div class="int-card">
+      <div class="int-strip" style="background:${i.sig?'var(--g1)':'var(--brd)'}"></div>
+      <div class="int-body">
+        <div class="int-ico" style="background:${i.sig?'var(--gl)':'var(--bg)'}">📄</div>
+        <div class="int-info">
+          <div class="int-nom">${i.bonNum} — ${i.nom}</div>
+          <div class="int-meta"><span>👤 ${i.tech}</span><span>👥 ${i.client}</span><span>📅 ${fmtD(i.date)}</span></div>
+          <div style="margin-top:5px">${i.sig?'<span class="badge b-g">✓ Signé</span>':'<span class="badge b-n">Non signé</span>'}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--n1)">${i.ca.toLocaleString('fr')}€</div>
+          <button class="btn btn-n btn-sm" onclick="openBon(${i.id})">📄 Ouvrir</button>
+          ${!i.sig?`<button class="btn btn-g btn-sm" onclick="openBon(${i.id})">✍️ Signer</button>`:''}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function openBon(id){
+  const i=interventions.find(x=>x.id===id);if(!i)return;
+  closeMo('mo-det');
+  const cl=clients.find(c=>c.nom===i.client)||{};
+  const w=window.open('','_blank','width=800,height=920');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Bon ${i.bonNum}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Outfit',sans-serif;padding:32px;color:#111;font-size:13px}
+  .hdr{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:16px;border-bottom:3px solid #5b9e2f;margin-bottom:20px}
+  .brand{font-size:21px;font-weight:800;color:#1a3a6b}.brand span{color:#5b9e2f}
+  .bnum{font-family:monospace;background:#eaf3e0;color:#3d6b1f;padding:5px 12px;border-radius:6px;font-size:13px;font-weight:700}
+  h4{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:#64748b;margin:16px 0 8px;padding-bottom:5px;border-bottom:1px solid #dde3ef}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .f{background:#f0f3f9;border-radius:6px;padding:8px 12px;margin-bottom:8px}
+  .fl{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#64748b;font-weight:600}
+  .fv{font-size:13px;font-weight:600;margin-top:2px}
+  table{width:100%;border-collapse:collapse;margin:8px 0}
+  th{font-size:11px;text-transform:uppercase;color:#64748b;padding:7px 10px;border-bottom:2px solid #dde3ef;text-align:left}
+  td{padding:8px 10px;border-bottom:1px solid #f0f3f9}
+  .sigs{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:20px;padding-top:16px;border-top:1px solid #dde3ef}
+  .sig-box{text-align:center}
+  .sig-box .sl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#64748b;margin-bottom:8px}
+  canvas{border:1px dashed #dde3ef;border-radius:8px;background:#fafafa;touch-action:none;cursor:crosshair}
+  .btns{display:flex;gap:10px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+  button{padding:9px 18px;border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;border:none;cursor:pointer}
+  .bg{background:#5b9e2f;color:#fff}.bn{background:#1a3a6b;color:#fff}.bw{background:#f0f3f9;border:1px solid #dde3ef}
+  .footer{margin-top:20px;padding-top:12px;border-top:1px solid #dde3ef;font-size:11px;color:#64748b;text-align:center}
+  @media print{.btns{display:none}}</style></head><body>
+  <div class="hdr">
+    <div><div class="brand">Self<span>Béton</span> Autun</div><div style="font-size:12px;color:#64748b;margin-top:3px">Bon d'intervention</div></div>
+    <div style="text-align:right"><div class="bnum">${i.bonNum}</div><div style="font-size:12px;color:#64748b;margin-top:5px">${fmtD(i.date)} à ${i.heure}</div></div>
+  </div>
+  <div class="g2">
+    <div>
+      <h4>Client</h4>
+      <div class="f"><div class="fl">Raison sociale</div><div class="fv">${i.client}</div></div>
+      <div class="f"><div class="fl">Lieu d'intervention</div><div class="fv">📍 ${i.lieu}</div></div>
+      ${cl.contact?`<div class="f"><div class="fl">Contact</div><div class="fv">${cl.contact}${cl.tel?' · '+cl.tel:''}</div></div>`:''}
+    </div>
+    <div>
+      <h4>Intervention</h4>
+      <div class="f"><div class="fl">Type</div><div class="fv">${i.type}</div></div>
+      <div class="f"><div class="fl">Technicien</div><div class="fv">${i.tech}</div></div>
+      <div class="f"><div class="fl">Durée · Montant</div><div class="fv">${i.duree}h · ${i.ca.toLocaleString('fr')}€ HT</div></div>
+    </div>
+  </div>
+  <h4>Désignation des travaux</h4>
+  <table><thead><tr><th>Description</th><th>Qté</th><th>P.U. HT</th><th>Total HT</th></tr></thead>
+  <tbody><tr><td>${i.nom}</td><td>1</td><td>${i.ca.toLocaleString('fr')}€</td><td><strong>${i.ca.toLocaleString('fr')}€</strong></td></tr>
+  <tr><td colspan="3" style="text-align:right;font-weight:700">TOTAL HT</td><td><strong style="font-family:monospace">${i.ca.toLocaleString('fr')}€</strong></td></tr>
+  <tr><td colspan="3" style="text-align:right;font-weight:700">TVA 20%</td><td style="font-family:monospace">${(i.ca*.2).toLocaleString('fr')}€</td></tr>
+  <tr><td colspan="3" style="text-align:right;font-weight:700;color:#1a3a6b">TOTAL TTC</td><td><strong style="font-family:monospace;color:#1a3a6b">${(i.ca*1.2).toLocaleString('fr')}€</strong></td></tr>
+  </tbody></table>
+  ${i.desc?`<h4>Observations</h4><p style="font-size:13px;line-height:1.6;background:#f0f3f9;padding:10px 12px;border-radius:6px">${i.desc}</p>`:''}
+  <div class="sigs">
+    <div class="sig-box"><div class="sl">Signature technicien</div>
+      <canvas id="c-tech" width="270" height="100"></canvas>
+      <div style="font-size:12px;color:#64748b;margin-top:5px">${i.tech}</div></div>
+    <div class="sig-box"><div class="sl">Bon pour accord — client</div>
+      <canvas id="c-client" width="270" height="100"></canvas>
+      <div style="font-size:12px;color:#64748b;margin-top:5px">${i.client}</div></div>
+  </div>
+  <div class="btns">
+    <button class="bg" onclick="saveSig()">✅ Valider signatures</button>
+    <button class="bn" onclick="window.print()">🖨️ Imprimer</button>
+    <button class="bw" onclick="clearSig()">🗑️ Effacer</button>
+  </div>
+  <div class="footer">Self Béton Autun — autun.selfbeton@gmail.com — Intervention garantie 3 mois pièces et main d'œuvre</div>
+  <script>
+    const cvs={tech:document.getElementById('c-tech'),client:document.getElementById('c-client')};
+    let drawing=null,ctx={};
+    ['tech','client'].forEach(k=>{
+      const c=cvs[k],x=c.getContext('2d');ctx[k]=x;
+      x.strokeStyle='#1a3a6b';x.lineWidth=2;x.lineCap='round';x.lineJoin='round';
+      c.addEventListener('mousedown',e=>{drawing=k;x.beginPath();x.moveTo(e.offsetX,e.offsetY)});
+      c.addEventListener('mousemove',e=>{if(drawing===k){x.lineTo(e.offsetX,e.offsetY);x.stroke()}});
+      c.addEventListener('mouseup',()=>drawing=null);
+      c.addEventListener('touchstart',e=>{e.preventDefault();drawing=k;const t=e.touches[0],r=c.getBoundingClientRect();x.beginPath();x.moveTo(t.clientX-r.left,t.clientY-r.top)},{passive:false});
+      c.addEventListener('touchmove',e=>{e.preventDefault();if(drawing===k){const t=e.touches[0],r=c.getBoundingClientRect();x.lineTo(t.clientX-r.left,t.clientY-r.top);x.stroke()}},{passive:false});
+      c.addEventListener('touchend',()=>drawing=null);
+    });
+    function clearSig(){['tech','client'].forEach(k=>ctx[k].clearRect(0,0,cvs[k].width,cvs[k].height))}
+    function saveSig(){
+      window.opener&&window.opener.postMessage({type:'bon-sig',id:${id},tech:cvs.tech.toDataURL(),client:cvs.client.toDataURL()},'*');
+      alert('Signatures validées ✓');window.close();
+    }
+  <\/script></body></html>`);
+  w.document.close();
+}
+
+window.addEventListener('message',e=>{
+  if(e.data?.type==='bon-sig'){
+    const i=interventions.find(x=>x.id===e.data.id);
+    if(i){i.sig='signed';i.statut='Terminée';i.avancement=100;
+      i.timeline.push({txt:'Bon signé — clôturé',ts:Date.now(),col:'#5b9e2f'});
+      save();toast('Bon signé ✓','ok');updateBubbles();
+    }
+  }
+});
+
+// ══════════════════════════════════════════════════════════
+// FEUILLES D'HEURES
+// ══════════════════════════════════════════════════════════
+const JOURS=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 
 function getISOWeek(d){
   const date=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
   const day=date.getUTCDay()||7;
   date.setUTCDate(date.getUTCDate()+4-day);
-  const yearStart=new Date(Date.UTC(date.getUTCFullYear(),0,1));
-  return Math.ceil((((date-yearStart)/86400000)+1)/7);
+  const ys=new Date(Date.UTC(date.getUTCFullYear(),0,1));
+  return Math.ceil((((date-ys)/86400000)+1)/7);
 }
 
-// ═══════════════════════════════════════════════════════
-// PLANNING
-// ═══════════════════════════════════════════════════════
-let planWeekOffset=0;
-const DAYS_SHORT=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
-
-function getPlanWeekDates(){
+(()=>{
   const now=new Date();
-  const day=now.getDay()||7;
-  const mon=new Date(now);
-  mon.setDate(now.getDate()-day+1+planWeekOffset*7);
-  return Array.from({length:7},(_,i)=>{
-    const d=new Date(mon);d.setDate(mon.getDate()+i);return d;
-  });
-}
+  const wk=getISOWeek(now);
+  document.getElementById('fh-week').value=`${now.getFullYear()}-W${String(wk).padStart(2,'0')}`;
+})();
 
-function renderPlanning(){
-  const dates=getPlanWeekDates();
-  const label=`${dates[0].toLocaleDateString('fr-FR',{day:'numeric',month:'short'})} – ${dates[6].toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})}`;
-  document.getElementById('plan-week-label').textContent=label;
-
-  const grid=document.getElementById('planning-grid');
-  // Header
-  let html=`<div class="pg-header tech">Technicien</div>`;
-  DAYS_SHORT.forEach((d,i)=>{
-    const date=dates[i];
-    const isToday=date.toDateString()===new Date().toDateString();
-    html+=`<div class="pg-header" style="${isToday?'background:var(--green)':''}">
-      ${d}<br><span style="font-size:10px;opacity:.7">${date.getDate()}</span>
+function renderHeures(){
+  const tech=document.getElementById('fh-tech').value;
+  const wk=document.getElementById('fh-week').value;
+  if(!wk) return;
+  document.getElementById('fh-title').textContent=`Feuille d'heures — ${tech} — sem. ${wk}`;
+  const wd=heures[wk]||{};
+  document.getElementById('fh-days').innerHTML=JOURS.map(j=>{
+    const d=wd[j]||{chantier:'',deb:'08:00',fin:'17:00',pause:'1',total:'0'};
+    return `<div class="fh-day">
+      <div class="fh-day-hdr" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+        <span class="dn">${j}</span>
+        <span style="font-size:12px;color:var(--mt)">${d.chantier||'—'} · <strong class="fh-total">${d.total||0}h</strong></span>
+        <span style="color:var(--mt)">▾</span>
+      </div>
+      <div class="fh-body">
+        <div class="fh-row">
+          <select class="fi" data-j="${j}" data-f="chantier" onchange="recalc('${j}')">
+            <option value="">— Chantier —</option>
+            ${interventions.map(i=>`<option ${i.nom===d.chantier?'selected':''}>${i.nom}</option>`).join('')}
+          </select>
+          <input class="fh-inp" type="time" value="${d.deb}" data-j="${j}" data-f="deb" oninput="recalc('${j}')"/>
+          <input class="fh-inp" type="time" value="${d.fin}" data-j="${j}" data-f="fin" oninput="recalc('${j}')"/>
+          <input class="fh-inp" type="number" step=".25" min="0" value="${d.pause}" data-j="${j}" data-f="pause" oninput="recalc('${j}')"/>
+          <div class="fh-total" id="tot-${j}">${d.total||0}h</div>
+        </div>
+      </div>
     </div>`;
-  });
-
-  team.forEach(t=>{
-    html+=`<div class="pg-tech"><div style="width:26px;height:26px;border-radius:50%;background:${t.couleur||'var(--navy)'};color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">${t.prenom.substring(0,2).toUpperCase()}</div>${t.prenom}</div>`;
-    for(let d=0;d<7;d++){
-      const slots=planning.filter(p=>p.tech===t.prenom&&p.jour===d);
-      html+=`<div class="pg-cell" onclick="openModalAffectation('${t.prenom}',${d})">
-        ${slots.map(s=>`<div class="pg-slot ${s.type||''}">
-          ${s.nom.length>16?s.nom.substring(0,14)+'…':s.nom}
-          ${s.debut?`<br><span style="opacity:.8;font-size:9px">${s.debut}–${s.fin||''}</span>`:''}
-        </div>`).join('')}
-      </div>`;
-    }
-  });
-
-  grid.innerHTML=html;
-  // populate modal select
-  const sel=document.getElementById('aff-chantier');
-  sel.innerHTML=chantiers.map(c=>`<option>${c.nom}</option>`).join('');
+  }).join('');
+  calcWeekTot();
+  renderFHRecap();
 }
 
-function prevPlanWeek(){planWeekOffset--;renderPlanning()}
-function nextPlanWeek(){planWeekOffset++;renderPlanning()}
-
-function openModalAffectation(tech,jour){
-  if(tech) document.getElementById('aff-tech').value=tech;
-  if(jour!==undefined) document.getElementById('aff-jour').value=DAYS_SHORT[jour]||DAYS_SHORT[0];
-  document.getElementById('modal-affectation').style.display='flex';
+function recalc(j){
+  const g=(f)=>document.querySelector(`[data-j="${j}"][data-f="${f}"]`)?.value||'';
+  const deb=g('deb'),fin=g('fin'),pause=parseFloat(g('pause'))||0;
+  if(!deb||!fin) return;
+  const [dh,dm]=deb.split(':').map(Number);
+  const [fh,fm]=fin.split(':').map(Number);
+  const tot=Math.max(0,(fh*60+fm-dh*60-dm)/60-pause);
+  document.getElementById('tot-'+j).textContent=tot.toFixed(2)+'h';
+  const wk=document.getElementById('fh-week').value;
+  if(!heures[wk]) heures[wk]={};
+  heures[wk][j]={chantier:g('chantier'),deb,fin,pause:g('pause'),total:tot.toFixed(2)};
+  calcWeekTot();save();
 }
 
-function saveAffectation(){
-  const tech=document.getElementById('aff-tech').value;
-  const jourStr=document.getElementById('aff-jour').value;
-  const jour=DAYS_SHORT.indexOf(jourStr);
-  const nom=document.getElementById('aff-chantier').value;
-  const debut=document.getElementById('aff-debut').value;
-  const fin=document.getElementById('aff-fin').value;
-  const c=chantiers.find(x=>x.nom===nom);
-  const typeMap={Maintenance:'green',Dépannage:'cyan',Installation:'orange',Formation:'navy',Audit:'navy'};
-  planning.push({tech,jour,nom,debut,fin,type:typeMap[c?.type]||'green'});
-  save(); closeModal('modal-affectation');
-  renderPlanning(); showNotif('Affectation enregistrée','success');
+function calcWeekTot(){
+  const wk=document.getElementById('fh-week').value;
+  const wd=heures[wk]||{};
+  let tot=0;JOURS.forEach(j=>tot+=parseFloat(wd[j]?.total||0));
+  const tech=document.getElementById('fh-tech').value;
+  const t=TEAM.find(x=>x.prenom===tech);
+  const sup=Math.max(0,tot-(t?.h||35));
+  document.getElementById('fh-tot').textContent=tot.toFixed(1)+'h';
+  document.getElementById('fh-sup').textContent=sup.toFixed(1)+'h';
 }
 
-// ═══════════════════════════════════════════════════════
-// CONFIG
-// ═══════════════════════════════════════════════════════
-function renderConfig(){
-  config = DB.get('config')||config;
-  document.getElementById('cfg-sheet-id').value=config.sheetId||'';
-  document.getElementById('cfg-token').value=config.token||'';
-  document.getElementById('cfg-h-contrat').value=config.hContrat||35;
-  document.getElementById('cfg-hs-taux').value=config.hsTaux||25;
-  renderTeamTable();
-  document.getElementById('app-url').textContent=window.location.href;
-  updateGsStatus();
-}
-
-function renderTeamTable(){
-  document.getElementById('team-tbody').innerHTML=team.map((t,i)=>`
-    <tr>
-      <td><span style="display:flex;align-items:center;gap:8px">${avatarHtml(t.prenom,26)} ${t.prenom}</span></td>
-      <td>${t.role}</td>
+function renderFHRecap(){
+  document.getElementById('fh-recap').innerHTML=TEAM.map(t=>{
+    const tot=Object.values(heures).reduce((a,wk)=>a+JOURS.reduce((b,j)=>b+parseFloat(wk[j]?.total||0),0),0)/Math.max(Object.keys(heures).length,1);
+    const sup=Math.max(0,tot-t.h);
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:8px">${av(t.prenom,27)} ${t.prenom}</div></td>
       <td>${t.h}h</td>
-      <td><button class="btn btn-ghost btn-sm" onclick="removeTeam(${i})">✕</button></td>
+      <td style="font-family:'JetBrains Mono',monospace">${tot.toFixed(1)}h</td>
+      <td style="font-family:'JetBrains Mono',monospace;color:${sup>0?'var(--o1)':'var(--mt)'}">${sup.toFixed(1)}h</td>
+      <td>${sup>2?'<span class="badge b-o">Dépassement</span>':'<span class="badge b-g">OK</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function saveHeures(){save();toast('Feuille enregistrée','ok');syncSheets('Heures',[{semaine:document.getElementById('fh-week').value}])}
+
+function fhNav(d){
+  const el=document.getElementById('fh-week');
+  const [y,w]=el.value.split('-W').map(Number);
+  const nw=w+d;
+  if(nw<1) el.value=`${y-1}-W52`;
+  else if(nw>52) el.value=`${y+1}-W01`;
+  else el.value=`${y}-W${String(nw).padStart(2,'0')}`;
+  renderHeures();
+}
+
+// ══════════════════════════════════════════════════════════
+// PHOTOS
+// ══════════════════════════════════════════════════════════
+function renderPhotos(){
+  const fi=document.getElementById('photo-f-int')?.value||'';
+  const ft=document.getElementById('photo-f-tech')?.value||'';
+  const all=[];
+  interventions.forEach(i=>{
+    if(ft&&i.tech!==ft)return;
+    if(fi&&i.id!==parseInt(fi))return;
+    (i.photos||[]).forEach(p=>all.push({src:p,nom:i.nom,tech:i.tech}));
+  });
+  photos.filter(p=>!ft||p.tech===ft).forEach(p=>all.push(p));
+  const grid=document.getElementById('photos-grid');
+  const empty=document.getElementById('photos-empty');
+  if(!all.length){grid.innerHTML='';empty.style.display='';return}
+  empty.style.display='none';
+  grid.innerHTML=all.map(p=>`<div class="photo-item"><img src="${p.src}" title="${p.nom||''}"/></div>`).join('');
+  const sel=document.getElementById('photo-f-int');
+  if(sel) sel.innerHTML='<option value="">Toutes interventions</option>'+interventions.map(i=>`<option value="${i.id}">${i.bonNum} — ${i.nom.substring(0,30)}</option>`).join('');
+}
+
+function addPhotos(inp){
+  Array.from(inp.files).forEach(f=>{
+    const r=new FileReader();
+    r.onload=e=>{photos.push({src:e.target.result,tech:'Damien',date:new Date().toISOString().split('T')[0]});save();renderPhotos()};
+    r.readAsDataURL(f);
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// CRM
+// ══════════════════════════════════════════════════════════
+function renderCRM(){
+  const q=(document.getElementById('crm-q')?.value||'').toLowerCase();
+  document.getElementById('crm-grid').innerHTML=clients.filter(c=>!q||(c.nom+c.contact).toLowerCase().includes(q)).map(c=>{
+    const ci=interventions.filter(i=>i.client===c.nom);
+    const cca=ci.reduce((a,i)=>a+i.ca,0);
+    return `<div class="client-card">
+      <div class="client-head">
+        <div class="cn">${c.nom}</div>
+        <div class="ct">${c.type}${c.contact?' · '+c.contact:''}</div>
+      </div>
+      <div class="client-body">
+        ${c.adresse?`<div style="font-size:12px;color:var(--mt)">📍 ${c.adresse}</div>`:''}
+        <div class="client-stats">
+          <div class="cs"><div class="cv">${ci.length}</div><div class="cl">Interventions</div></div>
+          <div class="cs"><div class="cv" style="color:var(--g2)">${cca.toLocaleString('fr')}€</div><div class="cl">CA total</div></div>
+          <div class="cs"><div class="cv">${ci.filter(i=>i.statut==='Terminée').length}</div><div class="cl">Terminées</div></div>
+        </div>
+        ${c.tel?`<div style="margin-top:8px"><a href="tel:${c.tel}" style="font-size:12px;color:var(--c1)">📞 ${c.tel}</a></div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+// CONTRATS
+// ══════════════════════════════════════════════════════════
+function renderContrats(){
+  document.getElementById('contrats-list').innerHTML=contrats.map(c=>`
+    <div class="int-card">
+      <div class="int-strip" style="background:${c.statut==='Actif'?'var(--g1)':'var(--brd)'}"></div>
+      <div class="int-body">
+        <div class="int-ico" style="background:var(--nl)">📝</div>
+        <div class="int-info">
+          <div class="int-nom">${c.nom}</div>
+          <div class="int-meta"><span>👥 ${c.client}</span><span>👤 ${c.tech}</span><span>🔄 ${c.period}</span><span>📅 Prochain : ${fmtD(c.prochaine)}</span></div>
+          <div style="margin-top:5px">${c.statut==='Actif'?'<span class="badge b-g">Actif</span>':'<span class="badge b-n">Inactif</span>'}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div class="int-ca">${c.tarif.toLocaleString('fr')}€<span style="font-size:11px;font-weight:400;color:var(--mt)">/visite</span></div>
+          <button class="btn btn-g btn-sm" style="margin-top:8px" onclick="genContratInt(${c.id})">+ Générer intervention</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function genContratInt(id){
+  const c=contrats.find(x=>x.id===id);if(!c)return;
+  const n=interventions.length+1;
+  interventions.push({id:Date.now(),nom:c.nom+' — '+c.client,client:c.client,lieu:'',tech:c.tech,type:'Maintenance',
+    date:c.prochaine,heure:'08:00',duree:2,ca:c.tarif,statut:'Planifiée',prio:'Normale',avancement:0,
+    desc:c.desc||'',timeline:[],photos:[],sig:'',bonNum:(cfg.pfx||'SBA-')+n.toString().padStart(4,'0')});
+  const d=new Date(c.prochaine);
+  const pm={Mensuelle:1,Trimestrielle:3,Semestrielle:6,Annuelle:12};
+  d.setMonth(d.getMonth()+(pm[c.period]||3));
+  c.prochaine=d.toISOString().split('T')[0];
+  save();renderContrats();toast('Intervention générée ✓','ok');updateBubbles();
+}
+
+// ══════════════════════════════════════════════════════════
+// RAPPORTS
+// ══════════════════════════════════════════════════════════
+function renderRapports(){
+  const now=new Date();
+  document.getElementById('rpt-deb').value=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];
+  document.getElementById('rpt-fin').value=now.toISOString().split('T')[0];
+  const tot=interventions.length,done=interventions.filter(i=>i.statut==='Terminée').length;
+  const ca=interventions.reduce((a,i)=>a+i.ca,0);
+  document.getElementById('stats-block').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      ${[['Total interventions',tot,'var(--gl)','var(--g2)'],['Terminées',done,'var(--nl)','var(--n1)'],
+         ['Taux clôture',(tot?Math.round(done/tot*100):0)+'%','var(--ol)','var(--o1)'],
+         ['CA total',ca.toLocaleString('fr')+'€','var(--cl)','#006688']].map(([l,v,bg,c])=>
+        `<div style="background:${bg};border-radius:8px;padding:12px;text-align:center">
+          <div style="font-size:19px;font-weight:800;font-family:'JetBrains Mono',monospace;color:${c}">${v}</div>
+          <div style="font-size:10px;color:var(--mt);text-transform:uppercase;letter-spacing:.5px;margin-top:2px">${l}</div>
+        </div>`).join('')}
+    </div>`;
+  document.getElementById('rpt-tbody').innerHTML=rapports.map(r=>`
+    <tr>
+      <td style="padding:9px 14px;border-bottom:1px solid var(--brd);font-weight:600">📄 ${r.nom}</td>
+      <td style="padding:9px 14px;border-bottom:1px solid var(--brd);color:var(--mt)">${r.periode}</td>
+      <td style="padding:9px 14px;border-bottom:1px solid var(--brd);color:var(--mt);font-size:12px">${ago(r.ts)}</td>
+      <td style="padding:9px 14px;border-bottom:1px solid var(--brd)"><button class="btn btn-ghost btn-xs">⬇ PDF</button></td>
     </tr>`).join('');
 }
 
-function removeTeam(i){team.splice(i,1);save();renderTeamTable()}
-
-function saveConfig(){
-  config.sheetId=document.getElementById('cfg-sheet-id').value;
-  config.token=document.getElementById('cfg-token').value;
-  config.hContrat=parseInt(document.getElementById('cfg-h-contrat').value)||35;
-  config.hsTaux=parseInt(document.getElementById('cfg-hs-taux').value)||25;
-  save(); showNotif('Configuration enregistrée','success');
-  updateGsStatus();
+function genRapport(){
+  rapports.unshift({nom:document.getElementById('rpt-type').value,
+    periode:`${fmtD(document.getElementById('rpt-deb').value)} – ${fmtD(document.getElementById('rpt-fin').value)}`,ts:Date.now()});
+  save();renderRapports();toast('Rapport généré','ok');
 }
 
-async function testConnection(){
-  if(!config.sheetId||!config.token){
-    showNotif('Renseignez Spreadsheet ID et Token','error');return;
-  }
-  showNotif('Test en cours…');
+// ══════════════════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════════════════
+function renderCfg(){
+  cfg=S.get('cfg')||cfg;
+  document.getElementById('cfg-sid').value=cfg.sid||'';
+  document.getElementById('cfg-tok').value=cfg.tok||'';
+  document.getElementById('cfg-hc').value=cfg.hc||35;
+  document.getElementById('cfg-pfx').value=cfg.pfx||'SBA-';
+
+  // Onglets Sheets
+  const tabs=['Chantiers','Heures','Planning','Actualites','CA_Mensuel','Clients','Contrats'];
+  document.getElementById('sheets-tabs').innerHTML=tabs.map(t=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--bg);border-radius:6px;margin-bottom:5px;font-size:12px">
+      <span>📊 ${t}</span>
+      <span class="badge b-o" style="font-size:10px">À créer</span>
+    </div>`).join('');
+
+  // Team
+  document.getElementById('cfg-team').innerHTML=`<table class="tbl">${TEAM.map(t=>`
+    <tr><td style="padding:9px 14px"><div style="display:flex;align-items:center;gap:8px">${av(t.prenom,26)} <strong>${t.prenom}</strong></div></td>
+    <td style="padding:9px 14px;color:var(--mt);font-size:12px">${t.role}</td>
+    <td style="padding:9px 14px;font-size:12px">${t.h}h/sem</td></tr>`).join('')}</table>`;
+
+  // Process steps
+  document.getElementById('cfg-steps').innerHTML=pSteps.map((s,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--brd)">
+      <span style="width:20px;height:20px;border-radius:50%;background:var(--g1);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</span>
+      <span style="flex:1;font-size:13px">${s}</span>
+      <button class="btn btn-ghost btn-xs" onclick="rmStep(${i})">✕</button>
+    </div>`).join('');
+
+  updateGS();
+}
+
+function addStep(){const s=prompt('Nouvelle étape :');if(s){pSteps.push(s);save();renderCfg()}}
+function rmStep(i){pSteps.splice(i,1);save();renderCfg()}
+
+function saveCfg(){
+  cfg.sid=document.getElementById('cfg-sid').value;
+  cfg.tok=document.getElementById('cfg-tok').value;
+  cfg.hc=parseInt(document.getElementById('cfg-hc').value)||35;
+  cfg.pfx=document.getElementById('cfg-pfx').value||'SBA-';
+  save();updateGS();toast('Configuration sauvegardée','ok');
+}
+
+async function testCfg(){
+  if(!cfg.sid||!cfg.tok){toast('Renseignez ID et token','err');return}
   try{
-    const res=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${config.sheetId}?fields=title`,{
-      headers:{Authorization:`Bearer ${config.token}`}
-    });
-    if(res.ok){
-      const d=await res.json();
-      document.getElementById('gs-dot').classList.add('connected');
-      document.getElementById('gs-status-txt').textContent='Connecté: '+d.title;
-      showNotif('Connexion réussie : '+d.title,'success');
-    } else {
-      showNotif('Erreur '+res.status+' : token invalide ?','error');
+    const r=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${cfg.sid}?fields=title`,{headers:{Authorization:'Bearer '+cfg.tok}});
+    if(r.ok){const d=await r.json();document.getElementById('gs-dot').classList.add('ok');document.getElementById('gs-txt').textContent='Connecté : '+d.title;toast('Connexion OK : '+d.title,'ok')}
+    else toast('Erreur '+r.status+' — token invalide ?','err');
+  }catch{toast('Erreur réseau','err')}
+}
+
+function updateGS(){
+  const ok=cfg.sid&&cfg.tok;
+  document.getElementById('gs-dot').className='gs-dot'+(ok?' ok':'');
+  document.getElementById('gs-txt').textContent=ok?'Configuré':'Non connecté';
+}
+
+// ══════════════════════════════════════════════════════════
+// CRUD MODALS
+// ══════════════════════════════════════════════════════════
+let editIntId=null;
+function openMoInt(id){
+  editIntId=id||null;
+  const mo=document.getElementById('mo-int');
+  const sel=document.getElementById('i-client');
+  sel.innerHTML='<option value="">— Sélectionner —</option>'+clients.map(c=>`<option>${c.nom}</option>`).join('');
+  if(id){
+    const i=interventions.find(x=>x.id===id);
+    document.getElementById('mo-int-ttl').textContent='Modifier intervention';
+    if(i){
+      document.getElementById('i-nom').value=i.nom;document.getElementById('i-client').value=i.client;
+      document.getElementById('i-lieu').value=i.lieu;document.getElementById('i-tech').value=i.tech;
+      document.getElementById('i-type').value=i.type;document.getElementById('i-date').value=i.date;
+      document.getElementById('i-heure').value=i.heure;document.getElementById('i-duree').value=i.duree;
+      document.getElementById('i-ca').value=i.ca;document.getElementById('i-prio').value=i.prio||'Normale';
+      document.getElementById('i-stat').value=i.statut;document.getElementById('i-desc').value=i.desc||'';
     }
-  } catch(e){ showNotif('Erreur réseau','error'); }
-}
-
-function updateGsStatus(){
-  const connected=config.sheetId&&config.token;
-  document.getElementById('gs-dot').className='gs-dot'+(connected?' connected':'');
-  document.getElementById('gs-status-txt').textContent=connected?'Configuré':'Non connecté';
-}
-
-function openModalTechnicien(){document.getElementById('modal-tech').style.display='flex'}
-function saveTechnicien(){
-  const prenom=document.getElementById('tech-prenom').value.trim();
-  if(!prenom) return;
-  const colors=['#5b9e2f','#0099cc','#e07b2a','#1a3a6b','#9b59b6','#e74c3c'];
-  team.push({prenom,nom:document.getElementById('tech-nom').value,
-    role:document.getElementById('tech-role').value,
-    h:parseInt(document.getElementById('tech-h').value)||35,
-    couleur:colors[team.length%colors.length]});
-  save();closeModal('modal-tech');renderTeamTable();
-  showNotif('Technicien ajouté','success');
-}
-
-function toggleSwitch(btn){btn.classList.toggle('on')}
-function copyUrl(){navigator.clipboard.writeText(window.location.href);showNotif('URL copiée','success')}
-
-// ═══════════════════════════════════════════════════════
-// GOOGLE SHEETS SYNC
-// ═══════════════════════════════════════════════════════
-async function syncToSheets(sheet, data){
-  if(!config.sheetId||!config.token) return;
-  try{
-    // Clear + append
-    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${config.sheetId}/values/${sheet}!A1:Z1000:clear`,{
-      method:'POST',headers:{'Authorization':'Bearer '+config.token,'Content-Type':'application/json'}
-    });
-    const rows = dataToRows(sheet, data);
-    if(!rows.length) return;
-    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${config.sheetId}/values/${sheet}!A1:append?valueInputOption=RAW`,{
-      method:'POST',
-      headers:{'Authorization':'Bearer '+config.token,'Content-Type':'application/json'},
-      body:JSON.stringify({values:rows})
-    });
-  } catch(e){ console.warn('Sheets sync error',e); }
-}
-
-function dataToRows(sheet, data){
-  if(sheet==='Chantiers'){
-    const h=['ID','Nom','Client','Lieu','Technicien','Type','Début','Fin','CA','Statut','Avancement','Notes'];
-    return [h,...data.map(c=>[c.id,c.nom,c.client,c.lieu,c.tech,c.type,c.debut,c.fin,c.ca,c.statut,c.avancement,c.notes||''])];
+  } else {
+    document.getElementById('mo-int-ttl').textContent='Nouvelle intervention';
+    ['i-nom','i-lieu','i-desc'].forEach(k=>document.getElementById(k).value='');
+    document.getElementById('i-date').value=new Date().toISOString().split('T')[0];
+    document.getElementById('i-heure').value='08:00';document.getElementById('i-duree').value='2';document.getElementById('i-ca').value='0';
   }
-  return [];
+  mo.style.display='flex';
 }
 
-// ═══════════════════════════════════════════════════════
+function saveInt(){
+  const nom=document.getElementById('i-nom').value.trim();
+  if(!nom){toast('Nom requis','err');return}
+  const n=interventions.length+1;
+  const data={nom,client:document.getElementById('i-client').value,lieu:document.getElementById('i-lieu').value,
+    tech:document.getElementById('i-tech').value,type:document.getElementById('i-type').value,
+    date:document.getElementById('i-date').value,heure:document.getElementById('i-heure').value,
+    duree:parseFloat(document.getElementById('i-duree').value)||2,
+    ca:parseFloat(document.getElementById('i-ca').value)||0,
+    prio:document.getElementById('i-prio').value,statut:document.getElementById('i-stat').value,
+    desc:document.getElementById('i-desc').value};
+  if(editIntId){
+    const ex=interventions.find(x=>x.id===editIntId);
+    Object.assign(ex,data);
+  } else {
+    data.id=Date.now();data.avancement=0;data.timeline=[];data.photos=[];data.sig='';
+    data.bonNum=(cfg.pfx||'SBA-')+n.toString().padStart(4,'0');
+    interventions.push(data);
+  }
+  save();closeMo('mo-int');
+  const cur=document.querySelector('.pg.on')?.id?.replace('pg-','');
+  if(cur==='interventions')renderInts();
+  if(cur==='dashboard')renderDash();
+  toast('Intervention enregistrée','ok');updateBubbles();
+  syncSheets('Chantiers',interventions);
+}
+
+function openMoClient(){
+  ['cl-nom','cl-contact','cl-tel','cl-adresse','cl-email','cl-notes'].forEach(k=>document.getElementById(k).value='');
+  document.getElementById('mo-client').style.display='flex';
+}
+function saveClient(){
+  const nom=document.getElementById('cl-nom').value.trim();
+  if(!nom){toast('Nom requis','err');return}
+  clients.push({id:Date.now(),nom,type:document.getElementById('cl-type').value,
+    contact:document.getElementById('cl-contact').value,tel:document.getElementById('cl-tel').value,
+    adresse:document.getElementById('cl-adresse').value,email:document.getElementById('cl-email').value,
+    notes:document.getElementById('cl-notes').value});
+  save();closeMo('mo-client');renderCRM();toast('Client ajouté','ok');
+}
+
+function openMoContrat(){
+  const sel=document.getElementById('ct-cl');
+  sel.innerHTML='<option value="">—</option>'+clients.map(c=>`<option>${c.nom}</option>`).join('');
+  document.getElementById('ct-deb').value=new Date().toISOString().split('T')[0];
+  document.getElementById('mo-contrat').style.display='flex';
+}
+function saveContrat(){
+  const nom=document.getElementById('ct-nom').value.trim();
+  if(!nom){toast('Nom requis','err');return}
+  const deb=document.getElementById('ct-deb').value;
+  contrats.push({id:Date.now(),client:document.getElementById('ct-cl').value,nom,
+    tech:document.getElementById('ct-tech').value,period:document.getElementById('ct-period').value,
+    tarif:parseFloat(document.getElementById('ct-tarif').value)||0,
+    deb,fin:document.getElementById('ct-fin').value,
+    desc:document.getElementById('ct-desc').value,statut:'Actif',prochaine:deb});
+  save();closeMo('mo-contrat');renderContrats();toast('Contrat enregistré','ok');
+}
+
+function openMoTech(){document.getElementById('mo-tech').style.display='flex'}
+function saveTech(){const p=document.getElementById('t-prenom').value.trim();if(p)toast('Technicien ajouté (démo)','ok');closeMo('mo-tech')}
+
+function closeMo(id){document.getElementById(id).style.display='none'}
+
+// ══════════════════════════════════════════════════════════
+// GOOGLE SHEETS SYNC
+// ══════════════════════════════════════════════════════════
+async function syncSheets(sheet,data){
+  if(!cfg.sid||!cfg.tok)return;
+  try{
+    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${cfg.sid}/values/${sheet}!A1:Z1000:clear`,
+      {method:'POST',headers:{Authorization:'Bearer '+cfg.tok,'Content-Type':'application/json'}});
+    if(sheet==='Chantiers'){
+      const rows=[['ID','Nom','Client','Lieu','Tech','Type','Date','Heure','Durée','CA','Statut','Priorité','Avancement','Bon'],
+        ...data.map(i=>[i.id,i.nom,i.client,i.lieu,i.tech,i.type,i.date,i.heure,i.duree,i.ca,i.statut,i.prio||'',i.avancement,i.bonNum])];
+      await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${cfg.sid}/values/${sheet}!A1:append?valueInputOption=RAW`,
+        {method:'POST',headers:{Authorization:'Bearer '+cfg.tok,'Content-Type':'application/json'},body:JSON.stringify({values:rows})});
+    }
+  }catch(e){console.warn('Sheets sync error',e)}
+}
+
+// ══════════════════════════════════════════════════════════
 // UTILS
-// ═══════════════════════════════════════════════════════
-function avatarHtml(name,size=32){
-  const colors={'François':'#5b9e2f','Mohian':'#0099cc','Maden':'#e07b2a','Damien':'#1a3a6b'};
-  const c=colors[name]||'#6b7a99';
-  const ini=(name||'?').substring(0,2).toUpperCase();
-  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${c};color:#fff;display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*.4)}px;font-weight:700;flex-shrink:0">${ini}</div>`;
+// ══════════════════════════════════════════════════════════
+function av(n,s=32){
+  const c=TC[n]||'#6b7a99';
+  return `<div style="width:${s}px;height:${s}px;border-radius:50%;background:${c};color:#fff;display:flex;align-items:center;justify-content:center;font-size:${Math.round(s*.38)}px;font-weight:700;flex-shrink:0">${(n||'?').substring(0,2).toUpperCase()}</div>`;
 }
 
-function badgeStatut(s){
-  const map={'En cours':'bs-en-cours','Terminé':'bs-ok','Planifié':'bs-attente','En attente':'bs-retard'};
-  return `<span class="badge-status ${map[s]||'bs-attente'}">${s}</span>`;
+function statBadge(s){
+  const m={'En cours':'b-c','Terminée':'b-g','Planifiée':'b-n','À planifier':'b-o','En pause':'b-o','Annulée':'b-r'};
+  const dot={'En cours':'🔵','Terminée':'✅','Planifiée':'📋','À planifier':'⏳','En pause':'⏸','Annulée':'❌'};
+  return `<span class="badge ${m[s]||'b-n'}">${dot[s]||''} ${s}</span>`;
 }
 
-function typeIcon(t){
-  const icons={Maintenance:'🔧',Dépannage:'⚡',Installation:'🏗️',Formation:'📚',Audit:'🔍'};
-  return icons[t]||'🔧';
+function typeIco(t){return {Maintenance:'🔧',Dépannage:'⚡',Installation:'🏗️',Contrôle:'🔍','Mise en service':'🚀'}[t]||'🔧'}
+function fmtD(d){if(!d)return '—';return new Date(d+'T12:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'})}
+function ago(ts){const s=Math.round((Date.now()-ts)/1000);if(s<60)return 'à l\'instant';if(s<3600)return Math.round(s/60)+'min';if(s<86400)return Math.round(s/3600)+'h';return Math.round(s/86400)+'j'}
+
+let toastT;
+function toast(msg,type=''){
+  const ex=document.querySelector('.toast');if(ex)ex.remove();
+  const t=document.createElement('div');t.className='toast '+(type||'');
+  t.textContent=(type==='ok'?'✓ ':type==='err'?'✕ ':'ℹ ')+msg;
+  document.body.appendChild(t);clearTimeout(toastT);toastT=setTimeout(()=>t.remove(),3200);
 }
 
-function formatDate(d){
-  if(!d) return '—';
-  return new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'});
+function updateBubbles(){
+  document.getElementById('bub-int').textContent=interventions.filter(i=>i.statut==='À planifier').length;
+  document.getElementById('bub-feed').textContent=feed.length;
+  document.getElementById('bub-feed').style.background='var(--g1)';
 }
 
-function timeAgo(ts){
-  const d=Math.round((Date.now()-new Date(ts))/1000);
-  if(d<60) return 'à l\'instant';
-  if(d<3600) return Math.round(d/60)+'min';
-  if(d<86400) return Math.round(d/3600)+'h';
-  return Math.round(d/86400)+'j';
+function exportCSV(){
+  const rows=[['Bon','Nom','Client','Lieu','Tech','Type','Date','CA','Statut']];
+  interventions.forEach(i=>rows.push([i.bonNum,i.nom,i.client,i.lieu,i.tech,i.type,i.date,i.ca,i.statut]));
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent('\uFEFF'+rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n'));
+  a.download='interventions_selfbeton.csv';a.click();toast('Export CSV téléchargé','ok');
 }
 
-let notifTimer;
-function showNotif(msg,type=''){
-  const existing=document.querySelector('.notif');
-  if(existing) existing.remove();
-  const n=document.createElement('div');
-  n.className='notif '+(type||'');
-  n.textContent=(type==='success'?'✓ ':type==='error'?'✕ ':'')+msg;
-  document.body.appendChild(n);
-  clearTimeout(notifTimer);
-  notifTimer=setTimeout(()=>n.remove(),3000);
-}
-
-function closeModal(id){document.getElementById(id).style.display='none'}
-
-function toggleChartType(){showNotif('Vue basculée')}
-
-// ═══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // INIT
-// ═══════════════════════════════════════════════════════
-updateGsStatus();
-renderDashboard();
+// ══════════════════════════════════════════════════════════
+updateGS();updateBubbles();renderDash();
+document.getElementById('tb-btn').style.display='';
+document.getElementById('tb-btn').textContent='+ Intervention';
+document.getElementById('tb-btn').onclick=()=>openMoInt();
 </script>
 </body>
 </html>
