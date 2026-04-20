@@ -600,14 +600,34 @@ select.fi{cursor:pointer}
       <div class="cb">
         <div class="fg"><label class="fl">Type</label>
           <select class="fi" id="rpt-type">
-            <option>Rapport hebdomadaire</option><option>Rapport mensuel CA</option>
-            <option>Fiche technicien</option><option>Historique client</option>
+            <option value="hebdo">Rapport hebdomadaire d'interventions</option>
+            <option value="mensuel">Rapport mensuel CA</option>
+            <option value="technicien">Fiche technicien</option>
+            <option value="client">Historique client</option>
           </select></div>
         <div class="fr2">
           <div class="fg"><label class="fl">Du</label><input class="fi" type="date" id="rpt-deb"/></div>
           <div class="fg"><label class="fl">Au</label><input class="fi" type="date" id="rpt-fin"/></div>
         </div>
-        <button class="btn btn-g" onclick="genRapport()">📄 Générer</button>
+        <div class="fr2">
+          <div class="fg"><label class="fl">Technicien</label>
+            <select class="fi" id="rpt-tech">
+              <option value="">Tous</option>
+              <option>François</option><option>Mohian</option><option>Maden</option><option>Damien</option>
+            </select></div>
+          <div class="fg"><label class="fl">Client</label>
+            <select class="fi" id="rpt-client">
+              <option value="">Tous</option>
+            </select></div>
+        </div>
+        <div class="cfg-row" style="padding:10px 0;margin-bottom:12px">
+          <div>
+            <div style="font-size:13px;font-weight:600">Inclure les photos</div>
+            <div style="font-size:11px;color:var(--mt)">Afficher les photos terrain dans le rapport</div>
+          </div>
+          <button class="toggle on" id="rpt-photos-toggle" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <button class="btn btn-g" onclick="genRapport()">📄 Générer &amp; ouvrir</button>
       </div>
     </div>
     <div class="card">
@@ -664,6 +684,12 @@ select.fi{cursor:pointer}
             <input class="fi" type="number" id="cfg-hc" value="35" style="max-width:90px"/></div>
           <div class="fg"><label class="fl">Préfixe bons</label>
             <input class="fi" id="cfg-pfx" value="SBA-" style="max-width:120px"/></div>
+          <div class="fg"><label class="fl">📸 Photos min. pour signer</label>
+            <div style="display:flex;align-items:center;gap:10px">
+              <input class="fi" type="number" id="cfg-minphotos" value="2" min="0" max="20" style="max-width:80px"/>
+              <span style="font-size:12px;color:var(--mt)">photo(s) obligatoires avant signature</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -676,11 +702,11 @@ select.fi{cursor:pointer}
         </div>
       </div>
       <div class="card">
-        <div class="ch"><h3>🔧 Processus métier</h3></div>
-        <div class="cb">
-          <div id="cfg-steps"></div>
-          <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="addStep()">+ Étape</button>
+        <div class="ch">
+          <h3>🔧 Processus métier</h3>
+          <button class="btn btn-g btn-sm" onclick="openMoProcessus()">+ Nouveau processus</button>
         </div>
+        <div class="cb" style="padding:0" id="cfg-processus-list"></div>
       </div>
     </div>
   </div>
@@ -841,6 +867,22 @@ select.fi{cursor:pointer}
   </div>
 </div>
 
+
+<!-- Modal processus -->
+<div class="ov" id="mo-processus" style="display:none" onclick="closeMo('mo-processus')">
+  <div class="mo" onclick="event.stopPropagation()">
+    <div class="mo-h"><h2 id="mo-proc-ttl">Nouveau processus</h2><button class="mo-x" onclick="closeMo('mo-processus')">✕</button></div>
+    <div class="mo-b">
+      <div class="fr2">
+        <div class="fg"><label class="fl">Nom du processus</label><input class="fi" id="proc-nom" placeholder="Ex : Maintenance préventive"/></div>
+        <div class="fg"><label class="fl">Type associé</label><select class="fi" id="proc-type"><option value="">Tous types</option><option>Maintenance</option><option>Dépannage</option><option>Installation</option><option>Contrôle</option><option>Mise en service</option></select></div>
+      </div>
+      <div class="fg"><label class="fl">Étapes</label><div id="proc-steps-list"></div><div style="display:flex;gap:8px;margin-top:8px"><input class="fi" id="proc-step-input" placeholder="Nouvelle étape…" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();addProcStep()}"><button class="btn btn-ghost btn-sm" onclick="addProcStep()">+ Ajouter</button></div></div>
+    </div>
+    <div class="mo-f"><button class="btn btn-ghost" onclick="closeMo('mo-processus')">Annuler</button><button class="btn btn-g" onclick="saveProcessus()">💾 Enregistrer</button></div>
+  </div>
+</div>
+
 <script>
 // ══════════════════════════════════════════════════════════
 // STORE
@@ -898,7 +940,12 @@ let rapports = S.get('rapports')||[
   {nom:'Rapport hebdo sem. 15',periode:'7–13 avr.',ts:Date.now()-432000000},
   {nom:'Rapport mensuel Mars 2025',periode:'Mars 2025',ts:Date.now()-864000000},
 ];
-let pSteps = S.get('psteps')||['Vérif. EPI','Photos avant','Intervention','Photos après','Signature client','Clôture bon'];
+let processusList = S.get('processus')||[
+  {id:1,nom:'Maintenance préventive',type:'Maintenance',etapes:['Vérif. EPI','Photos avant','Vérification hydraulique','Nettoyage filtres','Test dosage','Photos après','Signature client','Clôture bon']},
+  {id:2,nom:'Dépannage urgent',type:'Dépannage',etapes:['Vérif. EPI','Diagnostic panne','Photos avant intervention','Réparation','Test fonctionnel','Photos après','Signature client','Clôture bon']},
+  {id:3,nom:'Installation neuf',type:'Installation',etapes:['Vérif. EPI','Contrôle livraison matériel','Photos avant','Montage coffret','Raccordements','Mise en eau','Test complet','Formation client','Photos après','Signature client','Clôture bon']},
+  {id:4,nom:'Contrôle réglementaire',type:'Contrôle',etapes:['Vérif. EPI','Relevé compteurs','Contrôle sécurités','Vérification étanchéité','Rapport écrit','Signature client']},
+];
 let caData = S.get('ca')||{
   mois:['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'],
   y25:[12500,9800,14200,11600,0,0,0,0,0,0,0,0],
@@ -915,7 +962,7 @@ const TEAM=[
 function save(){
   S.set('ints',interventions);S.set('clients',clients);S.set('contrats',contrats);
   S.set('feed',feed);S.set('heures',heures);S.set('plan',planSlots);
-  S.set('photos',photos);S.set('rapports',rapports);S.set('psteps',pSteps);
+  S.set('photos',photos);S.set('rapports',rapports);S.set('processus',processusList);
   S.set('ca',caData);S.set('cfg',cfg);
 }
 
@@ -1216,10 +1263,21 @@ function openDet(id){
         </div>
         <div>
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mt);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--brd)">Processus métier</div>
-          ${pSteps.map(s=>`<div style="display:flex;align-items:center;gap:9px;padding:5px 0;border-bottom:1px solid var(--bg)">
-            <input type="checkbox" ${i.statut==='Terminée'?'checked disabled':''} style="cursor:pointer"/>
-            <span style="font-size:13px">${s}</span>
-          </div>`).join('')}
+          ${(()=>{
+            const proc = processusList.find(p=>p.type===i.type) || processusList[0];
+            const etapes = proc ? proc.etapes : [];
+            const progKey = 'proc_'+i.id;
+            const done = i.procDone || [];
+            return `<div style="font-size:11px;color:var(--c1);font-weight:600;margin-bottom:8px">${proc?proc.nom:'—'}</div>` +
+              etapes.map((s,idx)=>`<div style="display:flex;align-items:center;gap:9px;padding:5px 0;border-bottom:1px solid var(--bg)">
+                <input type="checkbox" ${done.includes(idx)||i.statut==='Terminée'?'checked':''} ${i.statut==='Terminée'?'disabled':''} style="cursor:pointer" onchange="toggleProcStep(${i.id},${idx},this.checked)"/>
+                <span style="font-size:13px;${done.includes(idx)||i.statut==='Terminée'?'text-decoration:line-through;color:var(--mt)':''}">${s}</span>
+              </div>`).join('') +
+              `<div style="margin-top:8px;height:5px;background:var(--brd);border-radius:3px">
+                <div style="height:100%;width:${etapes.length?Math.round((i.statut==='Terminée'?etapes.length:done.length)/etapes.length*100):0}%;background:var(--g1);border-radius:3px;transition:width .4s"></div>
+              </div>
+              <div style="font-size:11px;color:var(--mt);margin-top:4px">${i.statut==='Terminée'?etapes.length:done.length}/${etapes.length} étapes</div>`;
+          })()}
         </div>
       </div>
       <div>
@@ -1243,8 +1301,18 @@ function openDet(id){
         </div>
         <div>
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mt);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--brd)">Signature</div>
-          ${i.sig?'<div style="background:var(--gl);border-radius:7px;padding:10px;text-align:center;font-size:13px;color:var(--g2);font-weight:700">✓ Bon signé</div>':
-          `<button class="btn btn-g btn-sm" onclick="closeMo('mo-det');openBon(${id})">✍️ Faire signer le bon →</button>`}
+          ${i.sig
+            ? '<div style="background:var(--gl);border-radius:7px;padding:10px;text-align:center;font-size:13px;color:var(--g2);font-weight:700">✓ Bon signé</div>'
+            : `<div id="sig-block-${id}">
+                ${(i.photos&&i.photos.length>=(cfg.minPhotos||1))
+                  ? `<button class="btn btn-g btn-sm" onclick="closeMo('mo-det');openBon(${id})">✍️ Faire signer le bon →</button>`
+                  : `<div style="background:var(--rl);border:1px solid var(--r1);border-radius:8px;padding:11px 13px;">
+                      <div style="font-size:13px;font-weight:700;color:var(--r1);margin-bottom:4px">📸 Photos obligatoires</div>
+                      <div style="font-size:12px;color:var(--r1)">Ajoutez au minimum <strong>${cfg.minPhotos||1} photo${(cfg.minPhotos||1)>1?'s':''}</strong> avant de signer le bon.<br>Photos ajoutées : <strong>${i.photos?i.photos.length:0}/${cfg.minPhotos||1}</strong></div>
+                    </div>`
+                }
+              </div>`
+          }
         </div>
       </div>
     </div>`;
@@ -1265,7 +1333,36 @@ function changeStatut(id){
 
 function addPhotoInt(id,inp){
   const i=interventions.find(x=>x.id===id);if(!i)return;
-  Array.from(inp.files).forEach(f=>{const r=new FileReader();r.onload=e=>{i.photos.push(e.target.result);save();openDet(id)};r.readAsDataURL(f)});
+  Array.from(inp.files).forEach(f=>{
+    const r=new FileReader();
+    r.onload=e=>{
+      i.photos.push(e.target.result);
+      save();
+      // Rafraîchir la galerie photos dans le modal
+      const grid=document.querySelector(`#mo-det-body .photo-grid`);
+      if(grid){
+        const items=grid.querySelectorAll('.photo-item:not(:last-child)');
+        items.forEach(el=>el.remove());
+        i.photos.forEach(p=>{
+          const d=document.createElement('div');d.className='photo-item';
+          d.innerHTML=`<img src="${p}"/>`;grid.insertBefore(d,grid.lastElementChild);
+        });
+      }
+      // Rafraîchir le bloc signature
+      const sigBlock=document.getElementById('sig-block-'+id);
+      if(sigBlock){
+        const minP=cfg.minPhotos||1;
+        const ok=i.photos.length>=minP;
+        sigBlock.innerHTML=ok
+          ?`<button class="btn btn-g btn-sm" onclick="closeMo('mo-det');openBon(${id})">✍️ Faire signer le bon →</button>`
+          :`<div style="background:var(--rl);border:1px solid var(--r1);border-radius:8px;padding:11px 13px;">
+              <div style="font-size:13px;font-weight:700;color:var(--r1);margin-bottom:4px">📸 Photos obligatoires</div>
+              <div style="font-size:12px;color:var(--r1)">Ajoutez au minimum <strong>${minP} photo${minP>1?'s':''}</strong> avant de signer.<br>Photos ajoutées : <strong>${i.photos.length}/${minP}</strong></div>
+            </div>`;
+      }
+    };
+    r.readAsDataURL(f);
+  });
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1366,6 +1463,11 @@ function renderBons(){
 
 function openBon(id){
   const i=interventions.find(x=>x.id===id);if(!i)return;
+  const minP = cfg.minPhotos||1;
+  if(!i.photos||i.photos.length<minP){
+    toast(`📸 ${minP} photo${minP>1?'s':''} requise${minP>1?'s':''} — ${i.photos?i.photos.length:0}/${minP} ajoutée${(i.photos?i.photos.length:0)>1?'s':''}`,'err');
+    return;
+  }
   closeMo('mo-det');
   const cl=clients.find(c=>c.nom===i.client)||{};
   const w=window.open('','_blank','width=800,height=920');
@@ -1664,6 +1766,9 @@ function renderRapports(){
   const now=new Date();
   document.getElementById('rpt-deb').value=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];
   document.getElementById('rpt-fin').value=now.toISOString().split('T')[0];
+  // Populate client select
+  const sel=document.getElementById('rpt-client');
+  if(sel) sel.innerHTML='<option value="">Tous</option>'+clients.map(c=>`<option>${c.nom}</option>`).join('');
   const tot=interventions.length,done=interventions.filter(i=>i.statut==='Terminée').length;
   const ca=interventions.reduce((a,i)=>a+i.ca,0);
   document.getElementById('stats-block').innerHTML=`
@@ -1676,20 +1781,232 @@ function renderRapports(){
           <div style="font-size:10px;color:var(--mt);text-transform:uppercase;letter-spacing:.5px;margin-top:2px">${l}</div>
         </div>`).join('')}
     </div>`;
-  document.getElementById('rpt-tbody').innerHTML=rapports.map(r=>`
+  document.getElementById('rpt-tbody').innerHTML=rapports.map((r,ri)=>`
     <tr>
       <td style="padding:9px 14px;border-bottom:1px solid var(--brd);font-weight:600">📄 ${r.nom}</td>
       <td style="padding:9px 14px;border-bottom:1px solid var(--brd);color:var(--mt)">${r.periode}</td>
       <td style="padding:9px 14px;border-bottom:1px solid var(--brd);color:var(--mt);font-size:12px">${ago(r.ts)}</td>
-      <td style="padding:9px 14px;border-bottom:1px solid var(--brd)"><button class="btn btn-ghost btn-xs">⬇ PDF</button></td>
+      <td style="padding:9px 14px;border-bottom:1px solid var(--brd);display:flex;gap:6px">
+        <button class="btn btn-ghost btn-xs" onclick="openRapport(${ri})">👁 Ouvrir</button>
+      </td>
     </tr>`).join('');
 }
 
 function genRapport(){
-  rapports.unshift({nom:document.getElementById('rpt-type').value,
-    periode:`${fmtD(document.getElementById('rpt-deb').value)} – ${fmtD(document.getElementById('rpt-fin').value)}`,ts:Date.now()});
-  save();renderRapports();toast('Rapport généré','ok');
+  const type=document.getElementById('rpt-type').value;
+  const deb=document.getElementById('rpt-deb').value;
+  const fin=document.getElementById('rpt-fin').value;
+  const filterTech=document.getElementById('rpt-tech').value;
+  const filterClient=document.getElementById('rpt-client').value;
+  const withPhotos=document.getElementById('rpt-photos-toggle').classList.contains('on');
+
+  // Filtrer les interventions selon la période et les filtres
+  const list=interventions.filter(i=>{
+    if(deb&&i.date<deb) return false;
+    if(fin&&i.date>fin) return false;
+    if(filterTech&&i.tech!==filterTech) return false;
+    if(filterClient&&i.client!==filterClient) return false;
+    return true;
+  });
+
+  const nom=document.querySelector(`#rpt-type option[value="${type}"]`)?.textContent||type;
+  const periode=`${fmtD(deb)} – ${fmtD(fin)}`;
+  rapports.unshift({nom,periode,ts:Date.now(),type,deb,fin,filterTech,filterClient,withPhotos});
+  save();renderRapports();
+
+  // Ouvrir le rapport
+  openRapportWindow(list,{nom,periode,type,filterTech,filterClient,withPhotos,deb,fin});
+  toast('Rapport généré','ok');
 }
+
+function openRapport(ri){
+  const r=rapports[ri];
+  const list=interventions.filter(i=>{
+    if(r.deb&&i.date<r.deb) return false;
+    if(r.fin&&i.date>r.fin) return false;
+    if(r.filterTech&&i.tech!==r.filterTech) return false;
+    if(r.filterClient&&i.client!==r.filterClient) return false;
+    return true;
+  });
+  openRapportWindow(list,r);
+}
+
+function openRapportWindow(list,opts){
+  const caTotal=list.reduce((a,i)=>a+i.ca,0);
+  const done=list.filter(i=>i.statut==='Terminée');
+  const typeMap={};list.forEach(i=>typeMap[i.type]=(typeMap[i.type]||0)+1);
+  const techMap={};list.forEach(i=>techMap[i.tech]=(techMap[i.tech]||0)+1);
+  const techCA={};list.forEach(i=>techCA[i.tech]=(techCA[i.tech]||0)+i.ca);
+
+  const w=window.open('','_blank','width=900,height=1000');
+  w.document.write(`<!DOCTYPE html><html><head>
+  <meta charset="UTF-8"/><title>${opts.nom} — ${opts.periode}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Outfit',sans-serif;padding:36px;color:#111;font-size:13px;background:#fff}
+    .hdr{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:16px;border-bottom:3px solid #5b9e2f;margin-bottom:24px}
+    .brand{font-size:20px;font-weight:800;color:#1a3a6b}.brand span{color:#5b9e2f}
+    .rpt-meta{text-align:right;font-size:12px;color:#64748b}
+    .rpt-meta strong{font-size:14px;color:#111;display:block;margin-bottom:3px}
+    h2{font-size:15px;font-weight:800;color:#1a3a6b;margin:20px 0 12px;padding-bottom:6px;border-bottom:2px solid #eaf3e0}
+    h3{font-size:13px;font-weight:700;color:#1a3a6b;margin:14px 0 8px}
+    .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+    .kpi{border-radius:8px;padding:13px 14px;position:relative;overflow:hidden}
+    .kpi-top{position:absolute;top:0;left:0;right:0;height:3px;border-radius:8px 8px 0 0}
+    .kpi-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#64748b}
+    .kpi-val{font-size:22px;font-weight:800;font-family:monospace;margin:4px 0 2px;letter-spacing:-1px}
+    .kpi-sub{font-size:10px;color:#64748b}
+    table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12px}
+    th{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#64748b;font-weight:700;padding:8px 10px;border-bottom:2px solid #dde3ef;text-align:left;background:#f8fafc}
+    td{padding:8px 10px;border-bottom:1px solid #f0f3f9}
+    tr:hover td{background:#f8fafc}
+    .badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700}
+    .b-g{background:#eaf3e0;color:#3d6b1f}.b-c{background:#e0f4fb;color:#006688}
+    .b-o{background:#fdf0e3;color:#7a3e00}.b-n{background:#e8edf7;color:#1a3a6b}.b-r{background:#fdeaea;color:#d94040}
+    .int-block{border:1px solid #dde3ef;border-radius:8px;margin-bottom:16px;overflow:hidden;page-break-inside:avoid}
+    .int-block-hdr{background:#f0f3f9;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #dde3ef}
+    .int-block-hdr .title{font-size:13px;font-weight:700}
+    .int-block-hdr .meta{font-size:11px;color:#64748b}
+    .int-block-body{padding:12px 14px}
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+    .info-field{background:#f8fafc;border-radius:6px;padding:7px 10px}
+    .info-field .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#64748b;font-weight:600}
+    .info-field .val{font-size:12px;font-weight:600;margin-top:1px}
+    .photos-section{margin-top:10px}
+    .photos-section h4{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#64748b;margin-bottom:8px}
+    .photos-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+    .photo-thumb{width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;border:1px solid #dde3ef}
+    .no-photo{background:#f0f3f9;border-radius:6px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:20px;color:#b0bec5}
+    .sig-row{display:flex;gap:16px;margin-top:10px;padding-top:10px;border-top:1px solid #f0f3f9}
+    .sig-box{flex:1;text-align:center}
+    .sig-box .sl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#64748b;margin-bottom:4px}
+    .sig-img{border:1px solid #dde3ef;border-radius:6px;background:#fafafa;height:60px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#64748b}
+    .stat-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+    .stat-pill{background:#f0f3f9;border-radius:6px;padding:8px 13px;font-size:12px;font-weight:600}
+    .stat-pill span{color:#64748b;font-weight:400;margin-right:4px}
+    .footer{margin-top:28px;padding-top:12px;border-top:1px solid #dde3ef;font-size:11px;color:#64748b;text-align:center;display:flex;justify-content:space-between;align-items:center}
+    .print-btn{position:fixed;bottom:20px;right:20px;background:#5b9e2f;color:#fff;border:none;padding:11px 20px;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(91,158,47,.3)}
+    @media print{.print-btn{display:none}body{padding:20px}}
+  </style></head><body>
+
+  <div class="hdr">
+    <div>
+      <div class="brand">Self<span>Béton</span> Autun</div>
+      <div style="font-size:12px;color:#64748b;margin-top:3px">${opts.nom}</div>
+    </div>
+    <div class="rpt-meta">
+      <strong>${opts.nom}</strong>
+      Période : ${opts.periode}<br>
+      ${opts.filterTech?'Technicien : '+opts.filterTech+'<br>':''}
+      ${opts.filterClient?'Client : '+opts.filterClient+'<br>':''}
+      Généré le ${new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}
+    </div>
+  </div>
+
+  <h2>📊 Synthèse</h2>
+  <div class="kpi-row">
+    <div class="kpi" style="background:#eaf3e0">
+      <div class="kpi-top" style="background:#5b9e2f"></div>
+      <div class="kpi-lbl">Interventions</div>
+      <div class="kpi-val" style="color:#3d6b1f">${list.length}</div>
+      <div class="kpi-sub">sur la période</div>
+    </div>
+    <div class="kpi" style="background:#e8edf7">
+      <div class="kpi-top" style="background:#1a3a6b"></div>
+      <div class="kpi-lbl">Terminées</div>
+      <div class="kpi-val" style="color:#1a3a6b">${done.length}</div>
+      <div class="kpi-sub">${list.length?Math.round(done.length/list.length*100):0}% du total</div>
+    </div>
+    <div class="kpi" style="background:#fdf0e3">
+      <div class="kpi-top" style="background:#e07b2a"></div>
+      <div class="kpi-lbl">Heures terrain</div>
+      <div class="kpi-val" style="color:#e07b2a">${list.reduce((a,i)=>a+i.duree,0)}h</div>
+      <div class="kpi-sub">durée totale</div>
+    </div>
+    <div class="kpi" style="background:#e0f4fb">
+      <div class="kpi-top" style="background:#0099cc"></div>
+      <div class="kpi-lbl">CA total</div>
+      <div class="kpi-val" style="color:#006688;font-size:17px">${caTotal.toLocaleString('fr')}€</div>
+      <div class="kpi-sub">HT sur la période</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+    <div>
+      <h3>Répartition par type</h3>
+      <table><thead><tr><th>Type</th><th>Nb</th><th>%</th></tr></thead><tbody>
+        ${Object.entries(typeMap).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`
+          <tr><td>${t}</td><td><strong>${n}</strong></td><td>${list.length?Math.round(n/list.length*100):0}%</td></tr>`).join('')}
+      </tbody></table>
+    </div>
+    <div>
+      <h3>Répartition par technicien</h3>
+      <table><thead><tr><th>Technicien</th><th>Nb</th><th>CA HT</th></tr></thead><tbody>
+        ${Object.entries(techCA).sort((a,b)=>b[1]-a[1]).map(([t,ca])=>`
+          <tr><td>${t}</td><td>${techMap[t]||0}</td><td><strong>${ca.toLocaleString('fr')}€</strong></td></tr>`).join('')}
+      </tbody></table>
+    </div>
+  </div>
+
+  <h2>🔧 Détail des interventions (${list.length})</h2>
+  ${list.length===0?'<p style="color:#64748b;font-style:italic;padding:20px 0">Aucune intervention sur cette période.</p>':''}
+  ${list.sort((a,b)=>new Date(a.date)-new Date(b.date)).map(i=>{
+    const statMap={'En cours':'b-c','Terminée':'b-g','Planifiée':'b-n','À planifier':'b-o','En pause':'b-o','Annulée':'b-r'};
+    const hasPhotos=i.photos&&i.photos.length>0;
+    return `
+    <div class="int-block">
+      <div class="int-block-hdr">
+        <div>
+          <div class="title">${i.bonNum} — ${i.nom}</div>
+          <div class="meta">${i.type} · ${i.tech} · ${fmtD(i.date)} ${i.heure}</div>
+        </div>
+        <div style="text-align:right">
+          <span class="badge ${statMap[i.statut]||'b-n'}">${i.statut}</span>
+          <div style="font-family:monospace;font-weight:700;font-size:14px;margin-top:4px">${i.ca.toLocaleString('fr')}€</div>
+        </div>
+      </div>
+      <div class="int-block-body">
+        <div class="info-grid">
+          <div class="info-field"><div class="lbl">Client</div><div class="val">${i.client}</div></div>
+          <div class="info-field"><div class="lbl">Lieu</div><div class="val">📍 ${i.lieu}</div></div>
+          <div class="info-field"><div class="lbl">Durée réalisée</div><div class="val">${i.duree}h</div></div>
+          <div class="info-field"><div class="lbl">Avancement</div><div class="val">${i.avancement}%</div></div>
+        </div>
+        ${i.desc?`<div style="background:#f8fafc;border-radius:6px;padding:8px 11px;font-size:12px;color:#64748b;margin-bottom:10px"><strong style="color:#111">Observations : </strong>${i.desc}</div>`:''}
+        ${opts.withPhotos?`
+        <div class="photos-section">
+          <h4>📸 Photos terrain (${i.photos?i.photos.length:0})</h4>
+          ${hasPhotos
+            ?`<div class="photos-grid">${i.photos.map(p=>`<img class="photo-thumb" src="${p}" alt="Photo intervention"/>`).join('')}</div>`
+            :'<div style="background:#f0f3f9;border-radius:6px;padding:10px;font-size:12px;color:#b0bec5;text-align:center">📷 Aucune photo pour cette intervention</div>'
+          }
+        </div>`:''}
+        <div class="sig-row">
+          <div class="sig-box">
+            <div class="sl">Technicien — ${i.tech}</div>
+            <div class="sig-img">${i.sig?'✓ Signé':'En attente'}</div>
+          </div>
+          <div class="sig-box">
+            <div class="sl">Client — ${i.client}</div>
+            <div class="sig-img">${i.sig?'✓ Bon pour accord':'En attente'}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('')}
+
+  <div class="footer">
+    <span>Self Béton Autun — autun.selfbeton@gmail.com</span>
+    <span>${opts.nom} · ${opts.periode}</span>
+    <span>Page 1</span>
+  </div>
+
+  <button class="print-btn" onclick="window.print()">🖨️ Imprimer / PDF</button>
+  </body></html>`);
+  w.document.close();
+}
+
 
 // ══════════════════════════════════════════════════════════
 // CONFIG
@@ -1700,6 +2017,7 @@ function renderCfg(){
   document.getElementById('cfg-tok').value=cfg.tok||'';
   document.getElementById('cfg-hc').value=cfg.hc||35;
   document.getElementById('cfg-pfx').value=cfg.pfx||'SBA-';
+  document.getElementById('cfg-minphotos').value=cfg.minPhotos||2;
 
   // Onglets Sheets
   const tabs=['Chantiers','Heures','Planning','Actualites','CA_Mensuel','Clients','Contrats'];
@@ -1715,25 +2033,109 @@ function renderCfg(){
     <td style="padding:9px 14px;color:var(--mt);font-size:12px">${t.role}</td>
     <td style="padding:9px 14px;font-size:12px">${t.h}h/sem</td></tr>`).join('')}</table>`;
 
-  // Process steps
-  document.getElementById('cfg-steps').innerHTML=pSteps.map((s,i)=>`
-    <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--brd)">
-      <span style="width:20px;height:20px;border-radius:50%;background:var(--g1);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</span>
-      <span style="flex:1;font-size:13px">${s}</span>
-      <button class="btn btn-ghost btn-xs" onclick="rmStep(${i})">✕</button>
-    </div>`).join('');
+  // Process
+  renderProcessusList();
 
   updateGS();
 }
 
-function addStep(){const s=prompt('Nouvelle étape :');if(s){pSteps.push(s);save();renderCfg()}}
-function rmStep(i){pSteps.splice(i,1);save();renderCfg()}
+// ── PROCESSUS METIER MULTI ──
+let editProcIdx=null;
+let tmpSteps=[];
+
+function renderProcessusList(){
+  const el=document.getElementById('cfg-processus-list');
+  if(!el)return;
+  el.innerHTML=processusList.length?processusList.map((p,pi)=>`
+    <div style="border-bottom:1px solid var(--brd);padding:12px 16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div>
+          <div style="font-size:13px;font-weight:700">${p.nom}</div>
+          <div style="font-size:11px;color:var(--mt);margin-top:2px">
+            <span class="tag" style="font-size:10px">${p.type||'Tous types'}</span>
+            · ${p.etapes.length} étape${p.etapes.length>1?'s':''}
+          </div>
+        </div>
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-ghost btn-xs" onclick="editProcessus(${pi})">✏️</button>
+          <button class="btn btn-ghost btn-xs" onclick="dupProcessus(${pi})">📋</button>
+          <button class="btn btn-ghost btn-xs" style="color:var(--r1)" onclick="delProcessus(${pi})">✕</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">
+        ${p.etapes.map((e,ei)=>`<span style="background:var(--bg);border-radius:5px;padding:3px 8px;font-size:11px;font-weight:600">
+          <span style="width:14px;height:14px;border-radius:50%;background:var(--g1);color:#fff;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-right:3px">${ei+1}</span>${e}</span>`).join('')}
+      </div>
+    </div>`).join('')
+    :'<div style="padding:20px;text-align:center;color:var(--mt);font-size:13px">Aucun processus — créez-en un</div>';
+}
+
+function openMoProcessus(idx){
+  editProcIdx = idx!==undefined ? idx : null;
+  const p = idx!==undefined ? processusList[idx] : null;
+  tmpSteps = p ? [...p.etapes] : ['Vérif. EPI','Intervention','Signature client','Clôture bon'];
+  document.getElementById('mo-proc-ttl').textContent = p ? 'Modifier processus' : 'Nouveau processus';
+  document.getElementById('proc-nom').value = p ? p.nom : '';
+  document.getElementById('proc-type').value = p ? p.type||'' : '';
+  renderTmpSteps();
+  document.getElementById('mo-processus').style.display='flex';
+}
+
+function renderTmpSteps(){
+  document.getElementById('proc-steps-list').innerHTML=tmpSteps.map((s,i)=>`
+    <div style="display:flex;align-items:center;gap:7px;padding:6px 0;border-bottom:1px solid var(--brd)">
+      <span style="width:20px;height:20px;border-radius:50%;background:var(--g1);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</span>
+      <span style="flex:1;font-size:13px">${s}</span>
+      <button class="btn btn-ghost btn-xs" onclick="moveProcStep(${i},-1)" ${i===0?'disabled':''}>↑</button>
+      <button class="btn btn-ghost btn-xs" onclick="moveProcStep(${i},1)" ${i===tmpSteps.length-1?'disabled':''}>↓</button>
+      <button class="btn btn-ghost btn-xs" style="color:var(--r1)" onclick="tmpSteps.splice(${i},1);renderTmpSteps()">✕</button>
+    </div>`).join('');
+}
+
+function addProcStep(){
+  const v=document.getElementById('proc-step-input').value.trim();
+  if(!v)return;
+  tmpSteps.push(v);
+  document.getElementById('proc-step-input').value='';
+  renderTmpSteps();
+}
+
+function moveProcStep(i,dir){
+  const j=i+dir;
+  if(j<0||j>=tmpSteps.length)return;
+  [tmpSteps[i],tmpSteps[j]]=[tmpSteps[j],tmpSteps[i]];
+  renderTmpSteps();
+}
+
+function saveProcessus(){
+  const nom=document.getElementById('proc-nom').value.trim();
+  if(!nom){toast('Nom requis','err');return}
+  const proc={id:editProcIdx!==null?processusList[editProcIdx].id:Date.now(),
+    nom,type:document.getElementById('proc-type').value,etapes:[...tmpSteps]};
+  if(editProcIdx!==null) processusList[editProcIdx]=proc;
+  else processusList.push(proc);
+  save();closeMo('mo-processus');renderProcessusList();
+  toast((editProcIdx!==null?'Processus modifié':'Processus créé')+' : '+nom,'ok');
+}
+
+function editProcessus(i){openMoProcessus(i)}
+function dupProcessus(i){
+  const p=processusList[i];
+  processusList.push({...p,id:Date.now(),nom:p.nom+' (copie)',etapes:[...p.etapes]});
+  save();renderProcessusList();toast('Processus dupliqué','ok');
+}
+function delProcessus(i){
+  if(!confirm('Supprimer ce processus ?'))return;
+  processusList.splice(i,1);save();renderProcessusList();toast('Processus supprimé');
+}
+
 
 function saveCfg(){
   cfg.sid=document.getElementById('cfg-sid').value;
   cfg.tok=document.getElementById('cfg-tok').value;
   cfg.hc=parseInt(document.getElementById('cfg-hc').value)||35;
   cfg.pfx=document.getElementById('cfg-pfx').value||'SBA-';
+  cfg.minPhotos=parseInt(document.getElementById('cfg-minphotos').value)||1;
   save();updateGS();toast('Configuration sauvegardée','ok');
 }
 
@@ -1892,6 +2294,17 @@ function updateBubbles(){
   document.getElementById('bub-int').textContent=interventions.filter(i=>i.statut==='À planifier').length;
   document.getElementById('bub-feed').textContent=feed.length;
   document.getElementById('bub-feed').style.background='var(--g1)';
+}
+
+function toggleProcStep(intId,stepIdx,checked){
+  const i=interventions.find(x=>x.id===intId);if(!i)return;
+  if(!i.procDone)i.procDone=[];
+  if(checked){if(!i.procDone.includes(stepIdx))i.procDone.push(stepIdx);}
+  else{i.procDone=i.procDone.filter(x=>x!==stepIdx);}
+  // Mise à jour avancement automatique
+  const proc=processusList.find(p=>p.type===i.type)||processusList[0];
+  if(proc) i.avancement=Math.round(i.procDone.length/proc.etapes.length*100);
+  save();
 }
 
 function exportCSV(){
