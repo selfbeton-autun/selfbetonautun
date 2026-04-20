@@ -918,14 +918,18 @@ select.fi{cursor:pointer}
           <div class="pin-dot"></div><div class="pin-dot"></div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:240px;margin:0 auto">
-          ${[1,2,3,4,5,6,7,8,9,'',0,'⌫'].map(n=>`
-            <button onclick="${n==='⌫'?'pinDel()':n===''?'':('pinAdd('+n+')')}"
-              style="padding:14px;border-radius:9px;border:1px solid var(--brd);background:${n===''?'transparent':'var(--bg)'};font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--txt);transition:background .1s"
-              onmouseover="if(this.style.background!='transparent')this.style.background='var(--nl)'"
-              onmouseout="if(this.style.background!='transparent')this.style.background='var(--bg)'"
-              ${n===''?'disabled':''}>
-              ${n}
-            </button>`).join('')}
+          <button class="pin-btn" onclick="pinAdd(1)">1</button>
+          <button class="pin-btn" onclick="pinAdd(2)">2</button>
+          <button class="pin-btn" onclick="pinAdd(3)">3</button>
+          <button class="pin-btn" onclick="pinAdd(4)">4</button>
+          <button class="pin-btn" onclick="pinAdd(5)">5</button>
+          <button class="pin-btn" onclick="pinAdd(6)">6</button>
+          <button class="pin-btn" onclick="pinAdd(7)">7</button>
+          <button class="pin-btn" onclick="pinAdd(8)">8</button>
+          <button class="pin-btn" onclick="pinAdd(9)">9</button>
+          <button class="pin-btn" style="background:transparent;border-color:transparent;cursor:default" disabled></button>
+          <button class="pin-btn" onclick="pinAdd(0)">0</button>
+          <button class="pin-btn" onclick="pinDel()" style="font-size:22px">⌫</button>
         </div>
         <div id="login-error" style="text-align:center;margin-top:12px;font-size:12px;color:var(--r1);min-height:18px"></div>
       </div>
@@ -936,6 +940,9 @@ select.fi{cursor:pointer}
 <style>
 .pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--brd);background:transparent;transition:background .15s}
 .pin-dot.filled{background:var(--g1);border-color:var(--g1)}
+.pin-btn{padding:14px;border-radius:9px;border:1px solid var(--brd);background:var(--bg);font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--txt);transition:background .1s;width:100%}
+.pin-btn:hover{background:var(--nl)}
+.pin-btn:active{background:var(--nl);transform:scale(.95)}
 #login-screen .user-btn{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:9px;border:1px solid var(--brd);background:var(--bg);cursor:pointer;transition:all .15s;font-family:inherit;width:100%;text-align:left}
 #login-screen .user-btn:hover{border-color:var(--g1);background:var(--gl)}
 #login-screen .user-btn .u-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0}
