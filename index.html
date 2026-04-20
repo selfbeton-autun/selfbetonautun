@@ -273,9 +273,10 @@ select.fi{cursor:pointer}
         <div class="t2">Gestion complète</div>
       </div>
     </div>
-    <div class="sb-mode">
-      <button class="sb-mode-btn on" id="btn-manager" onclick="setMode('manager')">Manager</button>
-      <button class="sb-mode-btn" id="btn-tech" onclick="setMode('tech')">Technicien</button>
+    <div style="margin-top:11px;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.25);border-radius:8px;padding:6px 10px;cursor:pointer" onclick="logout()">
+      <div style="font-size:11px;color:rgba(255,255,255,.5)">Connecté en tant que</div>
+      <div style="font-size:11px;font-weight:700;color:#fff" id="sb-connected-as">—</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.35);margin-left:4px">↩</div>
     </div>
   </div>
 
@@ -473,7 +474,7 @@ select.fi{cursor:pointer}
     <button class="btn btn-ghost btn-sm" onclick="planNav(1)">▶</button>
     <button class="btn btn-ghost btn-sm" onclick="planOffset=0;renderPlan()">Aujourd'hui</button>
     <div style="margin-left:auto;display:flex;gap:8px">
-      <button class="btn btn-g btn-sm" onclick="openMoAff()">+ Affecter</button>
+      <button class="btn btn-g btn-sm" onclick="openMoAff()" id="btn-affecter">+ Affecter</button>
     </div>
   </div>
   <div class="card" style="margin-bottom:12px">
@@ -531,13 +532,21 @@ select.fi{cursor:pointer}
       <div id="fh-days"></div>
     </div>
   </div>
-  <div class="card">
+  <div class="card" style="margin-bottom:14px">
     <div class="ch"><h3>📊 Récap équipe</h3></div>
     <div style="overflow-x:auto">
       <table class="tbl"><thead><tr>
         <th>Technicien</th><th>Contrat</th><th>Saisies</th><th>Heures sup</th><th>Statut</th>
       </tr></thead><tbody id="fh-recap"></tbody></table>
     </div>
+  </div>
+
+  <div class="card" id="fh-sig-card">
+    <div class="ch">
+      <h3>✍️ Validation &amp; Signature de la semaine</h3>
+      <div id="fh-sig-status"></div>
+    </div>
+    <div class="cb" id="fh-sig-body"></div>
   </div>
 </div>
 
@@ -883,6 +892,57 @@ select.fi{cursor:pointer}
   </div>
 </div>
 
+<!-- ══ ÉCRAN DE CONNEXION ══ -->
+<div id="login-screen" style="position:fixed;inset:0;background:var(--n2);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surf);border-radius:16px;width:min(400px,95vw);box-shadow:var(--sh2);overflow:hidden">
+    <div style="background:linear-gradient(135deg,var(--n2),var(--n1));padding:28px 28px 22px;text-align:center">
+      <div style="width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,var(--g1),var(--g2));display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 12px">🏗️</div>
+      <div style="font-size:20px;font-weight:800;color:#fff">SelfBéton Autun</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:4px;text-transform:uppercase;letter-spacing:.8px">Gestion interventions</div>
+    </div>
+    <div style="padding:24px 28px">
+      <div id="login-step-user">
+        <div style="font-size:14px;font-weight:700;margin-bottom:14px;color:var(--txt)">Qui êtes-vous ?</div>
+        <div id="login-user-list" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+      <div id="login-step-pin" style="display:none">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+          <button onclick="backToUsers()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--mt)">←</button>
+          <div>
+            <div style="font-size:14px;font-weight:700" id="login-pin-name">—</div>
+            <div style="font-size:12px;color:var(--mt)">Entrez votre code PIN</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:center;gap:10px;margin-bottom:18px" id="pin-dots">
+          <div class="pin-dot"></div><div class="pin-dot"></div>
+          <div class="pin-dot"></div><div class="pin-dot"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:240px;margin:0 auto">
+          ${[1,2,3,4,5,6,7,8,9,'',0,'⌫'].map(n=>`
+            <button onclick="${n==='⌫'?'pinDel()':n===''?'':('pinAdd('+n+')')}"
+              style="padding:14px;border-radius:9px;border:1px solid var(--brd);background:${n===''?'transparent':'var(--bg)'};font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--txt);transition:background .1s"
+              onmouseover="if(this.style.background!='transparent')this.style.background='var(--nl)'"
+              onmouseout="if(this.style.background!='transparent')this.style.background='var(--bg)'"
+              ${n===''?'disabled':''}>
+              ${n}
+            </button>`).join('')}
+        </div>
+        <div id="login-error" style="text-align:center;margin-top:12px;font-size:12px;color:var(--r1);min-height:18px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--brd);background:transparent;transition:background .15s}
+.pin-dot.filled{background:var(--g1);border-color:var(--g1)}
+#login-screen .user-btn{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:9px;border:1px solid var(--brd);background:var(--bg);cursor:pointer;transition:all .15s;font-family:inherit;width:100%;text-align:left}
+#login-screen .user-btn:hover{border-color:var(--g1);background:var(--gl)}
+#login-screen .user-btn .u-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0}
+#login-screen .user-btn .u-name{font-size:14px;font-weight:700}
+#login-screen .user-btn .u-role{font-size:11px;color:var(--mt)}
+</style>
+
 <script>
 // ══════════════════════════════════════════════════════════
 // STORE
@@ -984,6 +1044,14 @@ const PAGES={
 };
 
 function nav(id){
+  // Vérifier les droits d'accès
+  if(currentUser){
+    const allowed = ACCESS[currentUser.role];
+    if(!allowed.includes(id)){
+      toast('Accès non autorisé','err');
+      return;
+    }
+  }
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.sb-lnk').forEach(l=>l.classList.remove('on'));
   document.getElementById('pg-'+id).classList.add('on');
@@ -1018,25 +1086,152 @@ function closeSb(){document.getElementById('sb').classList.remove('open');docume
 // ══════════════════════════════════════════════════════════
 // MODE
 // ══════════════════════════════════════════════════════════
-function setMode(m){
-  const isTech=m==='tech';
-  document.getElementById('btn-manager').classList.toggle('on',!isTech);
-  document.getElementById('btn-tech').classList.toggle('on',isTech);
-  document.getElementById('sb-name').textContent=isTech?'François':'Damien';
-  document.getElementById('sb-role').textContent=isTech?'Technicien':'Manager';
-  document.getElementById('sb-av').textContent=isTech?'FR':'DM';
-  document.getElementById('feed-av').textContent=isTech?'FR':'DM';
-  const techOnly=['interventions','planning','bons','heures','photos','feed'];
-  document.querySelectorAll('.sb-lnk').forEach(l=>{
-    if(isTech) l.style.display=techOnly.includes(l.dataset.p)||!l.dataset.p?'':'none';
-    else l.style.display='';
-  });
-  document.querySelectorAll('.sb-sec').forEach((s,i)=>{
-    if(isTech) s.style.display=i<3?'':'none';
-    else s.style.display='';
-  });
-  toast(isTech?'Mode technicien activé — François':'Mode manager activé — Damien');
+// ══════════════════════════════════════════════════════════
+// UTILISATEURS & CONNEXION
+// ══════════════════════════════════════════════════════════
+
+const USERS = [
+  {prenom:'Damien', role:'manager', col:'#1a3a6b', pin:'1234', ini:'DM'},
+  {prenom:'François', role:'tech', col:'#5b9e2f', pin:'1111', ini:'FR'},
+  {prenom:'Mohian', role:'tech', col:'#0099cc', pin:'2222', ini:'MO'},
+  {prenom:'Maden', role:'tech', col:'#e07b2a', pin:'3333', ini:'MA'},
+];
+
+let currentUser = null;
+let pinBuffer = '';
+let loginTarget = null;
+
+// Pages accessibles par rôle
+const ACCESS = {
+  manager: ['dashboard','feed','interventions','planning','bons','heures','photos','crm','contrats','rapports','config'],
+  tech:     ['feed','interventions','planning','bons','heures','photos'],
+};
+
+function initLoginScreen(){
+  const list = document.getElementById('login-user-list');
+  list.innerHTML = USERS.map(u=>`
+    <button class="user-btn" onclick="selectUser('${u.prenom}')">
+      <div class="u-av" style="background:${u.col}">${u.ini}</div>
+      <div>
+        <div class="u-name">${u.prenom}</div>
+        <div class="u-role">${u.role==='manager'?'Manager':'Technicien'}</div>
+      </div>
+      <div style="margin-left:auto;font-size:18px">${u.role==='manager'?'👑':'🔧'}</div>
+    </button>`).join('');
 }
+
+function selectUser(prenom){
+  loginTarget = USERS.find(u=>u.prenom===prenom);
+  document.getElementById('login-pin-name').textContent = prenom;
+  document.getElementById('login-step-user').style.display='none';
+  document.getElementById('login-step-pin').style.display='block';
+  pinBuffer = '';
+  updatePinDots();
+  document.getElementById('login-error').textContent='';
+}
+
+function backToUsers(){
+  pinBuffer='';
+  document.getElementById('login-step-user').style.display='block';
+  document.getElementById('login-step-pin').style.display='none';
+}
+
+function pinAdd(n){
+  if(pinBuffer.length>=4) return;
+  pinBuffer += String(n);
+  updatePinDots();
+  if(pinBuffer.length===4) setTimeout(checkPin, 150);
+}
+
+function pinDel(){
+  pinBuffer = pinBuffer.slice(0,-1);
+  updatePinDots();
+  document.getElementById('login-error').textContent='';
+}
+
+function updatePinDots(){
+  document.querySelectorAll('.pin-dot').forEach((d,i)=>{
+    d.classList.toggle('filled', i < pinBuffer.length);
+  });
+}
+
+function checkPin(){
+  if(!loginTarget) return;
+  if(pinBuffer === loginTarget.pin){
+    currentUser = loginTarget;
+    document.getElementById('login-screen').style.display='none';
+    applyUserContext();
+  } else {
+    pinBuffer='';
+    updatePinDots();
+    document.getElementById('login-error').textContent='Code incorrect — réessayez';
+    // Shake animation
+    const dots = document.getElementById('pin-dots');
+    dots.style.animation='shake .3s ease';
+    setTimeout(()=>dots.style.animation='',400);
+  }
+}
+
+function logout(){
+  if(!confirm('Se déconnecter ?')) return;
+  currentUser = null;
+  pinBuffer = '';
+  document.getElementById('login-step-user').style.display='block';
+  document.getElementById('login-step-pin').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  initLoginScreen();
+}
+
+function applyUserContext(){
+  const u = currentUser;
+  const isTech = u.role === 'tech';
+
+  // Sidebar infos
+  document.getElementById('sb-av').textContent = u.ini;
+  document.getElementById('sb-av').style.background = u.col;
+  document.getElementById('sb-name').textContent = u.prenom;
+  document.getElementById('sb-role').textContent = isTech ? 'Technicien' : 'Manager';
+  document.getElementById('sb-connected-as').textContent = u.prenom;
+  document.getElementById('feed-av').textContent = u.ini;
+
+  // Afficher/masquer les liens sidebar selon les droits
+  const allowed = ACCESS[u.role];
+  document.querySelectorAll('.sb-lnk').forEach(l=>{
+    const p = l.dataset.p;
+    l.style.display = (!p || allowed.includes(p)) ? '' : 'none';
+  });
+  // Masquer les sections de nav non pertinentes
+  document.querySelectorAll('.sb-sec').forEach((s,i)=>{
+    if(isTech) s.style.display = i < 3 ? '' : 'none';
+    else s.style.display = '';
+  });
+
+  // Masquer le bouton + Affecter du planning pour les techs
+  // Masquer CA dans les interventions pour les techs
+  updateGS();updateBubbles();
+
+  // Naviguer vers la page de départ selon le rôle
+  if(isTech) nav('planning');
+  else nav('dashboard');
+}
+
+// Filtrage des données selon l'utilisateur connecté
+function getMyInterventions(){
+  if(!currentUser) return interventions;
+  if(currentUser.role==='manager') return interventions;
+  return interventions.filter(i=>i.tech===currentUser.prenom);
+}
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+updateGS();
+initLoginScreen();
+// Ajouter animation shake CSS
+const shakeStyle=document.createElement('style');
+shakeStyle.textContent='@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}';
+document.head.appendChild(shakeStyle);
+
 
 // ══════════════════════════════════════════════════════════
 // DATE
@@ -1168,10 +1363,10 @@ function postFeed(){
   const msg=document.getElementById('feed-input').value.trim();
   if(!msg) return;
   const tag=document.getElementById('feed-tag').value;
-  const istech=document.getElementById('btn-tech').classList.contains('on');
-  const auteur=istech?'François':'Damien';
-  const ini=istech?'FR':'DM';
-  const col=istech?'#5b9e2f':'#1a3a6b';
+  const istech = currentUser?.role === 'tech';
+  const auteur = currentUser?.prenom || 'Damien';
+  const ini = currentUser?.ini || 'DM';
+  const col = currentUser?.col || '#1a3a6b';
   feed.push({id:Date.now(),auteur,ini,col,msg,tag,ts:Date.now()});
   document.getElementById('feed-input').value='';
   save();renderFeed();toast('Message envoyé','ok');
@@ -1185,10 +1380,15 @@ function renderInts(data){
   const fs=document.getElementById('f-stat')?.value||'';
   const ft=document.getElementById('f-tech')?.value||'';
   const fty=document.getElementById('f-type')?.value||'';
-  const list=data||interventions.filter(i=>
+  // Filtrer selon les droits : un tech ne voit que ses interventions
+  const base = getMyInterventions();
+  const list=data||base.filter(i=>
     (!fs||i.statut===fs)&&(!ft||i.tech===ft)&&(!fty||i.type===fty)&&
     (!q||(i.nom+i.client+i.lieu+i.tech).toLowerCase().includes(q))
   );
+  // Masquer le filtre technicien pour les techs
+  const ftEl=document.getElementById('f-tech');
+  if(ftEl) ftEl.style.display=currentUser?.role==='tech'?'none':'';
   const el=document.getElementById('int-list');
   if(!list.length){el.innerHTML='<div style="text-align:center;padding:56px;color:var(--mt)"><div style="font-size:36px;margin-bottom:10px">🔧</div><div style="font-weight:600">Aucune intervention</div></div>';return}
   el.innerHTML=list.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(i=>`
@@ -1211,7 +1411,7 @@ function renderInts(data){
         </div>
         <div class="int-right">
           <div style="font-size:11px;color:var(--mt);margin-bottom:4px">${i.bonNum}</div>
-          <div class="int-ca">${i.ca.toLocaleString('fr')}€</div>
+          ${currentUser?.role==='manager'?`<div class="int-ca">${i.ca.toLocaleString('fr')}€</div>`:''}
           <div style="margin-top:5px">${i.sig?'<span style="font-size:11px;color:var(--g2)">✓ Signé</span>':'<span style="font-size:11px;color:var(--mt)">Non signé</span>'}</div>
         </div>
       </div>
@@ -1382,6 +1582,10 @@ function renderPlan(){
   document.getElementById('plan-lbl').textContent=
     `${dates[0].toLocaleDateString('fr-FR',{day:'numeric',month:'short'})} – ${dates[5].toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})}`;
 
+  // Bouton affecter visible seulement pour le manager
+  const btnAff=document.getElementById('btn-affecter');
+  if(btnAff) btnAff.style.display=currentUser?.role==='manager'?'':'none';
+
   const cols=1+6;
   const grid=document.getElementById('plan-grid');
   grid.style.gridTemplateColumns=`110px repeat(6,1fr)`;
@@ -1401,7 +1605,7 @@ function renderPlan(){
       // Planning slots + interventions
       const slots=planSlots.filter(s=>s.tech===t.prenom&&s.jour===di);
       const ints=interventions.filter(i=>i.tech===t.prenom&&i.date===iso);
-      html+=`<div class="pg-cell" style="${isT?'background:rgba(91,158,47,.04)':''}" onclick="openMoAff('${t.prenom}',${di})">
+      html+=`<div class="pg-cell" style="${isT?'background:rgba(91,158,47,.04)':''}" ${currentUser?.role==='manager'?`onclick="openMoAff('${t.prenom}',${di})"`:''}>
         ${slots.map(s=>`<div class="pg-slot" style="background:${TYPC[s.type]||'var(--g1)'}">${s.nom.substring(0,16)}</div>`).join('')}
         ${ints.filter(i=>!slots.find(s=>s.nom===i.nom)).map(i=>`<div class="pg-slot" style="background:${TYPC[i.type]||'var(--g1)'};" onclick="event.stopPropagation();openDet(${i.id})">${i.heure} ${i.nom.substring(0,12)}</div>`).join('')}
       </div>`;
@@ -1534,7 +1738,7 @@ function openBon(id){
     <button class="bw" onclick="clearSig()">🗑️ Effacer</button>
   </div>
   <div class="footer">Self Béton Autun — autun.selfbeton@gmail.com — Intervention garantie 3 mois pièces et main d'œuvre</div>
-  <script>
+  <scr'+'ipt>
     const cvs={tech:document.getElementById('c-tech'),client:document.getElementById('c-client')};
     let drawing=null,ctx={};
     ['tech','client'].forEach(k=>{
@@ -1586,7 +1790,19 @@ function getISOWeek(d){
 })();
 
 function renderHeures(){
-  const tech=document.getElementById('fh-tech').value;
+  const tech = currentUser?.role==='tech' ? currentUser.prenom : document.getElementById('fh-tech').value;
+  // Forcer le select sur le bon technicien et le désactiver pour les techs
+  const sel = document.getElementById('fh-tech');
+  if(sel){
+    if(currentUser?.role==='tech'){
+      sel.value = currentUser.prenom;
+      sel.disabled = true;
+      sel.style.opacity = '.6';
+    } else {
+      sel.disabled = false;
+      sel.style.opacity = '';
+    }
+  }
   const wk=document.getElementById('fh-week').value;
   if(!wk) return;
   document.getElementById('fh-title').textContent=`Feuille d'heures — ${tech} — sem. ${wk}`;
@@ -1615,6 +1831,7 @@ function renderHeures(){
   }).join('');
   calcWeekTot();
   renderFHRecap();
+  renderSigBlock();
 }
 
 function recalc(j){
@@ -1656,7 +1873,246 @@ function renderFHRecap(){
   }).join('');
 }
 
-function saveHeures(){save();toast('Feuille enregistrée','ok');syncSheets('Heures',[{semaine:document.getElementById('fh-week').value}])}
+function saveHeures(){
+  save();
+  renderSigBlock();
+  toast('Feuille enregistrée','ok');
+  syncSheets('Heures',[{semaine:document.getElementById('fh-week').value}]);
+}
+
+function renderSigBlock(){
+  const tech=document.getElementById('fh-tech').value;
+  const wk=document.getElementById('fh-week').value;
+  if(!wk) return;
+  const wd=heures[wk]||{};
+  const sigKey=`sig_${wk}_${tech}`;
+  const sigData=wd[sigKey]||null;
+
+  // Statut badge
+  const statusEl=document.getElementById('fh-sig-status');
+  if(statusEl){
+    if(sigData?.sigManager){
+      statusEl.innerHTML='<span class="badge b-g">✅ Validée par le manager</span>';
+    } else if(sigData?.sigTech){
+      statusEl.innerHTML='<span class="badge b-c">✍️ Signée — en attente validation manager</span>';
+    } else {
+      statusEl.innerHTML='<span class="badge b-o">⏳ Non signée</span>';
+    }
+  }
+
+  const body=document.getElementById('fh-sig-body');
+  if(!body) return;
+
+  // Récap heures de la semaine
+  let totH=0;
+  JOURS.forEach(j=>totH+=parseFloat(wd[j]?.total||0));
+  const t=TEAM.find(x=>x.prenom===tech);
+  const contrat=t?.h||35;
+  const sup=Math.max(0,totH-contrat);
+
+  body.innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">
+      ${[
+        ['Technicien',tech],
+        ['Semaine',wk],
+        ['Total heures',totH.toFixed(1)+'h'],
+        ['Heures sup',sup>0?'<span style="color:var(--o1);font-weight:700">+'+sup.toFixed(1)+'h</span>':'0h'],
+      ].map(([l,v])=>`
+        <div style="background:var(--bg);border-radius:7px;padding:9px 12px">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--mt);font-weight:600;margin-bottom:3px">${l}</div>
+          <div style="font-size:14px;font-weight:700">${v}</div>
+        </div>`).join('')}
+    </div>
+
+    ${sigData?.sigManager
+      ? `<div style="background:var(--gl);border:1px solid var(--g1);border-radius:9px;padding:14px 16px;display:flex;align-items:center;gap:12px">
+          <div style="font-size:28px">✅</div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:var(--g2)">Feuille validée et signée</div>
+            <div style="font-size:12px;color:var(--mt);margin-top:3px">Technicien : ${tech} · Manager : Damien · ${new Date(sigData.ts).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}</div>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:7px">
+            <button class="btn btn-ghost btn-sm" onclick="openFeuillePDF('${tech}','${wk}')">🖨️ Imprimer</button>
+            <button class="btn btn-ghost btn-sm" style="color:var(--r1)" onclick="resetSig('${tech}','${wk}')">↩ Réinitialiser</button>
+          </div>
+        </div>`
+      : sigData?.sigTech
+        ? `<div style="background:var(--cl);border:1px solid var(--c1);border-radius:9px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px">
+            <div style="font-size:22px">✍️</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#006688">Signée par ${tech}</div>
+              <div style="font-size:12px;color:var(--mt)">En attente de votre validation, Damien</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:9px;justify-content:flex-end">
+            <button class="btn btn-ghost btn-sm" onclick="openFeuilleSig('${tech}','${wk}')">Voir la signature</button>
+            <button class="btn btn-g" onclick="validerManager('${tech}','${wk}')">✅ Valider &amp; signer en tant que manager</button>
+          </div>`
+        : `<div style="display:flex;gap:14px;align-items:flex-start">
+            <div style="flex:1">
+              <p style="font-size:13px;color:var(--mt);margin-bottom:12px">Le technicien doit signer sa feuille pour confirmer les heures déclarées. Le manager valide ensuite.</p>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-n" onclick="openFeuilleSig('${tech}','${wk}')">✍️ Signer la feuille — ${tech}</button>
+                <button class="btn btn-ghost btn-sm" onclick="openFeuillePDF('${tech}','${wk}')">🖨️ Aperçu PDF</button>
+              </div>
+            </div>
+          </div>`
+    }`;
+}
+
+function openFeuilleSig(tech, wk){
+  const wd=heures[wk]||{};
+  let totH=0;
+  JOURS.forEach(j=>totH+=parseFloat(wd[j]?.total||0));
+  const t=TEAM.find(x=>x.prenom===tech);
+  const contrat=t?.h||35;
+  const sup=Math.max(0,totH-contrat);
+  const sigKey=`sig_${wk}_${tech}`;
+  const existSig=wd[sigKey];
+
+  const w=window.open('','_blank','width=780,height=860');
+  w.document.write(`<!DOCTYPE html><html><head>
+  <meta charset="UTF-8"/><title>Feuille d'heures — ${tech} — ${wk}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Outfit',sans-serif;padding:32px;color:#111;font-size:13px}
+    .hdr{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:14px;border-bottom:3px solid #5b9e2f;margin-bottom:20px}
+    .brand{font-size:20px;font-weight:800;color:#1a3a6b}.brand span{color:#5b9e2f}
+    h4{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:#64748b;margin:16px 0 8px;padding-bottom:5px;border-bottom:1px solid #dde3ef}
+    table{width:100%;border-collapse:collapse;margin-bottom:16px}
+    th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#64748b;padding:8px 10px;border-bottom:2px solid #dde3ef;text-align:left;background:#f8fafc}
+    td{padding:8px 10px;border-bottom:1px solid #f0f3f9;font-size:13px}
+    .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+    .kpi{background:#f0f3f9;border-radius:7px;padding:10px 12px;text-align:center}
+    .kl{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#64748b;font-weight:600}
+    .kv{font-size:18px;font-weight:800;font-family:monospace;margin-top:3px}
+    .sigs{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:20px;padding-top:18px;border-top:2px solid #dde3ef}
+    .sig-box{text-align:center}
+    .sig-box .sl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#64748b;margin-bottom:8px}
+    canvas{border:1px dashed #dde3ef;border-radius:8px;background:#fafafa;touch-action:none;cursor:crosshair}
+    .sig-img{border:1px solid #dde3ef;border-radius:8px;background:#fafafa;padding:6px;max-width:100%}
+    .btns{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+    button{padding:9px 18px;border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;border:none;cursor:pointer}
+    .bg{background:#5b9e2f;color:#fff}.bn{background:#1a3a6b;color:#fff}.bw{background:#f0f3f9;border:1px solid #dde3ef}
+    .footer{margin-top:20px;padding-top:12px;border-top:1px solid #dde3ef;font-size:11px;color:#64748b;text-align:center}
+    @media print{.btns{display:none}canvas{display:none}.sig-img{display:block}}
+  </style></head><body>
+  <div class="hdr">
+    <div><div class="brand">Self<span>Béton</span> Autun</div><div style="font-size:12px;color:#64748b;margin-top:3px">Feuille d'heures hebdomadaire</div></div>
+    <div style="text-align:right;font-size:12px;color:#64748b"><strong style="font-size:14px;color:#111;display:block">${tech}</strong>Semaine ${wk}<br>Généré le ${new Date().toLocaleDateString('fr-FR')}</div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi"><div class="kl">Technicien</div><div class="kv" style="color:#1a3a6b;font-size:14px">${tech}</div></div>
+    <div class="kpi"><div class="kl">Semaine</div><div class="kv" style="color:#1a3a6b">${wk}</div></div>
+    <div class="kpi"><div class="kl">Total heures</div><div class="kv" style="color:#5b9e2f">${totH.toFixed(1)}h</div></div>
+    <div class="kpi"><div class="kl">Heures sup</div><div class="kv" style="color:${sup>0?'#e07b2a':'#5b9e2f'}">${sup>0?'+'+sup.toFixed(1)+'h':'0h'}</div></div>
+  </div>
+
+  <h4>Détail des journées</h4>
+  <table>
+    <thead><tr><th>Jour</th><th>Chantier</th><th>Début</th><th>Fin</th><th>Pause</th><th>Total</th></tr></thead>
+    <tbody>
+      ${JOURS.map(j=>{
+        const d=wd[j];
+        if(!d||!d.total||parseFloat(d.total)===0) return `<tr><td>${j}</td><td colspan="5" style="color:#b0bec5;font-style:italic">Repos / absent</td></tr>`;
+        return `<tr><td><strong>${j}</strong></td><td>${d.chantier||'—'}</td><td>${d.deb||'—'}</td><td>${d.fin||'—'}</td><td>${d.pause||0}h</td><td><strong style="color:#5b9e2f">${d.total}h</strong></td></tr>`;
+      }).join('')}
+      <tr style="background:#f0f3f9;border-top:2px solid #dde3ef">
+        <td colspan="5" style="text-align:right;font-weight:700">TOTAL SEMAINE</td>
+        <td><strong style="font-family:monospace;font-size:15px;color:#1a3a6b">${totH.toFixed(1)}h</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="sigs">
+    <div class="sig-box">
+      <div class="sl">Signature du technicien — ${tech}</div>
+      ${existSig?.sigTech
+        ?`<img class="sig-img" src="${existSig.sigTech}" alt="Signature ${tech}"/><div style="font-size:11px;color:#5b9e2f;margin-top:5px">✓ Déjà signé</div>`
+        :`<canvas id="c-tech" width="300" height="110"></canvas>
+         <div style="font-size:11px;color:#64748b;margin-top:4px">Signez ci-dessus</div>`
+      }
+    </div>
+    <div class="sig-box">
+      <div class="sl">Visa manager — Damien</div>
+      ${existSig?.sigManager
+        ?`<img class="sig-img" src="${existSig.sigManager}" alt="Visa manager"/><div style="font-size:11px;color:#5b9e2f;margin-top:5px">✓ Validé</div>`
+        :`<div style="border:1px dashed #dde3ef;border-radius:8px;height:110px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#b0bec5;background:#fafafa">En attente de validation</div>`
+      }
+    </div>
+  </div>
+
+  <div class="btns">
+    ${!existSig?.sigTech?`<button class="bg" onclick="saveSigTech()">✅ Confirmer ma signature</button>`:''}
+    <button class="bn" onclick="window.print()">🖨️ Imprimer</button>
+    ${!existSig?.sigTech?`<button class="bw" onclick="clearSig()">🗑️ Effacer</button>`:''}
+  </div>
+
+  <div class="footer">Self Béton Autun — autun.selfbeton@gmail.com — Je soussigné(e) ${tech} certifie l'exactitude des heures déclarées ci-dessus.</div>
+
+  <scr'+'ipt>
+    const JOURS=${JSON.stringify(JOURS)};
+    var canvas=document.getElementById('c-tech');
+    var ctx=canvas?canvas.getContext('2d'):null;
+    if(ctx){
+      ctx.strokeStyle='#1a3a6b';ctx.lineWidth=2;ctx.lineCap='round';ctx.lineJoin='round';
+      var drawing=false;
+      canvas.addEventListener('mousedown',e=>{drawing=true;ctx.beginPath();ctx.moveTo(e.offsetX,e.offsetY)});
+      canvas.addEventListener('mousemove',e=>{if(drawing){ctx.lineTo(e.offsetX,e.offsetY);ctx.stroke()}});
+      canvas.addEventListener('mouseup',()=>drawing=false);
+      canvas.addEventListener('touchstart',e=>{e.preventDefault();drawing=true;var t=e.touches[0],r=canvas.getBoundingClientRect();ctx.beginPath();ctx.moveTo(t.clientX-r.left,t.clientY-r.top)},{passive:false});
+      canvas.addEventListener('touchmove',e=>{e.preventDefault();if(drawing){var t=e.touches[0],r=canvas.getBoundingClientRect();ctx.lineTo(t.clientX-r.left,t.clientY-r.top);ctx.stroke()}},{passive:false});
+      canvas.addEventListener('touchend',()=>drawing=false);
+    }
+    function clearSig(){if(ctx)ctx.clearRect(0,0,canvas.width,canvas.height)}
+    function saveSigTech(){
+      if(!canvas){alert('Déjà signé');return}
+      var data=canvas.toDataURL();
+      window.opener&&window.opener.postMessage({type:'fh-sig-tech',tech:'${tech}',wk:'${wk}',sig:data},'*');
+      alert('Signature enregistrée ✓ — En attente de validation manager');
+    }
+  <\/script>
+  </body></html>`);
+  w.document.close();
+}
+
+window.addEventListener('message',e=>{
+  if(e.data?.type==='fh-sig-tech'){
+    const {tech,wk,sig}=e.data;
+    if(!heures[wk]) heures[wk]={};
+    const sigKey=`sig_${wk}_${tech}`;
+    heures[wk][sigKey]={sigTech:sig,sigManager:null,ts:Date.now()};
+    save();
+    // Rafraîchir si on est sur la bonne semaine/tech
+    const curTech=document.getElementById('fh-tech')?.value;
+    const curWk=document.getElementById('fh-week')?.value;
+    if(curTech===tech&&curWk===wk) renderSigBlock();
+    toast('Feuille signée par '+tech,'ok');
+  }
+});
+
+function validerManager(tech, wk){
+  if(!heures[wk]) heures[wk]={};
+  const sigKey=`sig_${wk}_${tech}`;
+  const existing=heures[wk][sigKey]||{};
+  heures[wk][sigKey]={...existing,sigManager:'validated_by_manager',ts:Date.now()};
+  save();renderSigBlock();
+  toast('Feuille validée et signée ✓','ok');
+  openFeuillePDF(tech,wk);
+}
+
+function resetSig(tech, wk){
+  if(!confirm('Réinitialiser les signatures de cette semaine ?')) return;
+  if(heures[wk]){delete heures[wk][`sig_${wk}_${tech}`];}
+  save();renderSigBlock();toast('Signatures réinitialisées');
+}
+
+function openFeuillePDF(tech, wk){
+  openFeuilleSig(tech, wk);
+}
+
 
 function fhNav(d){
   const el=document.getElementById('fh-week');
@@ -2315,13 +2771,7 @@ function exportCSV(){
   a.download='interventions_selfbeton.csv';a.click();toast('Export CSV téléchargé','ok');
 }
 
-// ══════════════════════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════════════════════
-updateGS();updateBubbles();renderDash();
-document.getElementById('tb-btn').style.display='';
-document.getElementById('tb-btn').textContent='+ Intervention';
-document.getElementById('tb-btn').onclick=()=>openMoInt();
+// (connexion gérée ci-dessus)
 </script>
 </body>
 </html>
