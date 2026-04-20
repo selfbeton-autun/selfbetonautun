@@ -660,15 +660,47 @@ select.fi{cursor:pointer}
       <div class="card" style="margin-bottom:14px">
         <div class="ch"><h3>🔗 Google Sheets</h3></div>
         <div class="cb">
+
+          <!-- ÉTAT CONNEXION -->
+          <div id="gs-auth-status" style="margin-bottom:14px"></div>
+
+          <!-- SPREADSHEET ID -->
           <div class="fg"><label class="fl">Spreadsheet ID</label>
-            <input class="fi" id="cfg-sid" placeholder="1BxiMVs0XRA5n…"/></div>
-          <div class="fg"><label class="fl">OAuth Token</label>
-            <input class="fi" id="cfg-tok" type="password" placeholder="ya29.xxxxx…"/></div>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-g btn-sm" onclick="saveCfg()">💾 Sauvegarder</button>
-            <button class="btn btn-ghost btn-sm" onclick="testCfg()">🔌 Tester</button>
+            <input class="fi" id="cfg-sid" placeholder="1BxiMVs0XRA5n… ou URL complète" oninput="previewSheetId(this)"/>
+            <div id="cfg-sid-preview" style="font-size:11px;margin-top:4px;padding:5px 9px;border-radius:5px;display:none"></div>
+            <div style="font-size:11px;color:var(--mt);margin-top:4px">💡 Colle l'URL complète ou juste l'ID</div>
           </div>
-          <div style="margin-top:12px">
+
+          <!-- OAUTH CLIENT ID / SECRET -->
+          <div class="fr2">
+            <div class="fg"><label class="fl">Client ID Google</label>
+              <input class="fi" id="cfg-client-id" placeholder="xxxxx.apps.googleusercontent.com"/></div>
+            <div class="fg"><label class="fl">Client Secret</label>
+              <input class="fi" id="cfg-client-secret" type="password" placeholder="GOCSPX-xxxxx"/></div>
+          </div>
+          <div style="font-size:11px;color:var(--mt);margin-bottom:12px">
+            Crée ces identifiants sur <a href="https://console.cloud.google.com" target="_blank" style="color:var(--c1)">console.cloud.google.com</a> → API et services → Identifiants → ID client OAuth (type : Application Web)
+          </div>
+
+          <!-- BOUTONS -->
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-g" onclick="startOAuth()">🔑 Connecter Google</button>
+            <button class="btn btn-ghost btn-sm" onclick="saveCfg()">💾 Sauvegarder</button>
+            <button class="btn btn-ghost btn-sm" onclick="testCfg()">🔌 Tester</button>
+            <button class="btn btn-ghost btn-sm" style="color:var(--r1)" onclick="disconnectGoogle()">Déconnecter</button>
+          </div>
+
+          <!-- TOKEN MANUEL (repli) -->
+          <details style="margin-top:14px">
+            <summary style="font-size:12px;color:var(--mt);cursor:pointer">⚙️ Token manuel (avancé)</summary>
+            <div style="margin-top:10px">
+              <div class="fg"><label class="fl">Access Token manuel</label>
+                <input class="fi" id="cfg-tok" type="password" placeholder="ya29.xxxxx… (expire après 1h)"/></div>
+              <div style="font-size:11px;color:var(--mt)">Obtenu via <a href="https://developers.google.com/oauthplayground" target="_blank" style="color:var(--c1)">OAuth Playground</a> — scope : spreadsheets</div>
+            </div>
+          </details>
+
+          <div style="margin-top:14px">
             <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mt);margin-bottom:8px">Onglets requis dans Sheets</div>
             <div id="sheets-tabs"></div>
           </div>
@@ -1253,8 +1285,13 @@ function getMyInterventions(){
 // ══════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════
-updateGS();
-initLoginScreen();
+// Vérifier si on revient d'un flux OAuth
+handleOAuthCallback().then(handled=>{
+  if(!handled){
+    updateGS();
+    initLoginScreen();
+  }
+});
 // Ajouter animation shake CSS
 const shakeStyle=document.createElement('style');
 shakeStyle.textContent='@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}';
@@ -2586,7 +2623,10 @@ function openRapportWindow(list,opts){
 function renderCfg(){
   cfg=S.get('cfg')||cfg;
   document.getElementById('cfg-sid').value=cfg.sid||'';
-  document.getElementById('cfg-tok').value=cfg.tok||'';
+  document.getElementById('cfg-client-id').value=cfg.clientId||'';
+  document.getElementById('cfg-client-secret').value=cfg.clientSecret||'';
+  const tokEl=document.getElementById('cfg-tok');
+  if(tokEl&&!cfg.refreshToken) tokEl.value=cfg.tok||'';
   document.getElementById('cfg-hc').value=cfg.hc||35;
   document.getElementById('cfg-pfx').value=cfg.pfx||'SBA-';
   document.getElementById('cfg-minphotos').value=cfg.minPhotos||2;
@@ -2702,9 +2742,176 @@ function delProcessus(i){
 }
 
 
+// ══════════════════════════════════════════════════════════
+// GOOGLE OAUTH — TOKEN AUTOMATIQUE
+// ══════════════════════════════════════════════════════════
+
+function extractSheetId(val){
+  val=(val||'').trim();
+  const m=val.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+  return m?m[1]:val;
+}
+
+function previewSheetId(input){
+  const val=input.value.trim();
+  const preview=document.getElementById('cfg-sid-preview');
+  if(!val){preview.style.display='none';return;}
+  const extracted=extractSheetId(val);
+  if(extracted!==val){
+    preview.style.cssText='display:block;background:var(--gl);color:var(--g2);font-size:11px;padding:5px 9px;border-radius:5px;margin-top:4px';
+    preview.innerHTML=`✓ ID extrait : <strong style="font-family:'JetBrains Mono',monospace">${extracted}</strong>`;
+  } else if(/^[a-zA-Z0-9_-]{20,}$/.test(val)){
+    preview.style.cssText='display:block;background:var(--gl);color:var(--g2);font-size:11px;padding:5px 9px;border-radius:5px;margin-top:4px';
+    preview.innerHTML='✓ Format valide';
+  } else {
+    preview.style.cssText='display:block;background:var(--rl);color:var(--r1);font-size:11px;padding:5px 9px;border-radius:5px;margin-top:4px';
+    preview.innerHTML='⚠ Format incorrect';
+  }
+}
+
+// Lance le flux OAuth PKCE (sans client secret côté serveur)
+async function startOAuth(){
+  const clientId=document.getElementById('cfg-client-id').value.trim();
+  if(!clientId){toast('Renseignez le Client ID Google','err');return;}
+  // Sauvegarder le client ID
+  cfg.clientId=clientId;
+  cfg.clientSecret=document.getElementById('cfg-client-secret').value.trim();
+  cfg.sid=extractSheetId(document.getElementById('cfg-sid').value);
+  save();
+
+  const redirectUri=window.location.origin+window.location.pathname;
+  const scope='https://www.googleapis.com/auth/spreadsheets';
+  // Générer code verifier PKCE
+  const verifier=generateCodeVerifier();
+  const challenge=await generateCodeChallenge(verifier);
+  sessionStorage.setItem('oauth_verifier',verifier);
+  sessionStorage.setItem('oauth_redirect',redirectUri);
+
+  const params=new URLSearchParams({
+    client_id:clientId,
+    redirect_uri:redirectUri,
+    response_type:'code',
+    scope,
+    access_type:'offline',
+    prompt:'consent',
+    code_challenge:challenge,
+    code_challenge_method:'S256',
+  });
+  window.location.href='https://accounts.google.com/o/oauth2/v2/auth?'+params;
+}
+
+function generateCodeVerifier(){
+  const arr=new Uint8Array(32);
+  crypto.getRandomValues(arr);
+  return btoa(String.fromCharCode(...arr)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+}
+
+async function generateCodeChallenge(verifier){
+  const encoder=new TextEncoder();
+  const data=encoder.encode(verifier);
+  const digest=await crypto.subtle.digest('SHA-256',data);
+  return btoa(String.fromCharCode(...new Uint8Array(digest))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+}
+
+// Échange le code OAuth contre les tokens (appelé au chargement si ?code= présent)
+async function handleOAuthCallback(){
+  const params=new URLSearchParams(window.location.search);
+  const code=params.get('code');
+  if(!code) return false;
+
+  // Nettoyer l'URL
+  window.history.replaceState({},'',window.location.pathname);
+
+  const verifier=sessionStorage.getItem('oauth_verifier');
+  const redirectUri=sessionStorage.getItem('oauth_redirect')||window.location.origin+window.location.pathname;
+  sessionStorage.removeItem('oauth_verifier');
+  sessionStorage.removeItem('oauth_redirect');
+
+  if(!verifier||!cfg.clientId){
+    toast('Erreur OAuth — recommencez la connexion','err');
+    return false;
+  }
+
+  try{
+    const body=new URLSearchParams({
+      code,
+      client_id:cfg.clientId,
+      client_secret:cfg.clientSecret||'',
+      redirect_uri:redirectUri,
+      grant_type:'authorization_code',
+      code_verifier:verifier,
+    });
+    const r=await fetch('https://oauth2.googleapis.com/token',{
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body,
+    });
+    const data=await r.json();
+    if(data.access_token){
+      cfg.tok=data.access_token;
+      if(data.refresh_token) cfg.refreshToken=data.refresh_token;
+      cfg.tokenExpiry=Date.now()+(data.expires_in-60)*1000;
+      save();
+      toast('✓ Google connecté avec succès !','ok');
+      updateGS();
+      renderCfg();
+      return true;
+    } else {
+      console.error('OAuth error:',data);
+      toast('Erreur OAuth : '+(data.error_description||data.error),'err');
+      return false;
+    }
+  } catch(e){
+    toast('Erreur réseau OAuth','err');
+    return false;
+  }
+}
+
+// Rafraîchit le token si expiré
+async function ensureFreshToken(){
+  if(!cfg.tok) return false;
+  // Token encore valide
+  if(cfg.tokenExpiry && Date.now()<cfg.tokenExpiry) return true;
+  // Refresh token disponible
+  if(cfg.refreshToken && cfg.clientId){
+    try{
+      const body=new URLSearchParams({
+        client_id:cfg.clientId,
+        client_secret:cfg.clientSecret||'',
+        refresh_token:cfg.refreshToken,
+        grant_type:'refresh_token',
+      });
+      const r=await fetch('https://oauth2.googleapis.com/token',{
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body,
+      });
+      const data=await r.json();
+      if(data.access_token){
+        cfg.tok=data.access_token;
+        cfg.tokenExpiry=Date.now()+(data.expires_in-60)*1000;
+        save();
+        return true;
+      }
+    } catch(e){ console.warn('Refresh failed',e); }
+  }
+  return !!cfg.tok; // Utiliser le token existant en dernier recours
+}
+
+function disconnectGoogle(){
+  if(!confirm('Déconnecter Google ?')) return;
+  cfg.tok='';cfg.refreshToken='';cfg.tokenExpiry=0;
+  save();updateGS();renderCfg();toast('Google déconnecté');
+}
+
 function saveCfg(){
-  cfg.sid=document.getElementById('cfg-sid').value;
-  cfg.tok=document.getElementById('cfg-tok').value;
+  cfg.sid=extractSheetId(document.getElementById('cfg-sid').value);
+  document.getElementById('cfg-sid').value=cfg.sid;
+  cfg.clientId=document.getElementById('cfg-client-id').value.trim();
+  cfg.clientSecret=document.getElementById('cfg-client-secret').value.trim();
+  // Token manuel si renseigné
+  const tokManuel=document.getElementById('cfg-tok')?.value;
+  if(tokManuel) { cfg.tok=tokManuel; cfg.tokenExpiry=0; cfg.refreshToken=''; }
   cfg.hc=parseInt(document.getElementById('cfg-hc').value)||35;
   cfg.pfx=document.getElementById('cfg-pfx').value||'SBA-';
   cfg.minPhotos=parseInt(document.getElementById('cfg-minphotos').value)||1;
@@ -2712,19 +2919,61 @@ function saveCfg(){
 }
 
 async function testCfg(){
-  if(!cfg.sid||!cfg.tok){toast('Renseignez ID et token','err');return}
+  if(!cfg.sid){toast('Renseignez le Spreadsheet ID','err');return;}
+  if(!cfg.tok){toast('Connectez Google d\'abord','err');return;}
+  await ensureFreshToken();
   try{
-    const r=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${cfg.sid}?fields=title`,{headers:{Authorization:'Bearer '+cfg.tok}});
-    if(r.ok){const d=await r.json();document.getElementById('gs-dot').classList.add('ok');document.getElementById('gs-txt').textContent='Connecté : '+d.title;toast('Connexion OK : '+d.title,'ok')}
-    else toast('Erreur '+r.status+' — token invalide ?','err');
-  }catch{toast('Erreur réseau','err')}
+    const r=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${cfg.sid}?fields=title`,
+      {headers:{Authorization:'Bearer '+cfg.tok}});
+    if(r.ok){
+      const d=await r.json();
+      document.getElementById('gs-dot').classList.add('ok');
+      document.getElementById('gs-txt').textContent='Connecté : '+d.title;
+      toast('✓ Connexion OK : '+d.title,'ok');
+    } else {
+      const err=await r.json().catch(()=>({}));
+      toast('Erreur '+r.status+' — '+(err.error?.message||'token invalide'),'err');
+    }
+  } catch(e){ toast('Erreur réseau','err'); }
 }
 
 function updateGS(){
-  const ok=cfg.sid&&cfg.tok;
-  document.getElementById('gs-dot').className='gs-dot'+(ok?' ok':'');
-  document.getElementById('gs-txt').textContent=ok?'Configuré':'Non connecté';
+  const hasToken=!!(cfg.tok);
+  const hasRefresh=!!(cfg.refreshToken);
+  const expired=cfg.tokenExpiry&&Date.now()>cfg.tokenExpiry;
+  let status, cls;
+  if(hasRefresh){ status='Connecté (auto-refresh)'; cls='ok'; }
+  else if(hasToken&&!expired){ status='Connecté (token manuel)'; cls='ok'; }
+  else if(hasToken&&expired){ status='Token expiré'; cls=''; }
+  else { status='Non connecté'; cls=''; }
+  document.getElementById('gs-dot').className='gs-dot'+(cls?' '+cls:'');
+  document.getElementById('gs-txt').textContent=status;
+
+  // Mettre à jour le bandeau d'état dans la config
+  const authStatus=document.getElementById('gs-auth-status');
+  if(authStatus){
+    if(hasRefresh){
+      authStatus.innerHTML=`<div style="background:var(--gl);border:1px solid var(--g1);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+        <div style="font-size:20px">✅</div>
+        <div><div style="font-size:13px;font-weight:700;color:var(--g2)">Google connecté</div>
+        <div style="font-size:11px;color:var(--mt)">Refresh token actif — renouvellement automatique</div></div>
+      </div>`;
+    } else if(hasToken&&!expired){
+      authStatus.innerHTML=`<div style="background:var(--ol);border:1px solid var(--o1);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+        <div style="font-size:20px">⚠️</div>
+        <div><div style="font-size:13px;font-weight:700;color:var(--o1)">Token manuel actif</div>
+        <div style="font-size:11px;color:var(--mt)">Expire dans ~1h — utilisez "Connecter Google" pour un accès permanent</div></div>
+      </div>`;
+    } else {
+      authStatus.innerHTML=`<div style="background:var(--rl);border:1px solid var(--r1);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+        <div style="font-size:20px">🔴</div>
+        <div><div style="font-size:13px;font-weight:700;color:var(--r1)">Non connecté</div>
+        <div style="font-size:11px;color:var(--mt)">Cliquez "Connecter Google" pour synchroniser avec Sheets</div></div>
+      </div>`;
+    }
+  }
 }
+
 
 // ══════════════════════════════════════════════════════════
 // CRUD MODALS
@@ -2824,6 +3073,7 @@ function closeMo(id){document.getElementById(id).style.display='none'}
 // ══════════════════════════════════════════════════════════
 async function syncSheets(sheet,data){
   if(!cfg.sid||!cfg.tok)return;
+  await ensureFreshToken();
   try{
     await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${cfg.sid}/values/${sheet}!A1:Z1000:clear`,
       {method:'POST',headers:{Authorization:'Bearer '+cfg.tok,'Content-Type':'application/json'}});
