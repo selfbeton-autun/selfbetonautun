@@ -685,6 +685,7 @@ select.fi{cursor:pointer}
           <!-- BOUTONS -->
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn btn-g" onclick="startOAuth()">🔑 Connecter Google</button>
+            <button class="btn btn-n" id="btn-sync-all" onclick="syncAll()">🔄 Synchroniser tout</button>
             <button class="btn btn-ghost btn-sm" onclick="saveCfg()">💾 Sauvegarder</button>
             <button class="btn btn-ghost btn-sm" onclick="testCfg()">🔌 Tester</button>
             <button class="btn btn-ghost btn-sm" style="color:var(--r1)" onclick="disconnectGoogle()">Déconnecter</button>
@@ -2631,13 +2632,18 @@ function renderCfg(){
   document.getElementById('cfg-pfx').value=cfg.pfx||'SBA-';
   document.getElementById('cfg-minphotos').value=cfg.minPhotos||2;
 
-  // Onglets Sheets
-  const tabs=['Chantiers','Heures','Planning','Actualites','CA_Mensuel','Clients','Contrats'];
-  document.getElementById('sheets-tabs').innerHTML=tabs.map(t=>`
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--bg);border-radius:6px;margin-bottom:5px;font-size:12px">
-      <span>📊 ${t}</span>
-      <span class="badge b-o" style="font-size:10px">À créer</span>
-    </div>`).join('');
+  // Onglets Sheets — vérifier statut si connecté
+  if(cfg.tok) updateSheetsTabStatus();
+  else{
+    const el=document.getElementById('sheets-tabs');
+    if(el){
+      const tabs=['Chantiers','Clients','Contrats','Actualites','Heures','Planning','CA_Mensuel'];
+      el.innerHTML=tabs.map(t=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--bg);border-radius:6px;margin-bottom:5px;font-size:12px">
+          <span>📊 ${t}</span><span class="badge b-o" style="font-size:10px">À créer</span>
+        </div>`).join('');
+    }
+  }
 
   // Team
   document.getElementById('cfg-team').innerHTML=`<table class="tbl">${TEAM.map(t=>`
@@ -2773,15 +2779,14 @@ function previewSheetId(input){
 async function startOAuth(){
   const clientId=document.getElementById('cfg-client-id').value.trim();
   if(!clientId){toast('Renseignez le Client ID Google','err');return;}
-  // Sauvegarder le client ID
   cfg.clientId=clientId;
   cfg.clientSecret=document.getElementById('cfg-client-secret').value.trim();
   cfg.sid=extractSheetId(document.getElementById('cfg-sid').value);
   save();
 
-  const redirectUri=window.location.origin+window.location.pathname;
+  // URI de redirection — doit correspondre exactement à ce qui est dans Google Cloud Console
+  const redirectUri='https://selfbetonautun.vercel.app/';
   const scope='https://www.googleapis.com/auth/spreadsheets';
-  // Générer code verifier PKCE
   const verifier=generateCodeVerifier();
   const challenge=await generateCodeChallenge(verifier);
   sessionStorage.setItem('oauth_verifier',verifier);
@@ -2823,7 +2828,7 @@ async function handleOAuthCallback(){
   window.history.replaceState({},'',window.location.pathname);
 
   const verifier=sessionStorage.getItem('oauth_verifier');
-  const redirectUri=sessionStorage.getItem('oauth_redirect')||window.location.origin+window.location.pathname;
+  const redirectUri='https://selfbetonautun.vercel.app/';
   sessionStorage.removeItem('oauth_verifier');
   sessionStorage.removeItem('oauth_redirect');
 
@@ -3071,20 +3076,147 @@ function closeMo(id){document.getElementById(id).style.display='none'}
 // ══════════════════════════════════════════════════════════
 // GOOGLE SHEETS SYNC
 // ══════════════════════════════════════════════════════════
-async function syncSheets(sheet,data){
-  if(!cfg.sid||!cfg.tok)return;
+// ══════════════════════════════════════════════════════════
+// GOOGLE SHEETS — SYNC COMPLET
+// ══════════════════════════════════════════════════════════
+
+async function syncSheets(sheet, data){
+  if(!cfg.sid||!cfg.tok) return;
+  await ensureFreshToken();
+  const rows = buildRows(sheet, data);
+  if(!rows) return;
+  try{
+    // Clear puis écrire
+    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${cfg.sid}/values/${encodeURIComponent(sheet)}!A1:Z10000:clear`,
+      {method:'POST', headers:{Authorization:'Bearer '+cfg.tok,'Content-Type':'application/json'}});
+    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${cfg.sid}/values/${encodeURIComponent(sheet)}!A1:append?valueInputOption=USER_ENTERED`,
+      {method:'POST', headers:{Authorization:'Bearer '+cfg.tok,'Content-Type':'application/json'},
+       body:JSON.stringify({values:rows})});
+  } catch(e){ console.warn('Sheets sync error', e); }
+}
+
+function buildRows(sheet, data){
+  if(sheet==='Chantiers'){
+    return [
+      ['ID','Nom','Client','Lieu','Technicien','Type','Date','Heure','Durée (h)','CA (€)','Statut','Priorité','Avancement (%)','N° Bon','Signé','Description'],
+      ...interventions.map(i=>[i.id,i.nom,i.client,i.lieu,i.tech,i.type,i.date,i.heure,i.duree,i.ca,i.statut,i.prio||'',i.avancement,i.bonNum,i.sig?'Oui':'Non',i.desc||''])
+    ];
+  }
+  if(sheet==='Clients'){
+    return [
+      ['ID','Nom','Type','Contact','Téléphone','Adresse','Email','Notes'],
+      ...clients.map(c=>[c.id,c.nom,c.type,c.contact||'',c.tel||'',c.adresse||'',c.email||'',c.notes||''])
+    ];
+  }
+  if(sheet==='Contrats'){
+    return [
+      ['ID','Client','Libellé','Technicien','Périodicité','Tarif (€)','Début','Fin','Statut','Prochaine visite','Description'],
+      ...contrats.map(c=>[c.id,c.client,c.nom,c.tech,c.period,c.tarif,c.deb,c.fin,c.statut,c.prochaine,c.desc||''])
+    ];
+  }
+  if(sheet==='Actualites'){
+    return [
+      ['ID','Auteur','Tag','Message','Date'],
+      ...[...feed].reverse().map(f=>[f.id,f.auteur,f.tag,f.msg,new Date(f.ts).toLocaleString('fr-FR')])
+    ];
+  }
+  if(sheet==='Heures'){
+    const JOURS_LIST=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+    const rows=[['Semaine','Technicien','Jour','Chantier','Début','Fin','Pause (h)','Total (h)']];
+    Object.entries(heures).forEach(([wk,wd])=>{
+      TEAM.forEach(t=>{
+        JOURS_LIST.forEach(j=>{
+          const d=wd[j];
+          if(d&&parseFloat(d.total||0)>0){
+            rows.push([wk,t.prenom,j,d.chantier||'',d.deb||'',d.fin||'',d.pause||0,d.total||0]);
+          }
+        });
+      });
+    });
+    return rows;
+  }
+  if(sheet==='Planning'){
+    return [
+      ['Technicien','Jour (index)','Jour','Intervention','Type','Début','Fin'],
+      ...planSlots.map(s=>[s.tech,s.jour,['Lun','Mar','Mer','Jeu','Ven','Sam'][s.jour]||'',s.nom,s.type||'',s.deb||'',s.fin||''])
+    ];
+  }
+  if(sheet==='CA_Mensuel'){
+    return [
+      ['Mois','CA 2025 (€)','CA 2024 (€)'],
+      ...caData.mois.map((m,i)=>[m, caData.y25[i]||0, caData.y24[i]||0])
+    ];
+  }
+  return null;
+}
+
+// Crée les onglets manquants dans le Sheets
+async function createMissingSheets(){
+  if(!cfg.sid||!cfg.tok) return;
+  await ensureFreshToken();
+  const required=['Chantiers','Clients','Contrats','Actualites','Heures','Planning','CA_Mensuel'];
+  try{
+    // Récupérer les onglets existants
+    const r=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${cfg.sid}?fields=sheets.properties.title`,
+      {headers:{Authorization:'Bearer '+cfg.tok}});
+    const d=await r.json();
+    const existing=(d.sheets||[]).map(s=>s.properties.title);
+    const missing=required.filter(t=>!existing.includes(t));
+    if(missing.length===0) return;
+    // Créer les onglets manquants
+    const requests=missing.map(title=>({addSheet:{properties:{title}}}));
+    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${cfg.sid}:batchUpdate`,
+      {method:'POST', headers:{Authorization:'Bearer '+cfg.tok,'Content-Type':'application/json'},
+       body:JSON.stringify({requests})});
+    console.log('Onglets créés:', missing);
+  } catch(e){ console.warn('createMissingSheets error', e); }
+}
+
+// Synchronise TOUT vers Google Sheets
+async function syncAll(){
+  if(!cfg.sid||!cfg.tok){ toast('Connectez Google d\'abord','err'); return; }
+  const btn=document.getElementById('btn-sync-all');
+  if(btn){ btn.textContent='⏳ Synchronisation…'; btn.disabled=true; }
+  try{
+    await createMissingSheets();
+    const sheets=['Chantiers','Clients','Contrats','Actualites','Heures','Planning','CA_Mensuel'];
+    for(const sheet of sheets){
+      await syncSheets(sheet, null);
+      await new Promise(r=>setTimeout(r,300)); // éviter rate limit
+    }
+    toast('✓ Toutes les données synchronisées !','ok');
+    updateSheetsTabStatus();
+  } catch(e){
+    toast('Erreur synchronisation','err');
+    console.error(e);
+  } finally{
+    if(btn){ btn.textContent='🔄 Synchroniser tout'; btn.disabled=false; }
+  }
+}
+
+// Met à jour le statut des onglets dans la config
+async function updateSheetsTabStatus(){
+  if(!cfg.sid||!cfg.tok) return;
   await ensureFreshToken();
   try{
-    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${cfg.sid}/values/${sheet}!A1:Z1000:clear`,
-      {method:'POST',headers:{Authorization:'Bearer '+cfg.tok,'Content-Type':'application/json'}});
-    if(sheet==='Chantiers'){
-      const rows=[['ID','Nom','Client','Lieu','Tech','Type','Date','Heure','Durée','CA','Statut','Priorité','Avancement','Bon'],
-        ...data.map(i=>[i.id,i.nom,i.client,i.lieu,i.tech,i.type,i.date,i.heure,i.duree,i.ca,i.statut,i.prio||'',i.avancement,i.bonNum])];
-      await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${cfg.sid}/values/${sheet}!A1:append?valueInputOption=RAW`,
-        {method:'POST',headers:{Authorization:'Bearer '+cfg.tok,'Content-Type':'application/json'},body:JSON.stringify({values:rows})});
+    const r=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${cfg.sid}?fields=sheets.properties.title`,
+      {headers:{Authorization:'Bearer '+cfg.tok}});
+    const d=await r.json();
+    const existing=(d.sheets||[]).map(s=>s.properties.title);
+    const required=['Chantiers','Clients','Contrats','Actualites','Heures','Planning','CA_Mensuel'];
+    const el=document.getElementById('sheets-tabs');
+    if(el){
+      el.innerHTML=required.map(t=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--bg);border-radius:6px;margin-bottom:5px;font-size:12px">
+          <span>📊 ${t}</span>
+          ${existing.includes(t)
+            ?'<span class="badge b-g" style="font-size:10px">✓ Présent</span>'
+            :'<span class="badge b-o" style="font-size:10px">À créer</span>'}
+        </div>`).join('');
     }
-  }catch(e){console.warn('Sheets sync error',e)}
+  } catch(e){ console.warn(e); }
 }
+
 
 // ══════════════════════════════════════════════════════════
 // UTILS
