@@ -126,15 +126,11 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt);displ
 .feed-input:focus{border-color:var(--g1);background:#fff}
 .feed-controls{display:flex;flex-direction:column;gap:6px}
 
-/* ── FEUILLES HEURES ── */
-.fh-day{border:1px solid var(--brd);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
-.fh-day-hdr{padding:9px 14px;background:var(--nl);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
-.fh-day-hdr .dn{font-size:13px;font-weight:700;color:var(--n1)}
-.fh-body{padding:10px 14px}
-.fh-row{display:grid;grid-template-columns:1fr 80px 80px 90px 90px;gap:8px;align-items:center;margin-bottom:6px}
-.fh-lbl{font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
-.fh-inp{border:1px solid var(--brd);border-radius:6px;padding:6px 10px;font-family:'JetBrains Mono',monospace;font-size:13px;text-align:center;outline:none;background:var(--bg);transition:border .15s;width:100%}
-.fh-inp:focus{border-color:var(--c1);background:#fff}
+/* ── FEUILLES HEURES MENSUELLES ── */
+.fh-cell{border:1px solid var(--brd);border-radius:4px;padding:3px 4px;font-family:'JetBrains Mono',monospace;font-size:12px;text-align:center;outline:none;background:var(--bg);width:58px;transition:border .15s}
+.fh-cell:focus{border-color:var(--c1);background:#fff}
+.fh-cell-total{background:var(--gl);color:var(--g2);font-weight:700}
+.fh-cell-total:focus{border-color:var(--g1);background:#fff}
 .fh-total{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--g1)}
 
 /* ── PLANNING ── */
@@ -267,7 +263,7 @@ select.fi{cursor:pointer}
 <aside id="sb">
   <div class="sb-head">
     <div class="sb-brand">
-      <div class="sb-icon">🏗️</div>
+      <div class="sb-icon" style="background:linear-gradient(135deg,#5b9e2f,#3d6b1f);padding:4px"><svg viewBox="0 0 36 36" width="28" height="28" xmlns="http://www.w3.org/2000/svg"><rect width="36" height="36" rx="7" fill="none"/><rect x="4" y="20" width="28" height="10" rx="3" fill="white" opacity=".95"/><rect x="4" y="14" width="18" height="7" rx="2" fill="white" opacity=".75"/><rect x="24" y="6" width="8" height="15" rx="2" fill="white" opacity=".75"/><circle cx="10" cy="30" r="3" fill="#3d6b1f"/><circle cx="22" cy="30" r="3" fill="#3d6b1f"/></svg></div>
       <div class="sb-brand-txt">
         <div class="t1">SelfBéton Autun</div>
         <div class="t2">Gestion complète</div>
@@ -452,9 +448,7 @@ select.fi{cursor:pointer}
     <select class="fi" style="max-width:135px" id="f-tech" onchange="renderInts()"><option value="">Tous tech.</option>
       <option>François</option><option>Mohian</option><option>Maden</option><option>Damien</option>
     </select>
-    <select class="fi" style="max-width:140px" id="f-type" onchange="renderInts()"><option value="">Tous types</option>
-      <option>Maintenance</option><option>Dépannage</option><option>Installation</option><option>Contrôle</option>
-    </select>
+    <select class="fi" style="max-width:140px" id="f-type" onchange="renderInts()"><option value="">Tous types</option></select>
     <input class="fi" style="max-width:190px" placeholder="🔍 Client, lieu…" id="f-q" oninput="renderInts()"/>
     <div style="margin-left:auto;display:flex;gap:8px">
       <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ CSV</button>
@@ -506,44 +500,35 @@ select.fi{cursor:pointer}
 ══════════════════════════════════════════ -->
 <div class="pg" id="pg-heures">
   <div style="display:flex;gap:10px;align-items:center;margin-bottom:15px;flex-wrap:wrap">
-    <select class="fi" style="max-width:150px" id="fh-tech" onchange="renderHeures()">
-      <option>François</option><option>Mohian</option><option>Maden</option><option>Damien</option>
-    </select>
-    <input type="week" class="fi" style="max-width:185px" id="fh-week" onchange="renderHeures()"/>
+    <select class="fi" style="max-width:150px" id="fh-tech" onchange="renderHeures()"></select>
+    <select class="fi" style="max-width:130px" id="fh-month" onchange="renderHeures()"></select>
+    <select class="fi" style="max-width:100px" id="fh-year" onchange="renderHeures()"></select>
     <div style="margin-left:auto;display:flex;gap:7px">
-      <button class="btn btn-ghost btn-sm" onclick="fhNav(-1)">◀ Préc.</button>
-      <button class="btn btn-ghost btn-sm" onclick="fhNav(1)">Suiv. ▶</button>
+      <button class="btn btn-ghost btn-sm" onclick="fhNav(-1)">◀ Mois préc.</button>
+      <button class="btn btn-ghost btn-sm" onclick="fhNav(1)">Mois suiv. ▶</button>
       <button class="btn btn-g btn-sm" onclick="saveHeures()">💾 Enregistrer</button>
     </div>
   </div>
   <div class="card" style="margin-bottom:14px">
     <div class="ch">
       <h3 id="fh-title">Feuille d'heures</h3>
-      <div style="display:flex;gap:14px;font-size:13px">
-        <span>Total : <strong id="fh-tot" class="fh-total">0h</strong></span>
-        <span>Sup : <strong id="fh-sup" style="color:var(--o1)">0h</strong></span>
-      </div>
+      <div style="font-size:13px">Total mois : <strong id="fh-tot" class="fh-total">0h</strong></div>
     </div>
-    <div class="cb" style="padding:10px 14px">
-      <div class="fh-row" style="margin-bottom:5px">
-        <div class="fh-lbl">Chantier</div><div class="fh-lbl">Début</div>
-        <div class="fh-lbl">Fin</div><div class="fh-lbl">Pause(h)</div><div class="fh-lbl">Total</div>
-      </div>
-      <div id="fh-days"></div>
+    <div class="cb" style="padding:8px 10px;overflow-x:auto">
+      <table id="fh-table" style="width:100%;border-collapse:collapse;font-size:12.5px;min-width:640px"></table>
     </div>
   </div>
+
   <div class="card" style="margin-bottom:14px">
-    <div class="ch"><h3>📊 Récap équipe</h3></div>
-    <div style="overflow-x:auto">
-      <table class="tbl"><thead><tr>
-        <th>Technicien</th><th>Contrat</th><th>Saisies</th><th>Heures sup</th><th>Statut</th>
-      </tr></thead><tbody id="fh-recap"></tbody></table>
+    <div class="ch"><h3>📝 Observations</h3></div>
+    <div class="cb">
+      <textarea class="fi" id="fh-obs" rows="3" placeholder="Absences (maladie, accident de travail, congés payés, repos compensateur…), acompte…"></textarea>
     </div>
   </div>
 
   <div class="card" id="fh-sig-card">
     <div class="ch">
-      <h3>✍️ Validation &amp; Signature de la semaine</h3>
+      <h3>✍️ Validation &amp; Signature du mois</h3>
       <div id="fh-sig-status"></div>
     </div>
     <div class="cb" id="fh-sig-body"></div>
@@ -737,15 +722,21 @@ select.fi{cursor:pointer}
     </div>
     <div>
       <div class="card" style="margin-bottom:14px">
-        <div class="ch"><h3>👥 Équipe</h3></div>
-        <div id="cfg-team" style="padding:0"></div>
-        <div style="padding:10px 14px">
-          <button class="btn btn-ghost btn-sm" onclick="openMoTech()">+ Ajouter technicien</button>
+        <div class="ch"><h3>👥 Utilisateurs</h3>
+          <button class="btn btn-g btn-sm" onclick="openMoUser()">+ Ajouter</button>
         </div>
+        <div id="cfg-team" style="padding:0"></div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="ch">
+          <h3>🔧 Types d'intervention</h3>
+          <button class="btn btn-g btn-sm" onclick="openMoTypes()">⚙️ Gérer</button>
+        </div>
+        <div class="cb" id="cfg-types-preview"></div>
       </div>
       <div class="card">
         <div class="ch">
-          <h3>🔧 Processus métier</h3>
+          <h3>📋 Processus métier</h3>
           <button class="btn btn-g btn-sm" onclick="openMoProcessus()">+ Nouveau processus</button>
         </div>
         <div class="cb" style="padding:0" id="cfg-processus-list"></div>
@@ -766,22 +757,30 @@ select.fi{cursor:pointer}
       <div class="fg"><label class="fl">Intitulé</label><input class="fi" id="i-nom" placeholder="Ex : Maintenance distributeur Autun"/></div>
       <div class="fr2">
         <div class="fg"><label class="fl">Client</label>
-          <select class="fi" id="i-client"><option value="">— Sélectionner —</option></select></div>
+          <div style="display:flex;gap:6px">
+            <select class="fi" id="i-client" style="flex:1"><option value="">— Sélectionner —</option></select>
+            <button class="btn btn-ghost btn-sm" onclick="openMoClientInline()" title="Nouveau client">+</button>
+          </div>
+        </div>
         <div class="fg"><label class="fl">Lieu</label><input class="fi" id="i-lieu" placeholder="Ville ou adresse"/></div>
       </div>
       <div class="fr2">
         <div class="fg"><label class="fl">Technicien</label>
-          <select class="fi" id="i-tech"><option>François</option><option>Mohian</option><option>Maden</option><option>Damien</option></select></div>
+          <select class="fi" id="i-tech" onchange="autoFillLieu()"></select></div>
         <div class="fg"><label class="fl">Type</label>
-          <select class="fi" id="i-type"><option>Maintenance</option><option>Dépannage</option><option>Installation</option><option>Contrôle</option></select></div>
+          <select class="fi" id="i-type"></select></div>
       </div>
       <div class="fr2">
         <div class="fg"><label class="fl">Date</label><input class="fi" type="date" id="i-date"/></div>
-        <div class="fg"><label class="fl">Heure</label><input class="fi" type="time" id="i-heure" value="08:00"/></div>
+        <div class="fg"><label class="fl">Heure</label>
+          <select class="fi" id="i-heure"></select>
+        </div>
       </div>
       <div class="fr2">
-        <div class="fg"><label class="fl">Durée (h)</label><input class="fi" type="number" step=".5" id="i-duree" value="2"/></div>
-        <div class="fg"><label class="fl">CA estimé (€)</label><input class="fi" type="number" id="i-ca" value="0"/></div>
+        <div class="fg"><label class="fl">Durée (h)</label>
+          <select class="fi" id="i-duree"></select>
+        </div>
+        <div style="display:none"><input class="fi" type="number" id="i-ca" value="0"/></div>
       </div>
       <div class="fr2">
         <div class="fg"><label class="fl">Priorité</label>
@@ -888,23 +887,54 @@ select.fi{cursor:pointer}
 </div>
 
 <!-- Technicien -->
-<div class="ov" id="mo-tech" style="display:none" onclick="closeMo('mo-tech')">
+<!-- Modal gestion utilisateur -->
+<div class="ov" id="mo-user" style="display:none" onclick="closeMo('mo-user')">
   <div class="mo" onclick="event.stopPropagation()">
-    <div class="mo-h"><h2>Ajouter technicien</h2><button class="mo-x" onclick="closeMo('mo-tech')">✕</button></div>
+    <div class="mo-h"><h2 id="mo-user-ttl">Nouvel utilisateur</h2><button class="mo-x" onclick="closeMo('mo-user')">✕</button></div>
     <div class="mo-b">
       <div class="fr2">
-        <div class="fg"><label class="fl">Prénom</label><input class="fi" id="t-prenom"/></div>
-        <div class="fg"><label class="fl">Nom</label><input class="fi" id="t-nom"/></div>
+        <div class="fg"><label class="fl">Prénom</label><input class="fi" id="u-prenom"/></div>
+        <div class="fg"><label class="fl">Initiales (2 car.)</label><input class="fi" id="u-ini" maxlength="2" placeholder="DM"/></div>
       </div>
       <div class="fr2">
         <div class="fg"><label class="fl">Rôle</label>
-          <select class="fi" id="t-role"><option>Technicien</option><option>Manager</option></select></div>
-        <div class="fg"><label class="fl">H/semaine</label><input class="fi" type="number" id="t-h" value="35"/></div>
+          <select class="fi" id="u-role">
+            <option value="manager">Manager (accès complet)</option>
+            <option value="tech">Technicien (avec heures)</option>
+            <option value="tech_light">Technicien léger (sans heures)</option>
+          </select></div>
+        <div class="fg"><label class="fl">Couleur avatar</label>
+          <input class="fi" type="color" id="u-col" value="#5b9e2f"/></div>
+      </div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">PIN (4 chiffres)</label>
+          <input class="fi" id="u-pin" type="password" maxlength="4" placeholder="••••" inputmode="numeric"/></div>
+        <div class="fg"><label class="fl">Confirmer PIN</label>
+          <input class="fi" id="u-pin2" type="password" maxlength="4" placeholder="••••" inputmode="numeric"/></div>
+      </div>
+      <div id="u-error" style="font-size:12px;color:var(--r1);min-height:16px;margin-top:4px"></div>
+    </div>
+    <div class="mo-f">
+      <button class="btn btn-ghost" onclick="closeMo('mo-user')">Annuler</button>
+      <button class="btn btn-g" onclick="saveUser()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal types d'intervention -->
+<div class="ov" id="mo-types" style="display:none" onclick="closeMo('mo-types')">
+  <div class="mo" onclick="event.stopPropagation()">
+    <div class="mo-h"><h2>Types d'intervention</h2><button class="mo-x" onclick="closeMo('mo-types')">✕</button></div>
+    <div class="mo-b">
+      <div id="types-list" style="margin-bottom:14px"></div>
+      <div style="display:flex;gap:8px">
+        <input class="fi" id="type-input" placeholder="Nouveau type…" style="flex:1"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();addIntType()}"/>
+        <button class="btn btn-g btn-sm" onclick="addIntType()">+ Ajouter</button>
       </div>
     </div>
     <div class="mo-f">
-      <button class="btn btn-ghost" onclick="closeMo('mo-tech')">Annuler</button>
-      <button class="btn btn-g" onclick="saveTech()">Ajouter</button>
+      <button class="btn btn-ghost" onclick="closeMo('mo-types')">Fermer</button>
     </div>
   </div>
 </div>
@@ -1080,11 +1110,15 @@ const TEAM=[
   {prenom:'Damien',role:'Manager',h:39,col:'#1a3a6b'},
 ];
 
+// Types d'intervention configurables
+let intTypes = S.get('intTypes') || ['Maintenance','Dépannage','Installation','Contrôle','Mise en service'];
+
 function save(){
   S.set('ints',interventions);S.set('clients',clients);S.set('contrats',contrats);
   S.set('feed',feed);S.set('heures',heures);S.set('plan',planSlots);
   S.set('photos',photos);S.set('rapports',rapports);S.set('processus',processusList);
-  S.set('ca',caData);S.set('cfg',cfg);
+  S.set('ca',caData);S.set('cfg',cfg);S.set('intTypes',intTypes);
+  S.set('users', USERS.map(u=>({...u})));
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1151,11 +1185,11 @@ function closeSb(){document.getElementById('sb').classList.remove('open');docume
 // UTILISATEURS & CONNEXION
 // ══════════════════════════════════════════════════════════
 
-const USERS = [
-  {prenom:'Damien', role:'manager', col:'#1a3a6b', pin:'1234', ini:'DM'},
-  {prenom:'François', role:'tech', col:'#5b9e2f', pin:'1111', ini:'FR'},
-  {prenom:'Mohian', role:'tech', col:'#0099cc', pin:'2222', ini:'MO'},
-  {prenom:'Maden', role:'tech', col:'#e07b2a', pin:'3333', ini:'MA'},
+const USERS = S.get('users') || [
+  {prenom:'Damien',   role:'manager',    col:'#1a3a6b', pin:'1234', ini:'DM', hasHeures:true},
+  {prenom:'François', role:'tech',       col:'#5b9e2f', pin:'1111', ini:'FR', hasHeures:true},
+  {prenom:'Mohian',   role:'tech_light', col:'#0099cc', pin:'2222', ini:'MO', hasHeures:false},
+  {prenom:'Maden',    role:'tech_light', col:'#e07b2a', pin:'3333', ini:'MA', hasHeures:false},
 ];
 
 let currentUser = null;
@@ -1164,8 +1198,9 @@ let loginTarget = null;
 
 // Pages accessibles par rôle
 const ACCESS = {
-  manager: ['dashboard','feed','interventions','planning','bons','heures','photos','crm','contrats','rapports','config'],
-  tech:     ['feed','interventions','planning','bons','heures','photos'],
+  manager:    ['dashboard','feed','interventions','planning','bons','heures','photos','crm','contrats','rapports','config'],
+  tech:       ['dashboard','feed','interventions','planning','bons','heures','photos'],
+  tech_light: ['feed','interventions','planning','bons','photos'],
 };
 
 function initLoginScreen(){
@@ -1177,7 +1212,7 @@ function initLoginScreen(){
         <div class="u-name">${u.prenom}</div>
         <div class="u-role">${u.role==='manager'?'Manager':'Technicien'}</div>
       </div>
-      <div style="margin-left:auto;font-size:18px">${u.role==='manager'?'👑':'🔧'}</div>
+      <div style="margin-left:auto;font-size:18px">${u.role==='manager'?'⚙️':'🔧'}</div>
     </button>`).join('');
 }
 
@@ -1245,35 +1280,37 @@ function logout(){
 
 function applyUserContext(){
   const u = currentUser;
-  const isTech = u.role === 'tech';
+  const isManager = u.role === 'manager';
+  const isTechLight = u.role === 'tech_light';
+  const isTech = u.role === 'tech' || isTechLight;
+  const roleLabel = {manager:'Manager', tech:'Technicien', tech_light:'Technicien'}[u.role]||u.role;
 
   // Sidebar infos
   document.getElementById('sb-av').textContent = u.ini;
   document.getElementById('sb-av').style.background = u.col;
   document.getElementById('sb-name').textContent = u.prenom;
-  document.getElementById('sb-role').textContent = isTech ? 'Technicien' : 'Manager';
+  document.getElementById('sb-role').textContent = roleLabel;
   document.getElementById('sb-connected-as').textContent = u.prenom;
   document.getElementById('feed-av').textContent = u.ini;
 
   // Afficher/masquer les liens sidebar selon les droits
-  const allowed = ACCESS[u.role];
+  const allowed = ACCESS[u.role] || [];
   document.querySelectorAll('.sb-lnk').forEach(l=>{
     const p = l.dataset.p;
     l.style.display = (!p || allowed.includes(p)) ? '' : 'none';
   });
-  // Masquer les sections de nav non pertinentes
+
+  // Sections de nav — masquer "Clients & Contrats" et "Admin" pour les techs
   document.querySelectorAll('.sb-sec').forEach((s,i)=>{
-    if(isTech) s.style.display = i < 3 ? '' : 'none';
-    else s.style.display = '';
+    if(isManager) s.style.display = '';
+    else s.style.display = i <= 2 ? '' : 'none';
   });
 
-  // Masquer le bouton + Affecter du planning pour les techs
-  // Masquer CA dans les interventions pour les techs
-  updateGS();updateBubbles();
+  updateGS(); updateBubbles();
 
-  // Naviguer vers la page de départ selon le rôle
-  if(isTech) nav('planning');
-  else nav('dashboard');
+  // Page de départ selon le rôle
+  if(isManager) nav('dashboard');
+  else nav('planning');
 }
 
 // Filtrage des données selon l'utilisateur connecté
@@ -1281,6 +1318,15 @@ function getMyInterventions(){
   if(!currentUser) return interventions;
   if(currentUser.role==='manager') return interventions;
   return interventions.filter(i=>i.tech===currentUser.prenom);
+}
+
+// Pré-remplir le lieu depuis l'intervention en cours du technicien
+function autoFillLieu(){
+  const tech = document.getElementById('i-tech')?.value;
+  if(!tech) return;
+  const lastInt = interventions.filter(i=>i.tech===tech&&i.lieu).slice(-1)[0];
+  const lieuEl = document.getElementById('i-lieu');
+  if(lieuEl && !lieuEl.value && lastInt) lieuEl.value = lastInt.lieu;
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1442,6 +1488,11 @@ function postFeed(){
 // INTERVENTIONS
 // ══════════════════════════════════════════════════════════
 function renderInts(data){
+  // Peupler le filtre type avec intTypes dynamiques
+  const ftEl=document.getElementById('f-type');
+  if(ftEl&&ftEl.options.length<=1){
+    ftEl.innerHTML='<option value="">Tous types</option>'+intTypes.map(t=>`<option>${t}</option>`).join('');
+  }
   const q=(document.getElementById('f-q')?.value||'').toLowerCase();
   const fs=document.getElementById('f-stat')?.value||'';
   const ft=document.getElementById('f-tech')?.value||'';
@@ -1453,8 +1504,8 @@ function renderInts(data){
     (!q||(i.nom+i.client+i.lieu+i.tech).toLowerCase().includes(q))
   );
   // Masquer le filtre technicien pour les techs
-  const ftEl=document.getElementById('f-tech');
-  if(ftEl) ftEl.style.display=currentUser?.role==='tech'?'none':'';
+  const ftechEl=document.getElementById('f-tech');
+  if(ftechEl) ftechEl.style.display=currentUser?.role==='tech'?'none':'';
   const el=document.getElementById('int-list');
   if(!list.length){el.innerHTML='<div style="text-align:center;padding:56px;color:var(--mt)"><div style="font-size:36px;margin-bottom:10px">🔧</div><div style="font-weight:600">Aucune intervention</div></div>';return}
   el.innerHTML=list.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(i=>`
@@ -1837,9 +1888,280 @@ window.addEventListener('message',e=>{
 });
 
 // ══════════════════════════════════════════════════════════
-// FEUILLES D'HEURES
+// FEUILLES D'HEURES — SAISIE MENSUELLE
 // ══════════════════════════════════════════════════════════
-const JOURS=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+const MOIS_NOMS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const JOURS_SEM=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+
+// Heures d'avril 2026 pré-chargées pour François (depuis le fichier réel)
+const HEURES_AVRIL_FRANCOIS={
+  '2026-04-01':{mDeb:'7.50',mFin:'12.00',aDeb:'13.00',aFin:'17.00',total:'8.50',nat:false},
+  '2026-04-02':{mDeb:'7.50',mFin:'12.00',aDeb:'13.00',aFin:'17.00',total:'8.50',nat:false},
+  '2026-04-03':{mDeb:'7.50',mFin:'12.00',aDeb:'13.00',aFin:'17.00',total:'8.50',nat:false},
+  '2026-04-06':{ferie:true,total:'0'},
+  '2026-04-07':{mDeb:'7.50',mFin:'12.00',aDeb:'13.00',aFin:'17.00',total:'8.50',nat:false},
+  '2026-04-08':{mDeb:'7.50',mFin:'12.00',aDeb:'13.00',aFin:'17.00',total:'8.50',nat:false},
+  '2026-04-09':{mDeb:'7.50',mFin:'12.00',aDeb:'13.00',aFin:'18.00',total:'9.50',nat:false},
+  '2026-04-10':{mDeb:'7.50',mFin:'12.00',aDeb:'13.00',aFin:'17.50',total:'9.00',nat:false},
+  '2026-04-13':{mDeb:'7.50',mFin:'12.00',aDeb:'13.00',aFin:'17.50',total:'9.00',nat:false},
+  '2026-04-14':{mDeb:'7.50',mFin:'12.00',aDeb:'13.00',aFin:'17.75',total:'9.25',nat:false},
+  '2026-04-15':{mDeb:'7.50',mFin:'12.00',aDeb:'13.00',aFin:'17.25',total:'8.75',nat:false},
+  '2026-04-16':{mDeb:'7.50',mFin:'12.00',aDeb:'13.00',aFin:'17.75',total:'9.25',nat:false},
+  '2026-04-17':{mDeb:'7.50',mFin:'12.00',aDeb:'13.00',aFin:'18.50',total:'10.00',nat:false},
+  '2026-04-20':{mDeb:'7.50',mFin:'12.00',aDeb:'13.00',aFin:'17.75',total:'9.25',nat:false},
+  '2026-04-21':{mDeb:'7.50',mFin:'12.00',aDeb:'13.00',aFin:'17.75',total:'9.25',nat:false},
+  '2026-04-22':{mDeb:'7.50',mFin:'12.00',aDeb:'13.00',aFin:'17.00',total:'8.50',nat:false},
+  '2026-04-23':{mDeb:'7.50',mFin:'12.00',aDeb:'13.00',aFin:'17.75',total:'9.25',nat:false},
+  '2026-04-24':{mDeb:'7.50',mFin:'12.00',aDeb:'13.00',aFin:'17.50',total:'9.00',nat:false},
+  '2026-04-27':{mDeb:'8.50',mFin:'12.00',aDeb:'13.00',aFin:'17.75',total:'8.25',nat:false},
+  '2026-04-28':{mDeb:'8.50',mFin:'12.00',aDeb:'13.00',aFin:'17.75',total:'8.25',nat:false},
+  '2026-04-29':{mDeb:'8.00',mFin:'12.00',aDeb:'13.00',aFin:'17.00',total:'8.00',nat:false},
+  '2026-04-30':{mDeb:'8.50',mFin:'12.00',aDeb:'13.00',aFin:'17.75',total:'8.25',nat:false},
+};
+
+// Pré-charger avril François une seule fois
+(function preloadAvril(){
+  if(S.get('avril_loaded')) return;
+  const key='2026-04_François';
+  if(!heures[key]) heures[key]={days:{},obs:''};
+  Object.entries(HEURES_AVRIL_FRANCOIS).forEach(([date,d])=>{
+    heures[key].days[date]=d;
+  });
+  S.set('avril_loaded',true);
+  save();
+})();
+
+// Convertit décimal "7.50" → affichage "7,50"
+function fmtDec(v){
+  if(v===''||v===undefined||v===null) return '';
+  const n=parseFloat(v);
+  if(isNaN(n)) return '';
+  return n.toFixed(2).replace('.',',');
+}
+// Parse "7,50" ou "7.50" → nombre
+function parseDec(v){
+  if(!v) return 0;
+  const n=parseFloat(String(v).replace(',','.'));
+  return isNaN(n)?0:n;
+}
+
+// Clé de stockage mois+tech
+function fhKey(){
+  const m=document.getElementById('fh-month').value;
+  const y=document.getElementById('fh-year').value;
+  const t=currentUser?.role==='tech'?currentUser.prenom:document.getElementById('fh-tech').value;
+  return `${y}-${String(parseInt(m)+1).padStart(2,'0')}_${t}`;
+}
+
+// Init des selecteurs mois/année
+(function initFhSelects(){
+  const now=new Date();
+  const mEl=document.getElementById('fh-month');
+  const yEl=document.getElementById('fh-year');
+  if(mEl&&mEl.options.length===0){
+    mEl.innerHTML=MOIS_NOMS.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+    mEl.value=now.getMonth();
+  }
+  if(yEl&&yEl.options.length===0){
+    const yNow=now.getFullYear();
+    let opts='';
+    for(let y=yNow-1;y<=yNow+1;y++) opts+=`<option value="${y}">${y}</option>`;
+    yEl.innerHTML=opts;
+    yEl.value=yNow;
+  }
+})();
+
+function renderHeures(){
+  // Select technicien — uniquement ceux avec hasHeures
+  const fhTechSel=document.getElementById('fh-tech');
+  if(fhTechSel){
+    const usersH=USERS.filter(u=>u.hasHeures);
+    fhTechSel.innerHTML=usersH.map(u=>`<option>${u.prenom}</option>`).join('');
+    if(currentUser?.role==='tech'){
+      fhTechSel.value=currentUser.prenom;
+      fhTechSel.disabled=true;
+      fhTechSel.style.opacity='.6';
+    } else {
+      fhTechSel.disabled=false;
+      fhTechSel.style.opacity='';
+    }
+  }
+  const tech=currentUser?.role==='tech'?currentUser.prenom:(fhTechSel?.value||'François');
+  const month=parseInt(document.getElementById('fh-month').value);
+  const year=parseInt(document.getElementById('fh-year').value);
+  const key=fhKey();
+  if(!heures[key]) heures[key]={days:{},obs:''};
+  const monthData=heures[key];
+
+  document.getElementById('fh-title').textContent=`Feuille d'heures — ${tech} — ${MOIS_NOMS[month]} ${year}`;
+  document.getElementById('fh-obs').value=monthData.obs||'';
+
+  // Construire le tableau jour par jour
+  const nbDays=new Date(year,month+1,0).getDate();
+  let html=`<thead>
+    <tr style="background:var(--n2);color:#fff">
+      <th rowspan="2" style="padding:7px 8px;font-size:10px;text-transform:uppercase;letter-spacing:.4px;text-align:left">Jour</th>
+      <th colspan="2" style="padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:.4px;text-align:center;border-left:1px solid rgba(255,255,255,.15)">Matin</th>
+      <th colspan="2" style="padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:.4px;text-align:center;border-left:1px solid rgba(255,255,255,.15)">Après-midi</th>
+      <th rowspan="2" style="padding:7px 8px;font-size:10px;text-transform:uppercase;letter-spacing:.4px;text-align:center;border-left:1px solid rgba(255,255,255,.15)">Total<br>jour</th>
+      <th rowspan="2" style="padding:7px 6px;font-size:10px;text-transform:uppercase;letter-spacing:.4px;text-align:center;border-left:1px solid rgba(255,255,255,.15)">Av. nature<br>nourriture</th>
+    </tr>
+    <tr style="background:var(--n1);color:#fff">
+      <th style="padding:4px 6px;font-size:10px;text-align:center;border-left:1px solid rgba(255,255,255,.15)">Début</th>
+      <th style="padding:4px 6px;font-size:10px;text-align:center">Fin</th>
+      <th style="padding:4px 6px;font-size:10px;text-align:center;border-left:1px solid rgba(255,255,255,.15)">Début</th>
+      <th style="padding:4px 6px;font-size:10px;text-align:center">Fin</th>
+    </tr>
+  </thead><tbody>`;
+
+  let totalMois=0;
+  let weekTotal=0;
+  let weekNum=null;
+
+  for(let day=1;day<=nbDays;day++){
+    const date=new Date(year,month,day);
+    const dateStr=`${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const dow=date.getDay(); // 0=dim
+    const isWeekend=(dow===0||dow===6);
+    const curWeek=getISOWeek(date);
+    const d=monthData.days[dateStr]||{};
+
+    // Ligne de sous-total à la fin de chaque semaine (après dimanche)
+    if(weekNum!==null && curWeek!==weekNum){
+      html+=`<tr style="background:var(--gl)">
+        <td colspan="6" style="padding:6px 8px;text-align:right;font-weight:700;font-size:11px;color:var(--g2)">Total semaine S${weekNum}</td>
+        <td colspan="1" style="padding:6px 8px;text-align:center;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--g2)">${fmtDec(weekTotal)}</td>
+      </tr>`;
+      weekTotal=0;
+    }
+    weekNum=curWeek;
+
+    const dowName=JOURS_SEM[dow];
+    const total=parseDec(d.total);
+    if(!d.ferie) { totalMois+=total; weekTotal+=total; }
+    else { /* férié n'ajoute rien */ }
+
+    const rowBg=isWeekend?'background:var(--bg)':'';
+    if(d.ferie){
+      html+=`<tr style="${rowBg}">
+        <td style="padding:5px 8px;border-bottom:1px solid var(--brd);font-weight:600">${dowName} ${day}</td>
+        <td colspan="5" style="padding:5px 8px;border-bottom:1px solid var(--brd);text-align:center;color:var(--o1);font-weight:700;letter-spacing:1px">FÉRIÉ</td>
+        <td style="padding:5px 6px;border-bottom:1px solid var(--brd);text-align:center">
+          <button class="btn btn-ghost btn-xs" onclick="fhToggleFerie('${dateStr}')" title="Annuler férié">↩</button>
+        </td>
+      </tr>`;
+    } else {
+      html+=`<tr style="${rowBg}">
+        <td style="padding:3px 8px;border-bottom:1px solid var(--brd);font-weight:${isWeekend?'400':'600'};color:${isWeekend?'var(--mt)':'var(--txt)'};white-space:nowrap">
+          ${dowName} ${day}
+        </td>
+        <td style="padding:3px 4px;border-bottom:1px solid var(--brd);border-left:1px solid var(--brd)">
+          <input class="fh-cell" data-d="${dateStr}" data-f="mDeb" value="${fmtDec(d.mDeb)}" oninput="fhRecalc('${dateStr}')" placeholder="—"/>
+        </td>
+        <td style="padding:3px 4px;border-bottom:1px solid var(--brd)">
+          <input class="fh-cell" data-d="${dateStr}" data-f="mFin" value="${fmtDec(d.mFin)}" oninput="fhRecalc('${dateStr}')" placeholder="—"/>
+        </td>
+        <td style="padding:3px 4px;border-bottom:1px solid var(--brd);border-left:1px solid var(--brd)">
+          <input class="fh-cell" data-d="${dateStr}" data-f="aDeb" value="${fmtDec(d.aDeb)}" oninput="fhRecalc('${dateStr}')" placeholder="—"/>
+        </td>
+        <td style="padding:3px 4px;border-bottom:1px solid var(--brd)">
+          <input class="fh-cell" data-d="${dateStr}" data-f="aFin" value="${fmtDec(d.aFin)}" oninput="fhRecalc('${dateStr}')" placeholder="—"/>
+        </td>
+        <td style="padding:3px 4px;border-bottom:1px solid var(--brd);border-left:1px solid var(--brd)">
+          <input class="fh-cell fh-cell-total" data-d="${dateStr}" data-f="total" value="${fmtDec(d.total)}" oninput="fhEditTotal('${dateStr}')" placeholder="0" style="font-weight:700;color:var(--g2)"/>
+        </td>
+        <td style="padding:3px 6px;border-bottom:1px solid var(--brd);border-left:1px solid var(--brd);text-align:center">
+          <input type="checkbox" ${d.nat?'checked':''} onchange="fhToggleNat('${dateStr}',this.checked)" style="cursor:pointer"/>
+          <button class="btn btn-ghost btn-xs" onclick="fhToggleFerie('${dateStr}')" title="Marquer férié" style="padding:1px 5px;margin-left:2px">F</button>
+        </td>
+      </tr>`;
+    }
+  }
+  // Dernier sous-total de semaine
+  if(weekNum!==null){
+    html+=`<tr style="background:var(--gl)">
+      <td colspan="6" style="padding:6px 8px;text-align:right;font-weight:700;font-size:11px;color:var(--g2)">Total semaine S${weekNum}</td>
+      <td colspan="1" style="padding:6px 8px;text-align:center;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--g2)">${fmtDec(weekTotal)}</td>
+    </tr>`;
+  }
+  // Total mois
+  html+=`<tr style="background:var(--n2);color:#fff">
+    <td colspan="6" style="padding:8px;text-align:right;font-weight:700;font-size:12px">TOTAL DU MOIS</td>
+    <td colspan="1" style="padding:8px;text-align:center;font-weight:800;font-family:'JetBrains Mono',monospace;font-size:14px">${fmtDec(totalMois)}</td>
+  </tr>`;
+  html+='</tbody>';
+
+  document.getElementById('fh-table').innerHTML=html;
+  document.getElementById('fh-tot').textContent=fmtDec(totalMois).replace(',','h').replace(/h(\d+)/,'h$1')+'';
+  document.getElementById('fh-tot').textContent=fmtDec(totalMois)+' h';
+
+  renderSigBlock();
+}
+
+// Calcul auto du total depuis les 4 horaires
+function fhRecalc(dateStr){
+  const get=(f)=>document.querySelector(`.fh-cell[data-d="${dateStr}"][data-f="${f}"]`)?.value||'';
+  const mDeb=parseDec(get('mDeb')), mFin=parseDec(get('mFin'));
+  const aDeb=parseDec(get('aDeb')), aFin=parseDec(get('aFin'));
+  let total=0;
+  if(mFin>mDeb) total+=mFin-mDeb;
+  if(aFin>aDeb) total+=aFin-aDeb;
+  // Mettre à jour le champ total
+  const totEl=document.querySelector(`.fh-cell[data-d="${dateStr}"][data-f="total"]`);
+  if(totEl) totEl.value=fmtDec(total);
+  fhStore(dateStr);
+  fhRefreshTotals();
+}
+
+// Total édité manuellement
+function fhEditTotal(dateStr){
+  fhStore(dateStr);
+  fhRefreshTotals();
+}
+
+// Stocke les données d'un jour
+function fhStore(dateStr){
+  const key=fhKey();
+  if(!heures[key]) heures[key]={days:{},obs:''};
+  const get=(f)=>document.querySelector(`.fh-cell[data-d="${dateStr}"][data-f="${f}"]`)?.value||'';
+  const existing=heures[key].days[dateStr]||{};
+  heures[key].days[dateStr]={
+    mDeb:String(parseDec(get('mDeb'))||''),
+    mFin:String(parseDec(get('mFin'))||''),
+    aDeb:String(parseDec(get('aDeb'))||''),
+    aFin:String(parseDec(get('aFin'))||''),
+    total:String(parseDec(get('total'))||'0'),
+    nat:existing.nat||false,
+    ferie:false,
+  };
+  save();
+}
+
+function fhToggleNat(dateStr,checked){
+  const key=fhKey();
+  if(!heures[key]) heures[key]={days:{},obs:''};
+  if(!heures[key].days[dateStr]) heures[key].days[dateStr]={total:'0'};
+  heures[key].days[dateStr].nat=checked;
+  save();
+}
+
+function fhToggleFerie(dateStr){
+  const key=fhKey();
+  if(!heures[key]) heures[key]={days:{},obs:''};
+  const d=heures[key].days[dateStr]||{};
+  if(d.ferie){
+    heures[key].days[dateStr]={total:'0'};
+  } else {
+    heures[key].days[dateStr]={ferie:true,total:'0'};
+  }
+  save();
+  renderHeures();
+}
+
+// Recalcule tous les totaux semaine + mois sans tout re-render
+function fhRefreshTotals(){
+  renderHeures();
+}
 
 function getISOWeek(d){
   const date=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
@@ -1849,434 +2171,318 @@ function getISOWeek(d){
   return Math.ceil((((date-ys)/86400000)+1)/7);
 }
 
-(()=>{
-  const now=new Date();
-  const wk=getISOWeek(now);
-  document.getElementById('fh-week').value=`${now.getFullYear()}-W${String(wk).padStart(2,'0')}`;
-})();
-
-function renderHeures(){
-  const tech = currentUser?.role==='tech' ? currentUser.prenom : document.getElementById('fh-tech').value;
-  // Forcer le select sur le bon technicien et le désactiver pour les techs
-  const sel = document.getElementById('fh-tech');
-  if(sel){
-    if(currentUser?.role==='tech'){
-      sel.value = currentUser.prenom;
-      sel.disabled = true;
-      sel.style.opacity = '.6';
-    } else {
-      sel.disabled = false;
-      sel.style.opacity = '';
-    }
-  }
-  const wk=document.getElementById('fh-week').value;
-  if(!wk) return;
-  document.getElementById('fh-title').textContent=`Feuille d'heures — ${tech} — sem. ${wk}`;
-  const wd=heures[wk]||{};
-  document.getElementById('fh-days').innerHTML=JOURS.map(j=>{
-    const d=wd[j]||{chantier:'',deb:'08:00',fin:'17:00',pause:'1',total:'0'};
-    return `<div class="fh-day">
-      <div class="fh-day-hdr" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
-        <span class="dn">${j}</span>
-        <span style="font-size:12px;color:var(--mt)">${d.chantier||'—'} · <strong class="fh-total">${d.total||0}h</strong></span>
-        <span style="color:var(--mt)">▾</span>
-      </div>
-      <div class="fh-body">
-        <div class="fh-row">
-          <select class="fi" data-j="${j}" data-f="chantier" onchange="recalc('${j}')">
-            <option value="">— Chantier —</option>
-            ${interventions.map(i=>`<option ${i.nom===d.chantier?'selected':''}>${i.nom}</option>`).join('')}
-          </select>
-          <input class="fh-inp" type="time" value="${d.deb}" data-j="${j}" data-f="deb" oninput="recalc('${j}')"/>
-          <input class="fh-inp" type="time" value="${d.fin}" data-j="${j}" data-f="fin" oninput="recalc('${j}')"/>
-          <input class="fh-inp" type="number" step=".25" min="0" value="${d.pause}" data-j="${j}" data-f="pause" oninput="recalc('${j}')"/>
-          <div class="fh-total" id="tot-${j}">${d.total||0}h</div>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-  calcWeekTot();
-  renderFHRecap();
-  renderSigBlock();
-}
-
-function recalc(j){
-  const g=(f)=>document.querySelector(`[data-j="${j}"][data-f="${f}"]`)?.value||'';
-  const deb=g('deb'),fin=g('fin'),pause=parseFloat(g('pause'))||0;
-  if(!deb||!fin) return;
-  const [dh,dm]=deb.split(':').map(Number);
-  const [fh,fm]=fin.split(':').map(Number);
-  const tot=Math.max(0,(fh*60+fm-dh*60-dm)/60-pause);
-  document.getElementById('tot-'+j).textContent=tot.toFixed(2)+'h';
-  const wk=document.getElementById('fh-week').value;
-  if(!heures[wk]) heures[wk]={};
-  heures[wk][j]={chantier:g('chantier'),deb,fin,pause:g('pause'),total:tot.toFixed(2)};
-  calcWeekTot();save();
-}
-
-function calcWeekTot(){
-  const wk=document.getElementById('fh-week').value;
-  const wd=heures[wk]||{};
-  let tot=0;JOURS.forEach(j=>tot+=parseFloat(wd[j]?.total||0));
-  const tech=document.getElementById('fh-tech').value;
-  const t=TEAM.find(x=>x.prenom===tech);
-  const sup=Math.max(0,tot-(t?.h||35));
-  document.getElementById('fh-tot').textContent=tot.toFixed(1)+'h';
-  document.getElementById('fh-sup').textContent=sup.toFixed(1)+'h';
-}
-
-function renderFHRecap(){
-  document.getElementById('fh-recap').innerHTML=TEAM.map(t=>{
-    const tot=Object.values(heures).reduce((a,wk)=>a+JOURS.reduce((b,j)=>b+parseFloat(wk[j]?.total||0),0),0)/Math.max(Object.keys(heures).length,1);
-    const sup=Math.max(0,tot-t.h);
-    return `<tr>
-      <td><div style="display:flex;align-items:center;gap:8px">${av(t.prenom,27)} ${t.prenom}</div></td>
-      <td>${t.h}h</td>
-      <td style="font-family:'JetBrains Mono',monospace">${tot.toFixed(1)}h</td>
-      <td style="font-family:'JetBrains Mono',monospace;color:${sup>0?'var(--o1)':'var(--mt)'}">${sup.toFixed(1)}h</td>
-      <td>${sup>2?'<span class="badge b-o">Dépassement</span>':'<span class="badge b-g">OK</span>'}</td>
-    </tr>`;
-  }).join('');
-}
-
 function saveHeures(){
+  const key=fhKey();
+  if(!heures[key]) heures[key]={days:{},obs:''};
+  heures[key].obs=document.getElementById('fh-obs').value;
   save();
   renderSigBlock();
-  toast('Feuille enregistrée','ok');
-  syncSheets('Heures',[{semaine:document.getElementById('fh-week').value}]);
+  toast('Feuille du mois enregistrée','ok');
+  syncSheets('Heures',null);
+}
+
+function fhNav(d){
+  const mEl=document.getElementById('fh-month');
+  const yEl=document.getElementById('fh-year');
+  let m=parseInt(mEl.value)+d;
+  let y=parseInt(yEl.value);
+  if(m<0){m=11;y--;}
+  if(m>11){m=0;y++;}
+  mEl.value=m;
+  // S'assurer que l'année existe dans le select
+  if(!Array.from(yEl.options).some(o=>o.value==y)){
+    const opt=document.createElement('option');
+    opt.value=y;opt.textContent=y;
+    yEl.appendChild(opt);
+  }
+  yEl.value=y;
+  renderHeures();
+}
+
+// ── SIGNATURE DU MOIS ──
+function fhSigKey(){
+  const m=document.getElementById('fh-month').value;
+  const y=document.getElementById('fh-year').value;
+  return `${y}-${String(parseInt(m)+1).padStart(2,'0')}`;
 }
 
 function renderSigBlock(){
-  const tech=document.getElementById('fh-tech').value;
-  const wk=document.getElementById('fh-week').value;
-  if(!wk) return;
-  const wd=heures[wk]||{};
-  const sigKey=`sig_${wk}_${tech}`;
-  const sigData=wd[sigKey]||null;
+  const tech=currentUser?.role==='tech'?currentUser.prenom:document.getElementById('fh-tech').value;
+  const key=fhKey();
+  const monthData=heures[key]||{days:{},obs:''};
+  const sig=monthData.sig||null;
+  const m=parseInt(document.getElementById('fh-month').value);
+  const y=parseInt(document.getElementById('fh-year').value);
+  const periode=`${MOIS_NOMS[m]} ${y}`;
 
-  // Statut badge
+  // Statut
   const statusEl=document.getElementById('fh-sig-status');
   if(statusEl){
-    if(sigData?.sigManager){
-      statusEl.innerHTML='<span class="badge b-g">✅ Validée par le manager</span>';
-    } else if(sigData?.sigTech){
-      statusEl.innerHTML='<span class="badge b-c">✍️ Signée — en attente validation manager</span>';
-    } else {
-      statusEl.innerHTML='<span class="badge b-o">⏳ Non signée</span>';
-    }
+    if(sig?.sigManager) statusEl.innerHTML='<span class="badge b-g">✅ Validée par le manager</span>';
+    else if(sig?.sigTech) statusEl.innerHTML='<span class="badge b-c">✍️ Signée — attente manager</span>';
+    else statusEl.innerHTML='<span class="badge b-o">⏳ Non signée</span>';
   }
+
+  // Total du mois
+  let totalMois=0;
+  Object.values(monthData.days||{}).forEach(d=>{ if(!d.ferie) totalMois+=parseDec(d.total); });
 
   const body=document.getElementById('fh-sig-body');
   if(!body) return;
 
-  // Récap heures de la semaine
-  let totH=0;
-  JOURS.forEach(j=>totH+=parseFloat(wd[j]?.total||0));
-  const t=TEAM.find(x=>x.prenom===tech);
-  const contrat=t?.h||35;
-  const sup=Math.max(0,totH-contrat);
-
-  body.innerHTML=`
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">
-      ${[
-        ['Technicien',tech],
-        ['Semaine',wk],
-        ['Total heures',totH.toFixed(1)+'h'],
-        ['Heures sup',sup>0?'<span style="color:var(--o1);font-weight:700">+'+sup.toFixed(1)+'h</span>':'0h'],
-      ].map(([l,v])=>`
-        <div style="background:var(--bg);border-radius:7px;padding:9px 12px">
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--mt);font-weight:600;margin-bottom:3px">${l}</div>
-          <div style="font-size:14px;font-weight:700">${v}</div>
-        </div>`).join('')}
-    </div>
-
-    ${sigData?.sigManager
-      ? `<div style="background:var(--gl);border:1px solid var(--g1);border-radius:9px;padding:14px 16px;display:flex;align-items:center;gap:12px">
-          <div style="font-size:28px">✅</div>
-          <div>
-            <div style="font-size:14px;font-weight:700;color:var(--g2)">Feuille validée et signée</div>
-            <div style="font-size:12px;color:var(--mt);margin-top:3px">Technicien : ${tech} · Manager : Damien · ${new Date(sigData.ts).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}</div>
-          </div>
-          <div style="margin-left:auto;display:flex;gap:7px">
-            <button class="btn btn-ghost btn-sm" onclick="openFeuillePDF('${tech}','${wk}')">🖨️ Imprimer</button>
-            <button class="btn btn-ghost btn-sm" style="color:var(--r1)" onclick="resetSig('${tech}','${wk}')">↩ Réinitialiser</button>
-          </div>
-        </div>`
-      : sigData?.sigTech
-        ? `<div style="background:var(--cl);border:1px solid var(--c1);border-radius:9px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px">
-            <div style="font-size:22px">✍️</div>
-            <div>
-              <div style="font-size:13px;font-weight:700;color:#006688">Signée par ${tech}</div>
-              <div style="font-size:12px;color:var(--mt)">En attente de votre validation, Damien</div>
-            </div>
-          </div>
-          <div style="display:flex;gap:9px;justify-content:flex-end">
-            <button class="btn btn-ghost btn-sm" onclick="openFeuilleSig('${tech}','${wk}')">Voir la signature</button>
-            <button class="btn btn-g" onclick="validerManager('${tech}','${wk}')">✅ Valider &amp; signer en tant que manager</button>
-          </div>`
-        : `<div style="display:flex;gap:14px;align-items:flex-start">
-            <div style="flex:1">
-              <p style="font-size:13px;color:var(--mt);margin-bottom:12px">Le technicien doit signer sa feuille pour confirmer les heures déclarées. Le manager valide ensuite.</p>
-              <div style="display:flex;gap:8px">
-                <button class="btn btn-n" onclick="openFeuilleSig('${tech}','${wk}')">✍️ Signer la feuille — ${tech}</button>
-                <button class="btn btn-ghost btn-sm" onclick="openFeuillePDF('${tech}','${wk}')">🖨️ Aperçu PDF</button>
-              </div>
-            </div>
-          </div>`
-    }`;
+  if(sig?.sigManager){
+    body.innerHTML=`
+      <div style="background:var(--gl);border:1px solid var(--g1);border-radius:9px;padding:14px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="font-size:26px">✅</div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--g2)">Feuille du mois validée et signée</div>
+          <div style="font-size:12px;color:var(--mt);margin-top:3px">${tech} · ${periode} · ${fmtDec(totalMois)} h · Manager : Damien</div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:7px">
+          <button class="btn btn-ghost btn-sm" onclick="printFeuille()">🖨️ Imprimer</button>
+          <button class="btn btn-ghost btn-sm" style="color:var(--r1)" onclick="resetSig()">↩ Réinitialiser</button>
+        </div>
+      </div>`;
+  } else if(sig?.sigTech){
+    body.innerHTML=`
+      <div style="background:var(--cl);border:1px solid var(--c1);border-radius:9px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px">
+        <div style="font-size:22px">✍️</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#006688">Signée par ${tech}</div>
+          <div style="font-size:12px;color:var(--mt)">${periode} · ${fmtDec(totalMois)} h · En attente de validation manager</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="openFeuilleSig()">Voir la feuille</button>
+        ${currentUser?.role==='manager'?`<button class="btn btn-g" onclick="validerManager()">✅ Valider &amp; signer (manager)</button>`:''}
+      </div>`;
+  } else {
+    body.innerHTML=`
+      <p style="font-size:13px;color:var(--mt);margin-bottom:12px">
+        Vérifiez vos heures puis signez la feuille du mois. ${tech} signe, puis le manager valide.
+      </p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-n" onclick="openFeuilleSig()">✍️ Signer la feuille — ${tech}</button>
+        <button class="btn btn-ghost btn-sm" onclick="printFeuille()">🖨️ Aperçu impression</button>
+      </div>`;
+  }
 }
 
-function openFeuilleSig(tech, wk){
-  const wd = heures[wk]||{};
-  let totH = 0;
-  JOURS.forEach(j=>totH+=parseFloat(wd[j]?.total||0));
-  const t = TEAM.find(x=>x.prenom===tech);
-  const sup = Math.max(0, totH-(t?.h||35));
-  const sigKey = `sig_${wk}_${tech}`;
-  const existSig = wd[sigKey];
-  const isSigned = !!existSig?.sigTech;
-  const isValidated = !!existSig?.sigManager;
-
-  document.getElementById('mo-fh-sig-ttl').textContent = `Feuille d'heures — ${tech}`;
-  document.getElementById('mo-fh-sig-sub').textContent = `Semaine ${wk} · ${totH.toFixed(1)}h${sup>0?' · +'+sup.toFixed(1)+'h sup':''}`;
-
-  // Récap KPIs
-  document.getElementById('mo-fh-sig-recap').innerHTML=`
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-      ${[['Technicien',tech,'var(--n1)'],['Semaine',wk,'var(--n1)'],
-         ['Total',totH.toFixed(1)+'h','var(--g1)'],
-         ['Sup',sup>0?'+'+sup.toFixed(1)+'h':'0h',sup>0?'var(--o1)':'var(--g1)']
-        ].map(([l,v,c])=>`
-        <div style="background:var(--bg);border-radius:7px;padding:8px 10px;text-align:center">
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--mt);font-weight:600">${l}</div>
-          <div style="font-size:15px;font-weight:800;color:${c};font-family:'JetBrains Mono',monospace;margin-top:2px">${v}</div>
-        </div>`).join('')}
-    </div>`;
-
-  // Tableau journées
-  document.getElementById('mo-fh-sig-table').innerHTML=`
-    <table class="tbl" style="font-size:12px">
-      <thead><tr><th>Jour</th><th>Chantier</th><th>Début</th><th>Fin</th><th>Pause</th><th>Total</th></tr></thead>
-      <tbody>
-        ${JOURS.map(j=>{
-          const d=wd[j];
-          if(!d||!d.total||parseFloat(d.total)===0)
-            return `<tr><td>${j}</td><td colspan="5" style="color:var(--mt);font-style:italic">Repos / absent</td></tr>`;
-          return `<tr><td><strong>${j}</strong></td><td>${d.chantier||'—'}</td><td>${d.deb||'—'}</td><td>${d.fin||'—'}</td><td>${d.pause||0}h</td><td><strong class="fh-total">${d.total}h</strong></td></tr>`;
-        }).join('')}
-        <tr style="background:var(--nl)">
-          <td colspan="5" style="text-align:right;font-weight:700;font-size:13px">TOTAL SEMAINE</td>
-          <td><strong style="font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--n1)">${totH.toFixed(1)}h</strong></td>
-        </tr>
-      </tbody>
-    </table>`;
-
-  // Zone signature
-  const zone = document.getElementById('mo-fh-sig-zone');
-  const footer = document.getElementById('mo-fh-sig-footer');
-
-  if(isValidated){
-    zone.innerHTML=`
-      <div style="background:var(--gl);border:1px solid var(--g1);border-radius:9px;padding:14px 16px;text-align:center">
-        <div style="font-size:22px;margin-bottom:6px">✅</div>
-        <div style="font-size:14px;font-weight:700;color:var(--g2)">Feuille validée et signée</div>
-        <div style="font-size:12px;color:var(--mt);margin-top:3px">Technicien : ${tech} · Manager : Damien</div>
-      </div>`;
-    footer.innerHTML=`
-      <button class="btn btn-ghost" onclick="closeMo('mo-fh-sig')">Fermer</button>
-      <button class="btn btn-ghost" onclick="printFeuille('${tech}','${wk}')">🖨️ Imprimer</button>
-      <button class="btn btn-ghost btn-sm" style="color:var(--r1)" onclick="resetSig('${tech}','${wk}')">↩ Réinitialiser</button>`;
-
-  } else if(isSigned){
-    zone.innerHTML=`
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-        <div style="text-align:center">
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mt);margin-bottom:6px">Signature technicien — ${tech}</div>
-          <img src="${existSig.sigTech}" style="border:1px solid var(--brd);border-radius:8px;background:#fafafa;max-width:100%;height:90px;object-fit:contain"/>
-          <div style="font-size:11px;color:var(--g2);margin-top:4px">✓ Signé</div>
-        </div>
-        <div style="text-align:center">
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mt);margin-bottom:6px">Visa manager — Damien</div>
-          <div style="border:1px dashed var(--brd);border-radius:8px;height:90px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--mt);background:var(--bg)">En attente de validation</div>
-        </div>
-      </div>`;
-    footer.innerHTML=`
-      <button class="btn btn-ghost" onclick="closeMo('mo-fh-sig')">Fermer</button>
-      ${currentUser?.role==='manager'?`<button class="btn btn-g" onclick="validerManager('${tech}','${wk}')">✅ Valider &amp; signer</button>`:''}`;
-
-  } else {
-    // Pad de signature inline avec canvas
-    zone.innerHTML=`
-      <div style="margin-bottom:12px">
-        <div style="font-size:12px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
-          ✍️ Signez ci-dessous pour certifier vos heures
-        </div>
-        <div style="position:relative;border:2px dashed var(--brd);border-radius:10px;background:var(--bg);overflow:hidden">
-          <canvas id="sig-canvas-fh" style="display:block;width:100%;height:120px;cursor:crosshair;touch-action:none"></canvas>
-          <div id="sig-hint" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:13px;color:var(--mt);font-style:italic;pointer-events:none">Signez ici…</div>
-        </div>
-        <div style="font-size:11px;color:var(--mt);margin-top:5px;text-align:center">
-          Je soussigné(e) <strong>${tech}</strong> certifie l'exactitude des heures déclarées ci-dessus.
-        </div>
-      </div>`;
-    footer.innerHTML=`
-      <button class="btn btn-ghost" onclick="clearSigCanvas()">🗑️ Effacer</button>
-      <button class="btn btn-ghost" onclick="closeMo('mo-fh-sig')">Annuler</button>
-      <button class="btn btn-g" onclick="saveSigFH('${tech}','${wk}')">✅ Confirmer la signature</button>`;
-
-    // Initialiser le canvas après rendu
-    setTimeout(()=>initSigCanvas(), 50);
+// Construit le tableau HTML de la feuille (pour modal signature + impression)
+function buildFeuilleTable(tech,monthData,m,y){
+  const nbDays=new Date(y,m+1,0).getDate();
+  let rows='';
+  let weekTotal=0, weekNum=null, totalMois=0;
+  for(let day=1;day<=nbDays;day++){
+    const date=new Date(y,m,day);
+    const dateStr=`${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const dow=date.getDay();
+    const curWeek=getISOWeek(date);
+    const d=(monthData.days||{})[dateStr]||{};
+    if(weekNum!==null&&curWeek!==weekNum){
+      rows+=`<tr style="background:#eaf3e0"><td colspan="5" style="text-align:right;font-weight:bold;padding:5px 8px;color:#3d6b1f">Total semaine S${weekNum}</td><td style="text-align:center;font-weight:bold;padding:5px 8px;color:#3d6b1f">${fmtDec(weekTotal)}</td><td></td></tr>`;
+      weekTotal=0;
+    }
+    weekNum=curWeek;
+    const total=parseDec(d.total);
+    if(!d.ferie) { totalMois+=total; weekTotal+=total; }
+    const dowName=JOURS_SEM[dow];
+    if(d.ferie){
+      rows+=`<tr><td style="padding:4px 8px;font-weight:bold">${dowName} ${day}</td><td colspan="5" style="padding:4px 8px;text-align:center;color:#e07b2a;font-weight:bold;letter-spacing:1px">FÉRIÉ</td><td></td></tr>`;
+    } else {
+      const empty=(!d.mDeb&&!d.aDeb&&!d.total);
+      rows+=`<tr>
+        <td style="padding:4px 8px;font-weight:${dow===0||dow===6?'normal':'bold'};color:${dow===0||dow===6?'#999':'#111'}">${dowName} ${day}</td>
+        <td style="padding:4px 8px;text-align:center">${fmtDec(d.mDeb)||'—'}</td>
+        <td style="padding:4px 8px;text-align:center">${fmtDec(d.mFin)||'—'}</td>
+        <td style="padding:4px 8px;text-align:center">${fmtDec(d.aDeb)||'—'}</td>
+        <td style="padding:4px 8px;text-align:center">${fmtDec(d.aFin)||'—'}</td>
+        <td style="padding:4px 8px;text-align:center;font-weight:bold;color:#5b9e2f">${fmtDec(d.total)||(empty?'':'0')}</td>
+        <td style="padding:4px 8px;text-align:center">${d.nat?'✓':''}</td>
+      </tr>`;
+    }
   }
+  if(weekNum!==null){
+    rows+=`<tr style="background:#eaf3e0"><td colspan="5" style="text-align:right;font-weight:bold;padding:5px 8px;color:#3d6b1f">Total semaine S${weekNum}</td><td style="text-align:center;font-weight:bold;padding:5px 8px;color:#3d6b1f">${fmtDec(weekTotal)}</td><td></td></tr>`;
+  }
+  rows+=`<tr style="background:#1a3a6b;color:#fff"><td colspan="5" style="text-align:right;font-weight:bold;padding:7px 8px">TOTAL DU MOIS</td><td style="text-align:center;font-weight:bold;padding:7px 8px;font-size:14px">${fmtDec(totalMois)}</td><td></td></tr>`;
+  return {rows,totalMois};
+}
 
+function openFeuilleSig(){
+  const tech=currentUser?.role==='tech'?currentUser.prenom:document.getElementById('fh-tech').value;
+  const key=fhKey();
+  const m=parseInt(document.getElementById('fh-month').value);
+  const y=parseInt(document.getElementById('fh-year').value);
+  const monthData=heures[key]||{days:{},obs:''};
+  const sig=monthData.sig||null;
+  const {rows,totalMois}=buildFeuilleTable(tech,monthData,m,y);
+
+  document.getElementById('mo-fh-sig-ttl').textContent=`Feuille d'heures — ${tech}`;
+  document.getElementById('mo-fh-sig-sub').textContent=`${MOIS_NOMS[m]} ${y} · Total ${fmtDec(totalMois)} h`;
+  document.getElementById('mo-fh-sig-recap').innerHTML=`
+    <div style="background:var(--bg);border-radius:7px;padding:9px 12px;font-size:13px">
+      <strong>${tech}</strong> — ${MOIS_NOMS[m]} ${y} — Total : <strong style="color:var(--g1)">${fmtDec(totalMois)} h</strong>
+    </div>`;
+  document.getElementById('mo-fh-sig-table').innerHTML=`
+    <table class="tbl" style="font-size:11.5px">
+      <thead><tr>
+        <th>Jour</th><th>M.Déb</th><th>M.Fin</th><th>A.Déb</th><th>A.Fin</th><th>Total</th><th>Nat.</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    ${monthData.obs?`<div style="margin-top:10px;font-size:12px;background:var(--bg);padding:8px 11px;border-radius:6px"><strong>Observations :</strong> ${monthData.obs}</div>`:''}`;
+
+  const zone=document.getElementById('mo-fh-sig-zone');
+  const footer=document.getElementById('mo-fh-sig-footer');
+
+  if(sig?.sigManager){
+    zone.innerHTML=`<div style="background:var(--gl);border:1px solid var(--g1);border-radius:9px;padding:14px;text-align:center">
+      <div style="font-size:22px;margin-bottom:6px">✅</div>
+      <div style="font-size:14px;font-weight:700;color:var(--g2)">Feuille validée et signée</div>
+      <div style="font-size:12px;color:var(--mt);margin-top:3px">${tech} · Manager : Damien</div>
+    </div>`;
+    footer.innerHTML=`<button class="btn btn-ghost" onclick="closeMo('mo-fh-sig')">Fermer</button>
+      <button class="btn btn-ghost" onclick="printFeuille()">🖨️ Imprimer</button>`;
+  } else if(sig?.sigTech){
+    zone.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div style="text-align:center">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mt);margin-bottom:6px">Signature ${tech}</div>
+        <img src="${sig.sigTech}" style="border:1px solid var(--brd);border-radius:8px;background:#fafafa;max-width:100%;height:90px;object-fit:contain"/>
+        <div style="font-size:11px;color:var(--g2);margin-top:4px">✓ Signé</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mt);margin-bottom:6px">Visa manager — Damien</div>
+        <div style="border:1px dashed var(--brd);border-radius:8px;height:90px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--mt);background:var(--bg)">En attente</div>
+      </div>
+    </div>`;
+    footer.innerHTML=`<button class="btn btn-ghost" onclick="closeMo('mo-fh-sig')">Fermer</button>
+      ${currentUser?.role==='manager'?`<button class="btn btn-g" onclick="validerManager()">✅ Valider &amp; signer</button>`:''}`;
+  } else {
+    zone.innerHTML=`<div style="margin-bottom:12px">
+      <div style="font-size:12px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">✍️ Signez pour certifier vos heures</div>
+      <div style="position:relative;border:2px dashed var(--brd);border-radius:10px;background:var(--bg);overflow:hidden">
+        <canvas id="sig-canvas-fh" style="display:block;width:100%;height:120px;cursor:crosshair;touch-action:none"></canvas>
+        <div id="sig-hint" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:13px;color:var(--mt);font-style:italic;pointer-events:none">Signez ici…</div>
+      </div>
+      <div style="font-size:11px;color:var(--mt);margin-top:5px;text-align:center">
+        Je soussigné(e) <strong>${tech}</strong> certifie l'exactitude des heures déclarées pour ${MOIS_NOMS[m]} ${y}.
+      </div>
+    </div>`;
+    footer.innerHTML=`<button class="btn btn-ghost" onclick="clearSigCanvas()">🗑️ Effacer</button>
+      <button class="btn btn-ghost" onclick="closeMo('mo-fh-sig')">Annuler</button>
+      <button class="btn btn-g" onclick="saveSigFH()">✅ Confirmer la signature</button>`;
+    setTimeout(()=>initSigCanvas(),50);
+  }
   document.getElementById('mo-fh-sig').style.display='flex';
 }
 
 function initSigCanvas(){
-  const canvas = document.getElementById('sig-canvas-fh');
+  const canvas=document.getElementById('sig-canvas-fh');
   if(!canvas) return;
-  // Ajuster la résolution réelle du canvas à sa taille CSS
-  const rect = canvas.getBoundingClientRect();
-  canvas.width = rect.width * window.devicePixelRatio;
-  canvas.height = rect.height * window.devicePixelRatio;
-  const ctx = canvas.getContext('2d');
-  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-  ctx.strokeStyle='#1a3a6b';
-  ctx.lineWidth=2.5;
-  ctx.lineCap='round';
-  ctx.lineJoin='round';
-  let drawing = false;
-
-  function getPos(e){
-    const r = canvas.getBoundingClientRect();
-    const src = e.touches ? e.touches[0] : e;
-    return {x: src.clientX - r.left, y: src.clientY - r.top};
-  }
-
-  canvas.addEventListener('mousedown', e=>{
-    drawing=true;
-    const p=getPos(e);
-    ctx.beginPath();ctx.moveTo(p.x,p.y);
-    document.getElementById('sig-hint').style.display='none';
-  });
-  canvas.addEventListener('mousemove', e=>{
-    if(!drawing)return;
-    const p=getPos(e);ctx.lineTo(p.x,p.y);ctx.stroke();
-  });
-  canvas.addEventListener('mouseup', ()=>drawing=false);
-  canvas.addEventListener('mouseleave', ()=>drawing=false);
-
-  canvas.addEventListener('touchstart', e=>{
-    e.preventDefault();drawing=true;
-    const p=getPos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);
-    document.getElementById('sig-hint').style.display='none';
-  },{passive:false});
-  canvas.addEventListener('touchmove', e=>{
-    e.preventDefault();if(!drawing)return;
-    const p=getPos(e);ctx.lineTo(p.x,p.y);ctx.stroke();
-  },{passive:false});
-  canvas.addEventListener('touchend', ()=>drawing=false);
+  const rect=canvas.getBoundingClientRect();
+  canvas.width=rect.width*window.devicePixelRatio;
+  canvas.height=rect.height*window.devicePixelRatio;
+  const ctx=canvas.getContext('2d');
+  ctx.scale(window.devicePixelRatio,window.devicePixelRatio);
+  ctx.strokeStyle='#1a3a6b';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.lineJoin='round';
+  let drawing=false;
+  function pos(e){const r=canvas.getBoundingClientRect();const s=e.touches?e.touches[0]:e;return{x:s.clientX-r.left,y:s.clientY-r.top};}
+  canvas.addEventListener('mousedown',e=>{drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);document.getElementById('sig-hint').style.display='none';});
+  canvas.addEventListener('mousemove',e=>{if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();});
+  canvas.addEventListener('mouseup',()=>drawing=false);
+  canvas.addEventListener('mouseleave',()=>drawing=false);
+  canvas.addEventListener('touchstart',e=>{e.preventDefault();drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);document.getElementById('sig-hint').style.display='none';},{passive:false});
+  canvas.addEventListener('touchmove',e=>{e.preventDefault();if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();},{passive:false});
+  canvas.addEventListener('touchend',()=>drawing=false);
 }
 
 function clearSigCanvas(){
-  const canvas = document.getElementById('sig-canvas-fh');
-  if(!canvas) return;
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const c=document.getElementById('sig-canvas-fh');
+  if(!c) return;
+  c.getContext('2d').clearRect(0,0,c.width,c.height);
   document.getElementById('sig-hint').style.display='';
 }
 
-function saveSigFH(tech, wk){
-  const canvas = document.getElementById('sig-canvas-fh');
+function saveSigFH(){
+  const canvas=document.getElementById('sig-canvas-fh');
   if(!canvas){toast('Canvas introuvable','err');return;}
-  // Vérifier que le canvas n'est pas vide
-  const ctx = canvas.getContext('2d');
-  const data = ctx.getImageData(0,0,canvas.width,canvas.height).data;
-  const hasContent = data.some(v=>v!==0);
-  if(!hasContent){toast('Veuillez signer avant de confirmer','err');return;}
-
-  const sigData = canvas.toDataURL('image/png');
-  const wk2 = document.getElementById('fh-week').value;
-  if(!heures[wk]) heures[wk]={};
-  const sigKey = `sig_${wk}_${tech}`;
-  heures[wk][sigKey]={sigTech:sigData, sigManager:null, ts:Date.now()};
+  const ctx=canvas.getContext('2d');
+  const data=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+  if(!data.some(v=>v!==0)){toast('Veuillez signer avant de confirmer','err');return;}
+  const tech=currentUser?.role==='tech'?currentUser.prenom:document.getElementById('fh-tech').value;
+  const key=fhKey();
+  if(!heures[key]) heures[key]={days:{},obs:''};
+  heures[key].sig={sigTech:canvas.toDataURL('image/png'),sigManager:null,ts:Date.now()};
   save();
   closeMo('mo-fh-sig');
   renderSigBlock();
   toast('Feuille signée par '+tech+' ✓','ok');
 }
 
-function printFeuille(tech, wk){
-  // Ouvrir une version imprimable simple sans script
-  const wd=heures[wk]||{};
-  let totH=0;
-  JOURS.forEach(j=>totH+=parseFloat(wd[j]?.total||0));
-  const sigKey=`sig_${wk}_${tech}`;
-  const existSig=wd[sigKey];
-  const w=window.open('','_blank','width=780,height=860');
-  const rows=JOURS.map(j=>{
-    const d=wd[j];
-    if(!d||!d.total||parseFloat(d.total)===0) return `<tr><td>${j}</td><td colspan="5" style="color:#b0bec5;font-style:italic">Repos / absent</td></tr>`;
-    return `<tr><td><b>${j}</b></td><td>${d.chantier||'—'}</td><td>${d.deb||'—'}</td><td>${d.fin||'—'}</td><td>${d.pause||0}h</td><td><b style="color:#5b9e2f">${d.total}h</b></td></tr>`;
-  }).join('');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Feuille ${tech} ${wk}</title>
-  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;padding:30px;font-size:12px}
-  h1{font-size:18px;color:#1a3a6b;margin-bottom:4px}h2{font-size:13px;color:#5b9e2f;margin-bottom:16px}
-  table{width:100%;border-collapse:collapse;margin:12px 0}th{background:#f0f3f9;padding:7px 9px;text-align:left;font-size:11px;border-bottom:2px solid #dde3ef}
-  td{padding:7px 9px;border-bottom:1px solid #f0f3f9}
-  .sigs{display:flex;gap:40px;margin-top:24px;padding-top:16px;border-top:2px solid #dde3ef}
-  .sig-box{flex:1;text-align:center}.sig-lbl{font-size:10px;text-transform:uppercase;font-weight:bold;color:#64748b;margin-bottom:8px}
-  img{border:1px solid #dde3ef;border-radius:6px;max-width:100%;height:80px;object-fit:contain}
-  .empty-sig{border:1px dashed #dde3ef;border-radius:6px;height:80px;display:flex;align-items:center;justify-content:center;color:#b0bec5;font-size:11px}
-  </style></head><body>
-  <h1>Self<span style="color:#5b9e2f">Béton</span> Autun — Feuille d'heures</h1>
-  <h2>${tech} · Semaine ${wk} · Total : ${totH.toFixed(1)}h</h2>
-  <table><thead><tr><th>Jour</th><th>Chantier</th><th>Début</th><th>Fin</th><th>Pause</th><th>Total</th></tr></thead>
-  <tbody>${rows}<tr style="background:#f0f3f9"><td colspan="5" style="text-align:right;font-weight:bold">TOTAL</td><td><b>${totH.toFixed(1)}h</b></td></tr></tbody></table>
-  <div class="sigs">
-    <div class="sig-box"><div class="sig-lbl">Signature technicien — ${tech}</div>
-      ${existSig?.sigTech?`<img src="${existSig.sigTech}"/>`:'<div class="empty-sig">Non signé</div>'}</div>
-    <div class="sig-box"><div class="sig-lbl">Visa manager — Damien</div>
-      ${existSig?.sigManager?'<div style="color:#5b9e2f;font-weight:bold;font-size:14px;margin-top:20px">✓ Validé</div>':'<div class="empty-sig">En attente</div>'}</div>
-  </div>
-  <script>window.onload=()=>window.print()<\/script>
-  </body></html>`);
-  w.document.close();
-}
-
-
-
-function validerManager(tech, wk){
-  if(!heures[wk]) heures[wk]={};
-  const sigKey=`sig_${wk}_${tech}`;
-  const existing=heures[wk][sigKey]||{};
-  // Signature manager = validation automatique (pas de pad requis)
-  heures[wk][sigKey]={...existing, sigManager:'validated_'+Date.now(), ts:Date.now()};
+function validerManager(){
+  const key=fhKey();
+  if(!heures[key]) heures[key]={days:{},obs:''};
+  const ex=heures[key].sig||{};
+  heures[key].sig={...ex,sigManager:'validated_'+Date.now(),ts:Date.now()};
   save();
   closeMo('mo-fh-sig');
   renderSigBlock();
   toast('Feuille validée par Damien ✓','ok');
 }
 
-function resetSig(tech, wk){
-  if(!confirm('Réinitialiser les signatures de cette semaine ?')) return;
-  if(heures[wk]){delete heures[wk][`sig_${wk}_${tech}`];}
+function resetSig(){
+  if(!confirm('Réinitialiser les signatures de ce mois ?')) return;
+  const key=fhKey();
+  if(heures[key]) delete heures[key].sig;
   save();renderSigBlock();toast('Signatures réinitialisées');
 }
 
-function openFeuillePDF(tech, wk){
-  printFeuille(tech, wk);
+function printFeuille(){
+  const tech=currentUser?.role==='tech'?currentUser.prenom:document.getElementById('fh-tech').value;
+  const key=fhKey();
+  const m=parseInt(document.getElementById('fh-month').value);
+  const y=parseInt(document.getElementById('fh-year').value);
+  const monthData=heures[key]||{days:{},obs:''};
+  const sig=monthData.sig||null;
+  const {rows,totalMois}=buildFeuilleTable(tech,monthData,m,y);
+  const w=window.open('','_blank','width=820,height=1000');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Feuille '+tech+' '+MOIS_NOMS[m]+' '+y+'</title>'+
+  '<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;padding:28px;font-size:11px;color:#111}'+
+  'h1{font-size:17px;color:#1a3a6b;margin-bottom:3px}h2{font-size:12px;color:#5b9e2f;margin-bottom:14px}'+
+  '.head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #5b9e2f;padding-bottom:10px;margin-bottom:14px}'+
+  '.meta{text-align:right;font-size:11px;color:#555}'+
+  'table{width:100%;border-collapse:collapse;margin:8px 0}'+
+  'th{background:#1a3a6b;color:#fff;padding:5px 6px;font-size:9px;text-transform:uppercase;border:1px solid #dde3ef}'+
+  'td{padding:4px 6px;border:1px solid #e8ebf2;font-size:10.5px}'+
+  '.obs{margin-top:12px;border:1px solid #dde3ef;border-radius:6px;padding:9px 11px;font-size:10.5px;min-height:50px}'+
+  '.sigs{display:flex;gap:40px;margin-top:20px;padding-top:14px;border-top:2px solid #dde3ef}'+
+  '.sig-box{flex:1;text-align:center}.sl{font-size:9px;text-transform:uppercase;font-weight:bold;color:#64748b;margin-bottom:6px}'+
+  'img{border:1px solid #dde3ef;border-radius:6px;max-width:100%;height:70px;object-fit:contain}'+
+  '.empty{border:1px dashed #ccd;border-radius:6px;height:70px;display:flex;align-items:center;justify-content:center;color:#aab;font-size:10px}'+
+  '.foot{margin-top:16px;padding-top:10px;border-top:1px solid #dde3ef;font-size:9px;color:#888;text-align:center}'+
+  '@media print{button{display:none}}</style></head><body>'+
+  '<div class="head"><div><h1>Self<span style="color:#5b9e2f">Béton</span> Autun</h1>'+
+  '<div style="font-size:10px;color:#888">Feuille d\'heures mensuelle</div></div>'+
+  '<div class="meta"><strong style="font-size:13px;color:#111">'+tech+'</strong><br>'+MOIS_NOMS[m]+' '+y+'<br>Total : '+fmtDec(totalMois)+' h</div></div>'+
+  '<table><thead><tr><th rowspan="2">Jour</th><th colspan="2">Matin</th><th colspan="2">Après-midi</th><th rowspan="2">Total jour</th><th rowspan="2">Av. nature</th></tr>'+
+  '<tr><th>Début</th><th>Fin</th><th>Début</th><th>Fin</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+  '<div><div style="font-size:9px;text-transform:uppercase;font-weight:bold;color:#64748b;margin-bottom:4px">Observations</div>'+
+  '<div class="obs">'+(monthData.obs||'')+'</div></div>'+
+  '<div class="sigs">'+
+  '<div class="sig-box"><div class="sl">Signature salarié — '+tech+'</div>'+
+  (sig&&sig.sigTech?'<img src="'+sig.sigTech+'"/>':'<div class="empty">Non signé</div>')+'</div>'+
+  '<div class="sig-box"><div class="sl">Signature employeur — Damien</div>'+
+  (sig&&sig.sigManager?'<div style="color:#5b9e2f;font-weight:bold;font-size:13px;margin-top:24px">✓ Validé</div>':'<div class="empty">En attente</div>')+'</div>'+
+  '</div>'+
+  '<div class="foot">SELFBETON AUTUN — autun.selfbeton@gmail.com — Document attestant des heures travaillées. Signature du salarié et de l\'employeur valant accord.</div>'+
+  '<scr'+'ipt>window.onload=function(){window.print()}<\/scr'+'ipt>'+
+  '</body></html>');
+  w.document.close();
 }
 
+function openFeuillePDF(){ printFeuille(); }
 
-function fhNav(d){
-  const el=document.getElementById('fh-week');
-  const [y,w]=el.value.split('-W').map(Number);
-  const nw=w+d;
-  if(nw<1) el.value=`${y-1}-W52`;
-  else if(nw>52) el.value=`${y+1}-W01`;
-  else el.value=`${y}-W${String(nw).padStart(2,'0')}`;
-  renderHeures();
-}
 
 // ══════════════════════════════════════════════════════════
 // PHOTOS
@@ -2645,11 +2851,16 @@ function renderCfg(){
     }
   }
 
-  // Team
-  document.getElementById('cfg-team').innerHTML=`<table class="tbl">${TEAM.map(t=>`
-    <tr><td style="padding:9px 14px"><div style="display:flex;align-items:center;gap:8px">${av(t.prenom,26)} <strong>${t.prenom}</strong></div></td>
-    <td style="padding:9px 14px;color:var(--mt);font-size:12px">${t.role}</td>
-    <td style="padding:9px 14px;font-size:12px">${t.h}h/sem</td></tr>`).join('')}</table>`;
+  // Utilisateurs
+  renderCfgUsers();
+
+  // Types d'intervention preview
+  const typesPreview=document.getElementById('cfg-types-preview');
+  if(typesPreview){
+    typesPreview.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:6px">
+      ${intTypes.map(t=>`<span class="tag">${t}</span>`).join('')}
+    </div>`;
+  }
 
   // Process
   renderProcessusList();
@@ -2987,24 +3198,40 @@ let editIntId=null;
 function openMoInt(id){
   editIntId=id||null;
   const mo=document.getElementById('mo-int');
+  // Clients
   const sel=document.getElementById('i-client');
   sel.innerHTML='<option value="">— Sélectionner —</option>'+clients.map(c=>`<option>${c.nom}</option>`).join('');
+  // Techniciens depuis USERS
+  const techSel=document.getElementById('i-tech');
+  if(techSel) techSel.innerHTML=USERS.map(u=>`<option>${u.prenom}</option>`).join('');
+  // Types dynamiques
+  const typeSel=document.getElementById('i-type');
+  if(typeSel) typeSel.innerHTML=intTypes.map(t=>`<option>${t}</option>`).join('');
+  // Heures et durées avec 00/15/30/45
+  populateTimeSelects();
   if(id){
     const i=interventions.find(x=>x.id===id);
     document.getElementById('mo-int-ttl').textContent='Modifier intervention';
     if(i){
       document.getElementById('i-nom').value=i.nom;document.getElementById('i-client').value=i.client;
       document.getElementById('i-lieu').value=i.lieu;document.getElementById('i-tech').value=i.tech;
-      document.getElementById('i-type').value=i.type;document.getElementById('i-date').value=i.date;
-      document.getElementById('i-heure').value=i.heure;document.getElementById('i-duree').value=i.duree;
-      document.getElementById('i-ca').value=i.ca;document.getElementById('i-prio').value=i.prio||'Normale';
+      if(typeSel) typeSel.value=i.type;
+      document.getElementById('i-date').value=i.date;
+      const heureEl=document.getElementById('i-heure');
+      if(heureEl) heureEl.value=i.heure;
+      const dureeEl=document.getElementById('i-duree');
+      if(dureeEl) dureeEl.value=i.duree;
+      document.getElementById('i-ca').value=i.ca||0;
+      document.getElementById('i-prio').value=i.prio||'Normale';
       document.getElementById('i-stat').value=i.statut;document.getElementById('i-desc').value=i.desc||'';
     }
   } else {
     document.getElementById('mo-int-ttl').textContent='Nouvelle intervention';
     ['i-nom','i-lieu','i-desc'].forEach(k=>document.getElementById(k).value='');
     document.getElementById('i-date').value=new Date().toISOString().split('T')[0];
-    document.getElementById('i-heure').value='08:00';document.getElementById('i-duree').value='2';document.getElementById('i-ca').value='0';
+    document.getElementById('i-ca').value='0';
+    // Pré-sélectionner l'utilisateur connecté si technicien
+    if(currentUser?.role!=='manager'&&techSel) techSel.value=currentUser.prenom;
   }
   mo.style.display='flex';
 }
@@ -3043,11 +3270,26 @@ function openMoClient(){
 function saveClient(){
   const nom=document.getElementById('cl-nom').value.trim();
   if(!nom){toast('Nom requis','err');return}
-  clients.push({id:Date.now(),nom,type:document.getElementById('cl-type').value,
+  const newClient={id:Date.now(),nom,type:document.getElementById('cl-type').value,
     contact:document.getElementById('cl-contact').value,tel:document.getElementById('cl-tel').value,
     adresse:document.getElementById('cl-adresse').value,email:document.getElementById('cl-email').value,
-    notes:document.getElementById('cl-notes').value});
-  save();closeMo('mo-client');renderCRM();toast('Client ajouté','ok');
+    notes:document.getElementById('cl-notes').value};
+  clients.push(newClient);
+  save();closeMo('mo-client');
+  // Retourner au modal intervention si on vient de là
+  if(sessionStorage.getItem('return_to_mo_int')){
+    sessionStorage.removeItem('return_to_mo_int');
+    openMoInt(editIntId||null);
+    // Sélectionner le nouveau client
+    setTimeout(()=>{
+      const sel=document.getElementById('i-client');
+      if(sel) sel.value=nom;
+    },100);
+    toast('Client créé et sélectionné','ok');
+  } else {
+    renderCRM();
+    toast('Client ajouté','ok');
+  }
 }
 
 function openMoContrat(){
@@ -3068,8 +3310,194 @@ function saveContrat(){
   save();closeMo('mo-contrat');renderContrats();toast('Contrat enregistré','ok');
 }
 
-function openMoTech(){document.getElementById('mo-tech').style.display='flex'}
-function saveTech(){const p=document.getElementById('t-prenom').value.trim();if(p)toast('Technicien ajouté (démo)','ok');closeMo('mo-tech')}
+// ── GESTION UTILISATEURS ──
+let editUserIdx = null;
+
+function openMoTech(){ openMoUser(); } // compat
+
+function openMoUser(idx){
+  editUserIdx = idx !== undefined ? idx : null;
+  const u = idx !== undefined ? USERS[idx] : null;
+  document.getElementById('mo-user-ttl').textContent = u ? 'Modifier utilisateur' : 'Nouvel utilisateur';
+  document.getElementById('u-prenom').value = u ? u.prenom : '';
+  document.getElementById('u-ini').value = u ? u.ini : '';
+  document.getElementById('u-role').value = u ? u.role : 'tech';
+  document.getElementById('u-col').value = u ? u.col : '#5b9e2f';
+  document.getElementById('u-pin').value = '';
+  document.getElementById('u-pin2').value = '';
+  document.getElementById('u-error').textContent = '';
+  document.getElementById('mo-user').style.display='flex';
+}
+
+function saveUser(){
+  const prenom = document.getElementById('u-prenom').value.trim();
+  const ini = document.getElementById('u-ini').value.trim().toUpperCase();
+  const role = document.getElementById('u-role').value;
+  const col = document.getElementById('u-col').value;
+  const pin = document.getElementById('u-pin').value;
+  const pin2 = document.getElementById('u-pin2').value;
+  const errEl = document.getElementById('u-error');
+
+  if(!prenom){ errEl.textContent='Prénom requis'; return; }
+  if(!ini){ errEl.textContent='Initiales requises'; return; }
+  if(pin && pin !== pin2){ errEl.textContent='Les PINs ne correspondent pas'; return; }
+  if(pin && !/^\d{4}$/.test(pin)){ errEl.textContent='Le PIN doit contenir exactement 4 chiffres'; return; }
+  if(!pin && editUserIdx===null){ errEl.textContent='PIN requis pour un nouvel utilisateur'; return; }
+
+  const hasHeures = role === 'manager' || role === 'tech';
+  if(editUserIdx !== null){
+    USERS[editUserIdx].prenom = prenom;
+    USERS[editUserIdx].ini = ini;
+    USERS[editUserIdx].role = role;
+    USERS[editUserIdx].col = col;
+    USERS[editUserIdx].hasHeures = hasHeures;
+    if(pin) USERS[editUserIdx].pin = pin;
+  } else {
+    USERS.push({prenom, ini, role, col, pin, hasHeures});
+  }
+  save();
+  closeMo('mo-user');
+  renderCfgUsers();
+  toast((editUserIdx!==null?'Utilisateur modifié':'Utilisateur créé')+' : '+prenom,'ok');
+}
+
+function renderCfgUsers(){
+  const el = document.getElementById('cfg-team');
+  if(!el) return;
+  const roleLabel = {manager:'Manager',tech:'Tech. + heures',tech_light:'Tech. léger'};
+  el.innerHTML = `<table class="tbl">
+    ${USERS.map((u,i)=>`<tr>
+      <td style="padding:9px 14px"><div style="display:flex;align-items:center;gap:8px">
+        <div style="width:26px;height:26px;border-radius:50%;background:${u.col};color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">${u.ini}</div>
+        <strong>${u.prenom}</strong>
+      </div></td>
+      <td style="padding:9px 14px;color:var(--mt);font-size:12px">${roleLabel[u.role]||u.role}</td>
+      <td style="padding:9px 14px">
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-ghost btn-xs" onclick="openMoUser(${i})">✏️ Modifier</button>
+          ${i>0?`<button class="btn btn-ghost btn-xs" style="color:var(--r1)" onclick="deleteUser(${i})">✕</button>`:''}
+        </div>
+      </td>
+    </tr>`).join('')}
+  </table>`;
+}
+
+function deleteUser(i){
+  if(!confirm('Supprimer '+USERS[i].prenom+' ?')) return;
+  USERS.splice(i,1);
+  save();
+  renderCfgUsers();
+  toast('Utilisateur supprimé');
+}
+
+// ── TYPES D'INTERVENTION ──
+function openMoTypes(){
+  renderTypesList();
+  document.getElementById('mo-types').style.display='flex';
+}
+
+function renderTypesList(){
+  const el = document.getElementById('types-list');
+  if(!el) return;
+  el.innerHTML = intTypes.map((t,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--brd)">
+      <div style="width:10px;height:10px;border-radius:50%;background:${Object.values({Maintenance:'#5b9e2f',Dépannage:'#0099cc',Installation:'#e07b2a',Contrôle:'#1a3a6b'})[i%4]||'#888'};flex-shrink:0"></div>
+      <span style="flex:1;font-size:13px">${t}</span>
+      <button class="btn btn-ghost btn-xs" onclick="moveType(${i},-1)" ${i===0?'disabled':''}>↑</button>
+      <button class="btn btn-ghost btn-xs" onclick="moveType(${i},1)" ${i===intTypes.length-1?'disabled':''}>↓</button>
+      <button class="btn btn-ghost btn-xs" style="color:var(--r1)" onclick="delType(${i})">✕</button>
+    </div>`).join('');
+}
+
+function addIntType(){
+  const v = document.getElementById('type-input').value.trim();
+  if(!v) return;
+  if(intTypes.includes(v)){ toast('Type déjà existant','err'); return; }
+  intTypes.push(v);
+  document.getElementById('type-input').value='';
+  save(); renderTypesList();
+  refreshTypeSelects();
+  toast('Type ajouté : '+v,'ok');
+}
+
+function delType(i){
+  if(intTypes.length<=1){ toast('Gardez au moins 1 type','err'); return; }
+  intTypes.splice(i,1);
+  save(); renderTypesList();
+  refreshTypeSelects();
+}
+
+function moveType(i,dir){
+  const j=i+dir;
+  if(j<0||j>=intTypes.length) return;
+  [intTypes[i],intTypes[j]]=[intTypes[j],intTypes[i]];
+  save(); renderTypesList();
+  refreshTypeSelects();
+}
+
+function refreshTypeSelects(){
+  // Met à jour tous les selects de type dans l'app
+  ['i-type','f-type'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    const cur=el.value;
+    if(id==='f-type') el.innerHTML='<option value="">Tous types</option>'+intTypes.map(t=>`<option>${t}</option>`).join('');
+    else el.innerHTML=intTypes.map(t=>`<option>${t}</option>`).join('');
+    if(intTypes.includes(cur)) el.value=cur;
+  });
+}
+
+// ── SÉLECTS HEURES (00,15,30,45) ET DURÉES ──
+function populateTimeSelects(){
+  // Heure de début
+  const heureEl=document.getElementById('i-heure');
+  if(heureEl){
+    const cur=heureEl.value||'08:00';
+    heureEl.innerHTML='';
+    for(let h=0;h<24;h++){
+      [0,15,30,45].forEach(m=>{
+        const val=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+        const opt=document.createElement('option');
+        opt.value=val; opt.textContent=val;
+        heureEl.appendChild(opt);
+      });
+    }
+    heureEl.value=cur;
+  }
+  // Durée
+  const dureeEl=document.getElementById('i-duree');
+  if(dureeEl){
+    const cur=dureeEl.value||'2';
+    dureeEl.innerHTML='';
+    for(let h=0;h<=12;h++){
+      [0,15,30,45].forEach((m,mi)=>{
+        if(h===0&&m===0) return;
+        const val=(h+m/60).toFixed(4).replace(/\.?0+$/,'');
+        const label=h>0&&m>0?`${h}h${String(m).padStart(2,'0')}`:h>0?`${h}h`:`${m}min`;
+        const opt=document.createElement('option');
+        opt.value=val; opt.textContent=label;
+        dureeEl.appendChild(opt);
+      });
+    }
+    dureeEl.value=cur;
+  }
+}
+
+// ── CLIENT INLINE DEPUIS MODAL INTERVENTION ──
+function openMoClientInline(){
+  // Sauvegarder l'état de la modal intervention
+  closeMo('mo-int');
+  document.getElementById('cl-nom').value='';
+  document.getElementById('cl-contact').value='';
+  document.getElementById('cl-tel').value='';
+  document.getElementById('cl-adresse').value='';
+  document.getElementById('cl-email').value='';
+  document.getElementById('cl-notes').value='';
+  // Marquer qu'on revient sur mo-int après
+  sessionStorage.setItem('return_to_mo_int','1');
+  document.getElementById('mo-client').style.display='flex';
+}
+
 
 function closeMo(id){document.getElementById(id).style.display='none'}
 
