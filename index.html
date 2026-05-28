@@ -244,16 +244,43 @@ select.fi{cursor:pointer}
   #sb{transform:translateX(-245px);width:245px}
   #sb.open{transform:translateX(0)}
   #sb-overlay.open{display:block}
-  #tb{left:0}
+  #tb{left:0;padding:0 12px;gap:8px}
   #main{margin-left:0}
   #hamburger{display:flex}
   .tb-date{display:none}
-  .kpi-row{grid-template-columns:1fr 1fr}
+  .tb-title{font-size:14px}
+  #tb-btn{font-size:11px;padding:6px 10px}
+  .kpi-row{grid-template-columns:1fr 1fr;gap:8px}
+  .kpi{padding:12px 12px}
+  .kpi-val{font-size:20px}
   .fr2{grid-template-columns:1fr}
-  .fh-row{grid-template-columns:1fr 70px 70px 80px}
   .int-right{display:none}
   .det-grid{grid-template-columns:1fr}
   .plan-grid{grid-template-columns:80px repeat(6,1fr)!important;font-size:10px}
+  .card .ch{padding:11px 14px;flex-wrap:wrap;gap:8px}
+  .card .ch h3{font-size:13px}
+  .cb{padding:12px}
+  .mo{width:98vw!important;max-height:95vh}
+  .mo-b{padding:14px 16px}
+  .mo-f{padding:10px 16px}
+  #fh-table{font-size:10px}
+  .fh-cell{width:50px!important;font-size:10px}
+  .int-card .int-body{padding:10px 11px;gap:9px}
+  .int-nom{font-size:13px}
+  .int-meta{font-size:11px}
+  .btn{font-size:12px}
+  .btn-sm{font-size:11px;padding:4px 9px}
+  #pg-heures .cb{padding:4px 4px;overflow-x:auto}
+  #fh-table td,#fh-table th{padding:3px 3px}
+  .pg{padding:12px}
+  .kpi-row{margin-bottom:12px}
+}
+@media(max-width:480px){
+  .kpi-row{grid-template-columns:1fr 1fr}
+  .kpi-val{font-size:18px}
+  #fh-table{font-size:9.5px}
+  .fh-cell{width:44px!important;font-size:9.5px;padding:1px 1px}
+  select.fh-cell{padding:1px 1px!important}
 }
 </style>
 </head>
@@ -768,7 +795,7 @@ select.fi{cursor:pointer}
         <div class="fg"><label class="fl">Technicien</label>
           <select class="fi" id="i-tech" onchange="autoFillLieu()"></select></div>
         <div class="fg"><label class="fl">Type</label>
-          <select class="fi" id="i-type"></select></div>
+          <select class="fi" id="i-type" onchange="prefillIntNom()"></select></div>
       </div>
       <div class="fr2">
         <div class="fg"><label class="fl">Date</label><input class="fi" type="date" id="i-date"/></div>
@@ -947,7 +974,7 @@ select.fi{cursor:pointer}
     <div class="mo-b">
       <div class="fr2">
         <div class="fg"><label class="fl">Nom du processus</label><input class="fi" id="proc-nom" placeholder="Ex : Maintenance préventive"/></div>
-        <div class="fg"><label class="fl">Type associé</label><select class="fi" id="proc-type"><option value="">Tous types</option><option>Maintenance</option><option>Dépannage</option><option>Installation</option><option>Contrôle</option><option>Mise en service</option></select></div>
+        <div class="fg"><label class="fl">Type associé</label><select class="fi" id="proc-type"><option value="">Tous types</option></select></div>
       </div>
       <div class="fg"><label class="fl">Étapes</label><div id="proc-steps-list"></div><div style="display:flex;gap:8px;margin-top:8px"><input class="fi" id="proc-step-input" placeholder="Nouvelle étape…" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();addProcStep()}"><button class="btn btn-ghost btn-sm" onclick="addProcStep()">+ Ajouter</button></div></div>
     </div>
@@ -1079,13 +1106,7 @@ let feed = S.get('feed')||[
 ];
 
 let heures = S.get('heures')||{};
-let planSlots = S.get('plan')||[
-  {tech:'François',jour:0,nom:'Maintenance Autun',type:'Maintenance',deb:'08:00',fin:'12:00'},
-  {tech:'Mohian',jour:0,nom:'Dépannage Chalon',type:'Dépannage',deb:'10:00',fin:'12:00'},
-  {tech:'Maden',jour:2,nom:'Installation Mâcon',type:'Installation',deb:'07:30',fin:'17:00'},
-  {tech:'Maden',jour:3,nom:'Installation Mâcon',type:'Installation',deb:'07:30',fin:'17:00'},
-  {tech:'Damien',jour:4,nom:'Contrôle Beaune',type:'Contrôle',deb:'14:00',fin:'16:00'},
-];
+let planSlots = S.get('plan')||[];
 let photos = S.get('photos')||[];
 let rapports = S.get('rapports')||[
   {nom:'Rapport hebdo sem. 15',periode:'7–13 avr.',ts:Date.now()-432000000},
@@ -1321,6 +1342,16 @@ function getMyInterventions(){
 }
 
 // Pré-remplir le lieu depuis l'intervention en cours du technicien
+function prefillIntNom(){
+  const nomEl=document.getElementById('i-nom');
+  const typeEl=document.getElementById('i-type');
+  if(!nomEl||!typeEl) return;
+  // Pré-remplir uniquement si le champ est vide ou contient un type précédent
+  if(!nomEl.value||intTypes.some(t=>nomEl.value===t)){
+    nomEl.value=typeEl.value;
+  }
+}
+
 function autoFillLieu(){
   const tech = document.getElementById('i-tech')?.value;
   if(!tech) return;
@@ -1530,12 +1561,23 @@ function renderInts(data){
           <div style="font-size:11px;color:var(--mt);margin-bottom:4px">${i.bonNum}</div>
           ${currentUser?.role==='manager'?`<div class="int-ca">${i.ca.toLocaleString('fr')}€</div>`:''}
           <div style="margin-top:5px">${i.sig?'<span style="font-size:11px;color:var(--g2)">✓ Signé</span>':'<span style="font-size:11px;color:var(--mt)">Non signé</span>'}</div>
+          ${currentUser?.role==='manager'?`<button class="btn btn-ghost btn-xs" style="color:var(--r1);margin-top:6px" onclick="event.stopPropagation();deleteInt(${i.id})">🗑️ Supprimer</button>`:''}
         </div>
       </div>
     </div>`).join('');
 }
 
 let detId=null;
+
+function deleteInt(id){
+  if(!confirm('Supprimer cette intervention ?')) return;
+  const idx=interventions.findIndex(x=>x.id===id);
+  if(idx<0) return;
+  interventions.splice(idx,1);
+  save(); renderInts(); updateBubbles();
+  toast('Intervention supprimée');
+}
+
 function openDet(id){
   detId=id;
   const i=interventions.find(x=>x.id===id);if(!i)return;
@@ -1723,8 +1765,12 @@ function renderPlan(){
       const slots=planSlots.filter(s=>s.tech===t.prenom&&s.jour===di);
       const ints=interventions.filter(i=>i.tech===t.prenom&&i.date===iso);
       html+=`<div class="pg-cell" style="${isT?'background:rgba(91,158,47,.04)':''}" ${currentUser?.role==='manager'?`onclick="openMoAff('${t.prenom}',${di})"`:''}>
-        ${slots.map(s=>`<div class="pg-slot" style="background:${TYPC[s.type]||'var(--g1)'}">${s.nom.substring(0,16)}</div>`).join('')}
-        ${ints.filter(i=>!slots.find(s=>s.nom===i.nom)).map(i=>`<div class="pg-slot" style="background:${TYPC[i.type]||'var(--g1)'};" onclick="event.stopPropagation();openDet(${i.id})">${i.heure} ${i.nom.substring(0,12)}</div>`).join('')}
+        ${slots.map((s,si)=>{
+          const sidx=planSlots.findIndex(p=>p.tech===t.prenom&&p.jour===di&&p.nom===s.nom);
+          const delBtn=currentUser?.role==='manager'?'<span data-idx="'+sidx+'" onclick="event.stopPropagation();delPlanSlot(this.dataset.idx)" style="position:absolute;right:2px;top:1px;cursor:pointer;font-size:10px;line-height:1;color:rgba(255,255,255,.9)">✕</span>':'';
+          return '<div class="pg-slot" style="background:'+(TYPC[s.type]||'var(--g1)')+'; padding-right:'+(currentUser?.role==='manager'?'16px':'5px')+'; position:relative">'+s.nom.substring(0,14)+delBtn+'</div>';
+        }).join('')}
+
       </div>`;
     });
   });
@@ -1733,6 +1779,14 @@ function renderPlan(){
   // Populate select
   const s=document.getElementById('aff-int');
   if(s) s.innerHTML=interventions.map(i=>`<option>${i.nom}</option>`).join('');
+}
+
+function delPlanSlot(idx){
+  idx=parseInt(idx);
+  if(isNaN(idx)||idx<0||idx>=planSlots.length) return;
+  planSlots.splice(idx,1);
+  save(); renderPlan();
+  toast('Affectation supprimée');
 }
 
 function openMoAff(tech,jour){
@@ -1756,6 +1810,15 @@ function saveAff(){
 // ══════════════════════════════════════════════════════════
 // BONS
 // ══════════════════════════════════════════════════════════
+function deleteBon(id){
+  if(!confirm('Supprimer ce bon et l\u2019intervention associée ?')) return;
+  const idx=interventions.findIndex(x=>x.id===id);
+  if(idx<0) return;
+  interventions.splice(idx,1);
+  save(); renderBons(); updateBubbles();
+  toast('Bon supprimé');
+}
+
 function renderBons(){
   const f=document.getElementById('bon-f')?.value||'';
   const list=interventions.filter(i=>{
@@ -1777,6 +1840,7 @@ function renderBons(){
           <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--n1)">${i.ca.toLocaleString('fr')}€</div>
           <button class="btn btn-n btn-sm" onclick="openBon(${i.id})">📄 Ouvrir</button>
           ${!i.sig?`<button class="btn btn-g btn-sm" onclick="openBon(${i.id})">✍️ Signer</button>`:''}
+          ${currentUser?.role==='manager'?`<button class="btn btn-ghost btn-xs" style="color:var(--r1);margin-top:4px" onclick="deleteBon(${i.id})">🗑️ Supprimer</button>`:''}
         </div>
       </div>
     </div>`).join('');
@@ -1945,11 +2009,60 @@ function parseDec(v){
   return isNaN(n)?0:n;
 }
 
+// ── SÉLECTS HEURES DÉCIMALES ──
+function buildTimeOptions(){
+  const opts=['<option value="">—</option>'];
+  for(let h=0;h<=23;h++){
+    for(let q=0;q<4;q++){
+      const val=(h+q*0.25).toFixed(2);
+      const disp=val.replace('.',',');
+      opts.push('<option value="'+val+'">'+disp+'</option>');
+    }
+  }
+  return opts.join('');
+}
+const FH_TIME_OPTS=buildTimeOptions();
+
+function fhTimeSelect(dateStr,field,val){
+  const v=val?parseFloat(String(val).replace(',','.')).toFixed(2):'';
+  const sel=document.createElement('select');
+  sel.className='fh-cell';
+  sel.dataset.d=dateStr;
+  sel.dataset.f=field;
+  sel.style.cssText='width:62px;padding:2px 2px;font-size:11px';
+  sel.innerHTML=FH_TIME_OPTS;
+  if(v) sel.value=v;
+  sel.addEventListener('change',()=>fhRecalc(dateStr));
+  return sel;
+}
+
+function fhSetSelects(monthData){
+  document.querySelectorAll('select.fh-cell[data-f]').forEach(el=>{
+    const field=el.dataset.f;
+    if(!['mDeb','mFin','aDeb','aFin'].includes(field)) return;
+    // Peupler si vide
+    if(!el.options.length) el.innerHTML=FH_TIME_OPTS;
+    // Sélectionner la valeur
+    const dateStr=el.dataset.d;
+    const d=(monthData.days||{})[dateStr]||{};
+    const rawVal=d[field];
+    if(rawVal!==undefined&&rawVal!==''&&rawVal!==null){
+      const v=parseFloat(String(rawVal).replace(',','.')).toFixed(2);
+      el.value=v;
+    }
+    // Ajouter listener si pas déjà fait
+    if(!el.dataset.bound){
+      el.dataset.bound='1';
+      el.addEventListener('change',()=>fhRecalc(el.dataset.d));
+    }
+  });
+}
+
 // Clé de stockage mois+tech
-function fhKey(){
+function fhKey(techOverride){
   const m=document.getElementById('fh-month').value;
   const y=document.getElementById('fh-year').value;
-  const t=currentUser?.role==='tech'?currentUser.prenom:document.getElementById('fh-tech').value;
+  const t=techOverride||(currentUser?.role==='tech'?currentUser.prenom:(document.getElementById('fh-tech')?.value||'François'));
   return `${y}-${String(parseInt(m)+1).padStart(2,'0')}_${t}`;
 }
 
@@ -1975,15 +2088,17 @@ function renderHeures(){
   // Select technicien — uniquement ceux avec hasHeures
   const fhTechSel=document.getElementById('fh-tech');
   if(fhTechSel){
-    const usersH=USERS.filter(u=>u.hasHeures);
+    const usersH=USERS.filter(u=>u.hasHeures&&u.role!=='manager');
     fhTechSel.innerHTML=usersH.map(u=>`<option>${u.prenom}</option>`).join('');
     if(currentUser?.role==='tech'){
       fhTechSel.value=currentUser.prenom;
       fhTechSel.disabled=true;
       fhTechSel.style.opacity='.6';
     } else {
+      // Manager : sélectionner la valeur précédente ou la première dispo
       fhTechSel.disabled=false;
       fhTechSel.style.opacity='';
+      if(!fhTechSel.value&&usersH.length) fhTechSel.value=usersH[0].prenom;
     }
   }
   const tech=currentUser?.role==='tech'?currentUser.prenom:(fhTechSel?.value||'François');
@@ -2056,16 +2171,16 @@ function renderHeures(){
           ${dowName} ${day}
         </td>
         <td style="padding:3px 4px;border-bottom:1px solid var(--brd);border-left:1px solid var(--brd)">
-          <input class="fh-cell" data-d="${dateStr}" data-f="mDeb" value="${fmtDec(d.mDeb)}" oninput="fhRecalc('${dateStr}')" placeholder="—"/>
+          <select class="fh-cell" data-d="${dateStr}" data-f="mDeb" onchange="fhRecalc('${dateStr}')" style="width:62px;padding:2px;font-size:11px"></select>
         </td>
         <td style="padding:3px 4px;border-bottom:1px solid var(--brd)">
-          <input class="fh-cell" data-d="${dateStr}" data-f="mFin" value="${fmtDec(d.mFin)}" oninput="fhRecalc('${dateStr}')" placeholder="—"/>
+          <select class="fh-cell" data-d="${dateStr}" data-f="mFin" onchange="fhRecalc('${dateStr}')" style="width:62px;padding:2px;font-size:11px"></select>
         </td>
         <td style="padding:3px 4px;border-bottom:1px solid var(--brd);border-left:1px solid var(--brd)">
-          <input class="fh-cell" data-d="${dateStr}" data-f="aDeb" value="${fmtDec(d.aDeb)}" oninput="fhRecalc('${dateStr}')" placeholder="—"/>
+          <select class="fh-cell" data-d="${dateStr}" data-f="aDeb" onchange="fhRecalc('${dateStr}')" style="width:62px;padding:2px;font-size:11px"></select>
         </td>
         <td style="padding:3px 4px;border-bottom:1px solid var(--brd)">
-          <input class="fh-cell" data-d="${dateStr}" data-f="aFin" value="${fmtDec(d.aFin)}" oninput="fhRecalc('${dateStr}')" placeholder="—"/>
+          <select class="fh-cell" data-d="${dateStr}" data-f="aFin" onchange="fhRecalc('${dateStr}')" style="width:62px;padding:2px;font-size:11px"></select>
         </td>
         <td style="padding:3px 4px;border-bottom:1px solid var(--brd);border-left:1px solid var(--brd)">
           <input class="fh-cell fh-cell-total" data-d="${dateStr}" data-f="total" value="${fmtDec(d.total)}" oninput="fhEditTotal('${dateStr}')" placeholder="0" style="font-weight:700;color:var(--g2)"/>
@@ -2092,7 +2207,7 @@ function renderHeures(){
   html+='</tbody>';
 
   document.getElementById('fh-table').innerHTML=html;
-  document.getElementById('fh-tot').textContent=fmtDec(totalMois).replace(',','h').replace(/h(\d+)/,'h$1')+'';
+  fhSetSelects(monthData);
   document.getElementById('fh-tot').textContent=fmtDec(totalMois)+' h';
 
   renderSigBlock();
@@ -2254,7 +2369,7 @@ function renderSigBlock(){
       </div>
       <div style="display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap">
         <button class="btn btn-ghost btn-sm" onclick="openFeuilleSig()">Voir la feuille</button>
-        ${currentUser?.role==='manager'?`<button class="btn btn-g" onclick="validerManager()">✅ Valider &amp; signer (manager)</button>`:''}
+        ${currentUser?.role==='manager'?`<button class="btn btn-g" onclick="validerManager('${tech}')">✅ Valider &amp; signer (manager)</button>`:''}
       </div>`;
   } else {
     body.innerHTML=`
@@ -2420,8 +2535,9 @@ function saveSigFH(){
   toast('Feuille signée par '+tech+' ✓','ok');
 }
 
-function validerManager(){
-  const key=fhKey();
+function validerManager(techParam){
+  const tech=techParam||(currentUser?.role!=='manager'?currentUser?.prenom:null)||document.getElementById('fh-tech')?.value||'François';
+  const key=fhKey(tech);
   if(!heures[key]) heures[key]={days:{},obs:''};
   const ex=heures[key].sig||{};
   heures[key].sig={...ex,sigManager:'validated_'+Date.now(),ts:Date.now()};
@@ -2904,6 +3020,11 @@ function openMoProcessus(idx){
   const p = idx!==undefined ? processusList[idx] : null;
   tmpSteps = p ? [...p.etapes] : ['Vérif. EPI','Intervention','Signature client','Clôture bon'];
   document.getElementById('mo-proc-ttl').textContent = p ? 'Modifier processus' : 'Nouveau processus';
+  // Peupler les types dynamiquement
+  const procTypeSel=document.getElementById('proc-type');
+  if(procTypeSel){
+    procTypeSel.innerHTML='<option value="">Tous types</option>'+intTypes.map(t=>`<option>${t}</option>`).join('');
+  }
   document.getElementById('proc-nom').value = p ? p.nom : '';
   document.getElementById('proc-type').value = p ? p.type||'' : '';
   renderTmpSteps();
@@ -3417,6 +3538,8 @@ function addIntType(){
   document.getElementById('type-input').value='';
   save(); renderTypesList();
   refreshTypeSelects();
+  refreshCfgTypesPreview();
+  refreshCfgTypesPreview();
   toast('Type ajouté : '+v,'ok');
 }
 
@@ -3425,6 +3548,7 @@ function delType(i){
   intTypes.splice(i,1);
   save(); renderTypesList();
   refreshTypeSelects();
+  refreshCfgTypesPreview();
 }
 
 function moveType(i,dir){
@@ -3433,6 +3557,11 @@ function moveType(i,dir){
   [intTypes[i],intTypes[j]]=[intTypes[j],intTypes[i]];
   save(); renderTypesList();
   refreshTypeSelects();
+}
+
+function refreshCfgTypesPreview(){
+  const el=document.getElementById('cfg-types-preview');
+  if(el) el.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:6px">'+intTypes.map(t=>`<span class="tag">${t}</span>`).join('')+'</div>';
 }
 
 function refreshTypeSelects(){
