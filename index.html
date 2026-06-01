@@ -848,16 +848,19 @@ select.fi{cursor:pointer}
   <div class="mo" onclick="event.stopPropagation()">
     <div class="mo-h"><h2>Affecter une intervention</h2><button class="mo-x" onclick="closeMo('mo-aff')">✕</button></div>
     <div class="mo-b">
-      <div class="fr2">
-        <div class="fg"><label class="fl">Technicien</label>
-          <select class="fi" id="aff-tech"><option>François</option><option>Mohian</option><option>Maden</option><option>Damien</option></select></div>
-        <div class="fg"><label class="fl">Jour</label>
-          <select class="fi" id="aff-jour"><option>Lun</option><option>Mar</option><option>Mer</option><option>Jeu</option><option>Ven</option><option>Sam</option></select></div>
+      <div class="fg" style="background:var(--nl);border-radius:8px;padding:9px 12px;margin-bottom:12px">
+        <div style="font-size:11px;color:var(--mt);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Jour sélectionné</div>
+        <div id="aff-date-display" style="font-size:14px;font-weight:700;color:var(--n1);margin-top:3px">—</div>
       </div>
-      <div class="fg"><label class="fl">Intervention</label><select class="fi" id="aff-int"></select></div>
+      <div class="fg"><label class="fl">Technicien</label>
+        <select class="fi" id="aff-tech"></select></div>
+      <div class="fg"><label class="fl">Intervention</label>
+        <select class="fi" id="aff-int"></select></div>
       <div class="fr2">
-        <div class="fg"><label class="fl">Heure début</label><input class="fi" type="time" id="aff-deb" value="08:00"/></div>
-        <div class="fg"><label class="fl">Heure fin</label><input class="fi" type="time" id="aff-fin" value="17:00"/></div>
+        <div class="fg"><label class="fl">Heure début</label>
+          <input class="fi" type="time" id="aff-deb" value="08:00"/></div>
+        <div class="fg"><label class="fl">Heure fin</label>
+          <input class="fi" type="time" id="aff-fin" value="17:00"/></div>
       </div>
     </div>
     <div class="mo-f">
@@ -1761,15 +1764,14 @@ function renderPlan(){
   document.getElementById('plan-lbl').textContent=
     `${dates[0].toLocaleDateString('fr-FR',{day:'numeric',month:'short'})} – ${dates[5].toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})}`;
 
-  // Bouton affecter visible seulement pour le manager
   const btnAff=document.getElementById('btn-affecter');
   if(btnAff) btnAff.style.display=currentUser?.role==='manager'?'':'none';
 
-  const cols=1+6;
   const grid=document.getElementById('plan-grid');
-  grid.style.gridTemplateColumns=`110px repeat(6,1fr)`;
+  grid.style.gridTemplateColumns='110px repeat(6,1fr)';
 
-  let html=`<div class="pg-hdr tech">Technicien</div>`;
+  // Construire la grille avec des dates ISO (pas des indices de jour)
+  let html='<div class="pg-hdr tech">Technicien</div>';
   dates.forEach((d,i)=>{
     const iso=d.toISOString().split('T')[0];
     const isT=iso===new Date().toISOString().split('T')[0];
@@ -1781,22 +1783,34 @@ function renderPlan(){
     dates.forEach((d,di)=>{
       const iso=d.toISOString().split('T')[0];
       const isT=iso===new Date().toISOString().split('T')[0];
-      // Planning slots + interventions
-      const slots=planSlots.filter(s=>s.tech===t.prenom&&s.jour===di);
-      const ints=interventions.filter(i=>i.tech===t.prenom&&i.date===iso);
-      html+=`<div class="pg-cell" style="${isT?'background:rgba(91,158,47,.04)':''}" ${currentUser?.role==='manager'?`onclick="openMoAff('${t.prenom}',${di})"`:''}>
-        ${slots.map((s,si)=>{
-          const sidx=planSlots.findIndex(p=>p.tech===t.prenom&&p.jour===di&&p.nom===s.nom);
-          const delBtn=currentUser?.role==='manager'?'<span data-idx="'+sidx+'" onclick="event.stopPropagation();delPlanSlot(this.dataset.idx)" style="position:absolute;right:2px;top:1px;cursor:pointer;font-size:10px;line-height:1;color:rgba(255,255,255,.9)">✕</span>':'';
-          return '<div class="pg-slot" style="background:'+(TYPC[s.type]||'var(--g1)')+'; padding-right:'+(currentUser?.role==='manager'?'16px':'5px')+'; position:relative">'+s.nom.substring(0,14)+delBtn+'</div>';
-        }).join('')}
 
-      </div>`;
+      // Slots manuels filtrés par date ISO précise
+      const slots=planSlots.filter(s=>s.tech===t.prenom&&s.date===iso);
+      // Interventions du jour (affichées en lecture seule)
+      const dayInts=interventions.filter(i=>i.tech===t.prenom&&i.date===iso);
+
+      const cellClick=currentUser?.role==='manager'?`onclick="openMoAff('${t.prenom}','${iso}')"`:'' ;
+
+      let cellContent='';
+      // Slots manuels avec bouton supprimer
+      slots.forEach(s=>{
+        const sidx=planSlots.findIndex(p=>p.tech===t.prenom&&p.date===iso&&p.nom===s.nom);
+        const del=currentUser?.role==='manager'
+          ?'<span data-idx="'+sidx+'" onclick="event.stopPropagation();delPlanSlot(this.dataset.idx)" style="position:absolute;right:2px;top:1px;cursor:pointer;font-size:10px;color:rgba(255,255,255,.9)">✕</span>'
+          :'';
+        cellContent+='<div class="pg-slot" style="background:'+(TYPC[s.type]||'var(--g1)')+';position:relative;padding-right:'+(currentUser?.role==='manager'?'16px':'5px')+'">'+s.nom.substring(0,14)+del+'</div>';
+      });
+      // Interventions cliquables
+      dayInts.forEach(i=>{
+        cellContent+='<div class="pg-slot" style="background:'+(TYPC[i.type]||'var(--c1)')+';cursor:pointer;opacity:.85" onclick="event.stopPropagation();openDet('+i.id+')">'+i.heure+' '+i.nom.substring(0,12)+'</div>';
+      });
+
+      html+=`<div class="pg-cell" style="${isT?'background:rgba(91,158,47,.04)':''}" ${cellClick}>${cellContent}</div>`;
     });
   });
   grid.innerHTML=html;
 
-  // Populate select
+  // Populate select affectation
   const s=document.getElementById('aff-int');
   if(s) s.innerHTML=interventions.map(i=>`<option>${i.nom}</option>`).join('');
 }
@@ -1809,21 +1823,36 @@ function delPlanSlot(idx){
   toast('Affectation supprimée');
 }
 
-function openMoAff(tech,jour){
-  if(tech) document.getElementById('aff-tech').value=tech;
-  if(jour!==undefined) document.getElementById('aff-jour').value=DAYS[jour]||'Lun';
+function openMoAff(tech,dateIso){
+  // Peupler techniciens depuis USERS
+  const techSel=document.getElementById('aff-tech');
+  if(techSel) techSel.innerHTML=USERS.map(u=>`<option>${u.prenom}</option>`).join('');
+  if(tech&&techSel) techSel.value=tech;
+  // Stocker la date ISO
+  const mo=document.getElementById('mo-aff');
+  if(dateIso) mo.dataset.date=dateIso;
+  // Afficher la date lisible
+  const dateEl=document.getElementById('aff-date-display');
+  if(dateEl&&dateIso){
+    const d=new Date(dateIso+'T12:00:00');
+    dateEl.textContent=d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  }
+  // Peupler interventions
   const s=document.getElementById('aff-int');
-  s.innerHTML=interventions.map(i=>`<option>${i.nom}</option>`).join('');
-  document.getElementById('mo-aff').style.display='flex';
+  if(s) s.innerHTML=interventions.map(i=>`<option>${i.nom}</option>`).join('');
+  mo.style.display='flex';
 }
 
 function saveAff(){
   const tech=document.getElementById('aff-tech').value;
-  const jourStr=document.getElementById('aff-jour').value;
-  const jour=DAYS.indexOf(jourStr);
+  const dateIso=document.getElementById('mo-aff').dataset.date||new Date().toISOString().split('T')[0];
   const nom=document.getElementById('aff-int').value;
   const int=interventions.find(i=>i.nom===nom);
-  planSlots.push({tech,jour,nom,type:int?.type||'Maintenance',deb:document.getElementById('aff-deb').value,fin:document.getElementById('aff-fin').value});
+  // Vérifier doublon
+  if(planSlots.find(s=>s.tech===tech&&s.date===dateIso&&s.nom===nom)){
+    toast('Déjà affecté ce jour-là','err'); return;
+  }
+  planSlots.push({tech,date:dateIso,nom,type:int?.type||'Maintenance',deb:document.getElementById('aff-deb').value,fin:document.getElementById('aff-fin').value});
   save();closeMo('mo-aff');renderPlan();toast('Affectation enregistrée','ok');
 }
 
